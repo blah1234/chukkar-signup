@@ -418,7 +418,6 @@ public class SignupView implements EntryPoint
 		        	
 		        	_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
 		        	
-		        	clearSignupPage();
 		        	_ctrl.loadPlayers();
 		        }
 		        else if( "admin".equalsIgnoreCase(event.getValue()) )
@@ -748,6 +747,8 @@ public class SignupView implements EntryPoint
 	
 	public void loadPlayers(List<Player> playersList)
 	{
+		clearSignupPage();
+		
 		for(Player currPlayer : playersList)
 		{
 			FlexTable signupTable;
