@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/signup/cron/removeAllPlayers</url>
+    <description>Resets the signup page every Monday at 6am</description>
+    <schedule>every monday 06:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupNoticeEmail</url>
+    <description>Sends a weekly email reminding players to signup for weekend chukkars</description>
+    <schedule>every wednesday 09:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupReminderEmail</url>
+    <description>Sends a weekly last reminder to players to signup for weekend chukkars</description>
+    <schedule>every friday 09:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+</cronentries>

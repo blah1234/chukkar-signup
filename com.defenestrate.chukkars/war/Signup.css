@@ -1,0 +1,226 @@
+/** Add css rules here for your application. */
+
+
+/** Example rules used by the template application (remove for your app) */
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+  color: #777777;
+  margin: 40px 0px 70px;
+  text-align: center;
+}
+
+/* signup table header row */
+.signupHeader {
+  background-color: #2062B8;
+  color: white;
+  font-style: italic;
+}
+
+/* signup flex table */
+.signupTable {
+  padding: 2px;
+  margin-top:6px;
+  margin-bottom:6px;
+}
+
+/* time column */
+.signupTimeColumn {
+  width: 12em;
+  color: graytext;
+  font-style: italic;
+}
+
+/* num chukkar column */
+.signupNumericColumn {
+  text-align: right;
+  width:4em;
+}
+
+/* signup table Action column */
+.signupActionColumn {
+  text-align: center;
+}
+
+/* main panel */
+.mainPanel {
+  margin: 15px 15px 15px 15px;
+}
+
+.chukkarsPanel {
+  margin: 6px 0px 6px 30px;
+}
+
+/* signup table, the Action buttons */
+.gwt-Button-action {
+  width: 70px;
+}
+
+/* signup table, the Delete buttons */
+.gwt-Button-delete {
+  width: 50px;
+}
+
+.gwt-TextBox-numChukkars {
+	width: 4em;
+}
+
+/* num game chukkars label */
+.gwt-Label-gameChukkarsLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: medium;
+  font-weight: bold;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+/* num chukkars total label */
+.gwt-Label-totalChukkarsLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: medium;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.loginPanel {
+  float: right;
+  margin-bottom: 30px;
+}
+
+/* logged in user userNickname label */
+.gwt-Label-userNicknameLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: 11px;
+}
+
+.gwt-Label-pipeLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: 15px;
+}
+
+/* logged in user email label */
+.gwt-Label-userEmailLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  margin-right: 10px;
+  margin-left: 5px;
+  font-size: 11px;
+}
+
+.gwt-Anchor-logoutLink {
+  font-family: Arial,Helvetica,sans-serif !important;
+  font-size: 11px !important;
+  margin-left: 10px;
+}
+
+/* ------------ Admin page ------------ */
+
+.adminLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  float:right;
+}
+
+.gwt-TextBox-recipientEmail {
+  width: 25em;
+  margin-top: 0px !important;
+  padding-top: 0px !important;
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+.adminTable {
+  border-spacing: 5px 20px;
+}
+
+.gwt-TextArea-signupTxt {
+  font-family: Arial,Helvetica,sans-serif;
+  width: 40em;
+  height: 30ex;
+}
+
+/* save button */
+.gwt-Button-saveAdminSettings {
+  width: 75px;
+  float: right; 
+}
+
+
+/* ------------ Busy Indicator Dialog ------------ */
+.dialogVPanel {
+  margin: 50px 100px 50px 100px;
+}
+
+.gwt-Label-busyLbl {
+  font-size: large;
+  margin-bottom: 10px;
+  color: activeborder;
+}
+
+
+/* ------------ Error Dialog ------------ */
+.gwt-DialogBox .Caption-errorDialog {
+  font-size: large;
+  text-align:center;
+}
+
+.gwt-Button-errorDialog {
+  width: 75px;
+}
+
+.gwt-Label-errorDialog {
+  font-size: large;
+  margin-right: 10px;
+}
+
+.errorDialogPanel-main {
+  margin-bottom: 10px;
+}
+
+
+/* ------------ Example ------------ */
+.demo-example-panel {
+  margin: 1em 1em;
+}
+
+DIV.dragdrop-dropTarget {
+  background-color: #CCCCCC; /* gray */
+  border: 1px solid black;
+}
+
+DIV.dragdrop-dropTarget-engage {
+  background: #BCDEFF; /* lighter blue */
+}
+
+/* ------------ InsertPanelExample ------------ */
+.demo-InsertPanelExample .demo-InsertPanelExample-widget ,
+.demo-InsertPanelExample .demo-InsertPanelExample-heading ,
+.demo-InsertPanelExample .demo-InsertPanelExample-spacer {
+  padding: 0.1em;
+  margin: 0.1em;
+  width: 120px;
+}
+
+.demo-InsertPanelExample .demo-InsertPanelExample-widget ,
+.demo-InsertPanelExample .demo-InsertPanelExample-heading {
+  border: 1px solid blue;
+}
+
+.demo-InsertPanelExample .demo-InsertPanelExample-spacer {
+  height: 50px;
+}
+
+.demo-InsertPanelExample .demo-InsertPanelExample-add-heading {
+  width: 50px;
+}
+
+.demo-InsertPanelExample .demo-InsertPanelExample-widget {
+  background-color: #B3FF87; /* bright green */
+}
+
+.demo-InsertPanelExample .demo-InsertPanelExample-heading {
+  background-color: #87B3FF; /* bright blue */
+}
+
+.demo-InsertPanelExample .demo-InsertPanelExample-column-composite {
+  padding: 1px;
+}
