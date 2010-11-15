@@ -65,12 +65,8 @@ public class CronServiceImpl extends HttpServlet
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
-		Transaction tx = pm.currentTransaction();
-		
 		try 
 		{
-			tx.begin();
-			
 			Extent<Player> e = pm.getExtent(Player.class);
 			Iterator<Player> iter = e.iterator();
 			
@@ -79,20 +75,13 @@ public class CronServiceImpl extends HttpServlet
 				Player delPlayer = iter.next();
 				pm.deletePersistent(delPlayer);
 			}
-			
-			tx.commit();
 		} 
 		catch(Exception e)
 		{
 			LOG.log(
 				Level.SEVERE, 
-				"Error encountered trying to remove all players", 
+				"Error encountered trying to remove all players:\n" + e.getMessage(), 
 				e);
-			
-		    if( tx.isActive() )
-		    {
-		        tx.rollback();
-		    }
 		}
 		finally 
 		{
