@@ -84,7 +84,7 @@ public class AdminServiceImpl extends RemoteServiceServlet
 		{
 			LOG.log(
 				Level.SEVERE, 
-				"Error encountered trying to save the state of MessageAdmin with id = " + data.getId(), 
+				"Error encountered trying to save the state of MessageAdmin with id = " + data.getId() + ":\n" + e.getMessage(), 
 				e);
 			
 		    if( tx.isActive() )
