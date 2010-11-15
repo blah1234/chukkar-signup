@@ -84,7 +84,7 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		{
 			LOG.log(
 				Level.SEVERE, 
-				"Error encountered trying to modify number of chukkars for player with id = " + playerId, 
+				"Error encountered trying to modify number of chukkars for player with id = " + playerId + ":\n" + e.getMessage(), 
 				e);
 			
 		    if( tx.isActive() )
@@ -127,7 +127,7 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		{
 			LOG.log(
 				Level.SEVERE, 
-				"Error encountered trying to remove player with id = " + id, 
+				"Error encountered trying to remove player with id = " + id + ":\n" + e.getMessage(), 
 				e);
 			
 		    if( tx.isActive() )
