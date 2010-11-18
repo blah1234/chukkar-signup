@@ -48,7 +48,7 @@ public class Simulator
 	
 
 	/////////////////////////////// CONSTRUCTORS ///////////////////////////////
-	public Simulator(int numNodes, int numBuddies)
+	public Simulator(int numNodes, int numBuddies, boolean isBuddyBidirectional)
 	{
 		try
 		{
@@ -61,7 +61,7 @@ public class Simulator
 			throw new RuntimeException(e);
 		}
 		
-		createNodes(numNodes, numBuddies);
+		createNodes(numNodes, numBuddies, isBuddyBidirectional);
 	}
 	
 	private void createJMSConstructs() throws Exception
@@ -131,7 +131,7 @@ public class Simulator
 		});
 	}
 	
-	private void createNodes(int numNodes, int numBuddies)
+	private void createNodes(int numNodes, int numBuddies, boolean isBuddyBidirectional)
 	{
 		_allNodes = Collections.synchronizedList( new ArrayList<NodeStateHelper>(numNodes) );
 		
@@ -158,32 +158,49 @@ public class Simulator
 		
 		//---------- link up buddies ------------
 		int n = _allNodes.size();
+		int increment = 0;
+		
 		for(NodeStateHelper currHelper : _allNodes)
 		{
 			//does the current Node already have all its buddies?
 			for(int i=currHelper._node.getBuddyCount(); i<numBuddies;)
 			{
 				//choose buddies randomly
-				int buddyIndex = _rand.nextInt(n);
+				int buddyIndex = isBuddyBidirectional ? (increment++ % n) : _rand.nextInt(n);
 				Node buddyNode = _allNodes.get(buddyIndex)._node;
 				
-				//must make sure that the potential buddy node doesn't 
-				//have all its OWN required number of buddies already
-				if(buddyNode.getBuddyCount() < numBuddies)
+				//for BIDIRECTIONAL buddies, must make sure that the potential buddy   
+				//node doesn't have all its OWN required number of buddies already
+				if( !isBuddyBidirectional || (buddyNode.getBuddyCount() < numBuddies ) )
 				{
 					//try to establish the forward direction of the buddy relationship
 					boolean isSuccess = currHelper._node.addBuddy(buddyNode);
 					
 					if(isSuccess)
 					{
-						//establish the reverse direction of the buddy relationship
-						buddyNode.addBuddy(currHelper._node);
+						if(isBuddyBidirectional)
+						{
+							//establish the reverse direction of the buddy relationship
+							buddyNode.addBuddy(currHelper._node);
+						}
+						
 						i++;
 					}
 				}
 			}
 		}
 		
+		
+		if( _log.isTraceEnabled() )
+		{
+			//check buddy counts
+			for(int i=0; i<n; i++)
+			{
+				NodeStateHelper currHelper = _allNodes.get(i);
+				_log.trace( i + ": # buddies: " + currHelper._node.getBuddyCount() );
+			}
+		}
+			
 		
 		//----------- start messaging ------------
 		for(NodeStateHelper currHelper : _allNodes)
@@ -282,7 +299,7 @@ public class Simulator
 	
 	static public void main(String[] args) throws Exception
     {
-    	Simulator driver = new Simulator(2, 1);
+    	Simulator driver = new Simulator(1000, 20, false);
     	driver.startMainEventLoop(30000 * 1000);
     	
     	//System.exit(0);
