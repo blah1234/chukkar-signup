@@ -19,6 +19,8 @@ import javax.jms.Topic;
 
 import org.apache.log4j.Logger;
 
+import util.SkypeTestSystem;
+
 import client.Node;
 import client.Presence;
 
@@ -33,8 +35,9 @@ public class Simulator
 	private Session _receiveSession;
 	private Queue _nodeInput;
 	private Topic _broadcastOut;
-	private List<StateHelper> _allNodes;
+	private List<NodeStateHelper> _allNodes;
 	private Random _rand = new Random();
+	private long _numMsgSent;
 	private volatile boolean _isKilled;
 	private static final Logger _log = Logger.getLogger(Simulator.class);
 	
@@ -78,6 +81,8 @@ public class Simulator
 	
 	private void createMessageForwarder() throws JMSException
 	{
+		_numMsgSent = 0;
+		
 		MessageConsumer cons = _receiveSession.createConsumer(_nodeInput);
 		cons.setMessageListener(new MessageListener()
 		{
@@ -96,6 +101,8 @@ public class Simulator
 						prod.setTimeToLive(0);	//0 is unlimited
 						
 						prod.send(msg);
+						_numMsgSent++;
+						
 						prod.close();
 					}
 				}
@@ -109,19 +116,20 @@ public class Simulator
 	
 	private void createNodes(int numNodes, int numBuddies)
 	{
-		_allNodes = Collections.synchronizedList( new ArrayList<StateHelper>(numNodes) );
+		_allNodes = Collections.synchronizedList( new ArrayList<NodeStateHelper>(numNodes) );
 		
+		//---------- create the nodes --------------
 		for(int i=0; i<numNodes; i++)
 		{
 			//choose the init state randomly
 			boolean randBool = _rand.nextBoolean();
 			Presence initState = randBool ? Presence.ONLINE : Presence.OFFLINE;
 			
-			StateHelper currHelper = new StateHelper();
+			NodeStateHelper currHelper = new NodeStateHelper();
 			Node currNode = new Node(initState, _jmsConn, _nodeInput, _broadcastOut);
 			
 			currHelper._node = currNode;
-			currHelper._lastStateChangeTime = System.currentTimeMillis();
+			currHelper._lastStateChangeTime = SkypeTestSystem.currentTimeMillis();
 			
 			//random # of seconds between 0 and 4000
 			currHelper._currentStateChangeIntervalMillis = _rand.nextInt(4001) * 1000;
@@ -130,24 +138,37 @@ public class Simulator
 		}
 		
 		
+		//---------- link up buddies ------------
 		int n = _allNodes.size();
-		for(StateHelper currHelper : _allNodes)
+		for(NodeStateHelper currHelper : _allNodes)
 		{
-			for(int i=0; i<numBuddies;)
+			//does the current Node already have all its buddies?
+			for(int i=currHelper._node.getBuddyCount(); i<numBuddies;)
 			{
 				//choose buddies randomly
 				int buddyIndex = _rand.nextInt(n);
-				boolean isSuccess = currHelper._node.addBuddy( _allNodes.get(buddyIndex)._node );
+				Node buddyNode = _allNodes.get(buddyIndex)._node;
 				
-				if(isSuccess)
+				//must make sure that the potential buddy node doesn't 
+				//have all its OWN required number of buddies already
+				if(buddyNode.getBuddyCount() < numBuddies)
 				{
-					i++;
+					//try to establish the forward direction of the buddy relationship
+					boolean isSuccess = currHelper._node.addBuddy(buddyNode);
+					
+					if(isSuccess)
+					{
+						//establish the reverse direction of the buddy relationship
+						buddyNode.addBuddy(currHelper._node);
+						i++;
+					}
 				}
 			}
 		}
 		
 		
-		for(StateHelper currHelper : _allNodes)
+		//----------- start messaging ------------
+		for(NodeStateHelper currHelper : _allNodes)
 		{
 			currHelper._node.start();
 		}
@@ -163,9 +184,9 @@ public class Simulator
 				{
 					synchronized(_allNodes)
 					{
-						for(StateHelper currHelper : _allNodes)
+						for(NodeStateHelper currHelper : _allNodes)
 						{
-							long timeElapsedMillis = System.currentTimeMillis() - currHelper._lastStateChangeTime;
+							long timeElapsedMillis = SkypeTestSystem.currentTimeMillis() - currHelper._lastStateChangeTime;
 							if(timeElapsedMillis >= currHelper._currentStateChangeIntervalMillis)
 							{
 								currHelper._node.toggleState();
@@ -174,7 +195,7 @@ public class Simulator
 						}
 					}
 					
-					
+					/**@todo don't need probably
 					try
 					{
 						Thread.sleep(1000);
@@ -182,7 +203,7 @@ public class Simulator
 					catch(InterruptedException e)
 					{
 						//don't really care
-					}
+					}*/
 				}
 			}
 		};
@@ -199,7 +220,7 @@ public class Simulator
 		
 		synchronized(_allNodes)
 		{
-			for(StateHelper currHelper : _allNodes)
+			for(NodeStateHelper currHelper : _allNodes)
 			{
 				currHelper._node.kill();
 			}
@@ -208,6 +229,8 @@ public class Simulator
 		JMSUtils.closeSilently(_receiveSession);
 		JMSUtils.closeSilently(_sendSession);
 		JMSUtils.closeSilently(_jmsConn);
+		
+		SkypeTestSystem.stopClock();
 		
 		//TODO: maybe drain out the queue?
 	}
@@ -219,7 +242,7 @@ public class Simulator
 	
 
 	////////////////////////////// INNER CLASSES ///////////////////////////////
-	private class StateHelper
+	private class NodeStateHelper
 	{
 		Node _node;
 		long _lastStateChangeTime;
