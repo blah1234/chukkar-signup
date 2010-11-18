@@ -240,16 +240,6 @@ public class Simulator
 					prevPercent = percentElapsed;
 				}
 			}
-			
-			/**@todo don't need probably
-			try
-			{
-				Thread.sleep(1000);
-			}
-			catch(InterruptedException e)
-			{
-				//don't really care
-			}*/
 		}
 		
 		kill();
@@ -280,12 +270,12 @@ public class Simulator
 	
 	private void printStatistics(long timeElapsedMillis)
 	{
-		System.out.println("Total time elapsed (sec):");
-		System.out.println(SkypeTestSystem.computeAverageNotificationLatencyMillis() / 1000f);
+		System.out.println("\nTotal time elapsed (sec):");
+		System.out.println(timeElapsedMillis / 1000f);
 		
 		//--------------------
 		
-		System.out.println("Average latency between Node presence change and delivery of notification (sec):");
+		System.out.println("\nAverage latency between Node presence change and delivery of notification (sec):");
 		System.out.println(SkypeTestSystem.computeAverageNotificationLatencyMillis() / 1000f); 
 		
 		//--------------------
@@ -302,7 +292,7 @@ public class Simulator
     	Simulator driver = new Simulator(1000, 20, false);
     	driver.startMainEventLoop(30000 * 1000);
     	
-    	//System.exit(0);
+    	System.exit(0);
     }
 	
 
