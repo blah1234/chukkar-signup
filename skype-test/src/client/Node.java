@@ -22,6 +22,7 @@ import jms.JMSUtils;
 import org.apache.log4j.Logger;
 
 import util.Constants;
+import util.SkypeTestSystem;
 
 public class Node
 {
@@ -31,7 +32,7 @@ public class Node
 
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
 	private final UUID _guid = UUID.randomUUID();
-	private volatile Presence _state;
+	private volatile State _state;
 	private Map<String, Presence> _buddyIdToPresenceMap;
 	private Queue _simulatorInput;
 	private Topic _simulatorBroadcast;
@@ -52,7 +53,7 @@ public class Node
 	 */
 	public Node(Presence initState, Connection jmsConn, Queue simInQueue, Topic simBroadcast)
 	{
-		_state = initState;
+		_state = new State( initState, SkypeTestSystem.currentTimeMillis() );
 		
 		try
 		{
@@ -86,8 +87,10 @@ public class Node
 			{
 				public void onMessage(Message msg)
 				{
+					State currState = Node.this.getState();
+
 					//simulate communication failure if state is OFFLINE
-					if(Node.this.getState() == Presence.ONLINE)
+					if(currState.getPresence() == Presence.ONLINE)
 					{
 						MapMessage mapMsg = (MapMessage)msg;
 						
@@ -98,7 +101,17 @@ public class Node
 							if( _buddyIdToPresenceMap.containsKey(nodeGuid) )
 							{
 								String state = mapMsg.getString(Constants.NODE_STATE);
-								_buddyIdToPresenceMap.put( nodeGuid, Presence.valueOf(state) );
+								Presence newState = Presence.valueOf(state);
+								
+								Presence oldState = _buddyIdToPresenceMap.put(nodeGuid, newState);
+								
+								if(oldState != newState)
+								{
+									//record the latency between actual state change and notification
+									long stateChangeTime = mapMsg.getLong(Constants.NODE_STATE_CHANGE_TIME);
+									long elapsedTime = SkypeTestSystem.currentTimeMillis() - stateChangeTime;
+									SkypeTestSystem.addNotificationLatencyMetric(elapsedTime);
+								}
 							}
 						}
 						catch(JMSException e)
@@ -134,10 +147,12 @@ public class Node
 				{
 					while(!_isKilled)
 					{
+						State currState = Node.this.getState();
+
 						//simulate communication failure if state is OFFLINE
 						//node can't send more than 5 msg/min
-						if( (Node.this.getState() == Presence.ONLINE) &&
-							((_lastSendTime == -1) || (System.currentTimeMillis() - _lastSendTime >= SEND_MESSAGE_INTERVAL_MILLIS)) )
+						if( (currState.getPresence() == Presence.ONLINE) &&
+							((_lastSendTime == -1) || (SkypeTestSystem.currentTimeMillis() - _lastSendTime >= SEND_MESSAGE_INTERVAL_MILLIS)) )
 						{
 							try
 							{
@@ -147,10 +162,11 @@ public class Node
 								
 								MapMessage msg = _sendSession.createMapMessage();
 								msg.setStringProperty( Constants.NODE_GUID, Node.this.getGUID() );
-								msg.setString( Constants.NODE_STATE, Node.this.getState().toString() );
+								msg.setString( Constants.NODE_STATE, currState.getPresence().toString() );
+								msg.setLong( Constants.NODE_STATE_CHANGE_TIME, currState.getLastStateChangeTime() );
 								prod.send(msg);
 								
-								_lastSendTime = System.currentTimeMillis();
+								_lastSendTime = SkypeTestSystem.currentTimeMillis();
 		
 								prod.close();
 							}
@@ -161,6 +177,7 @@ public class Node
 							}
 						}
 						
+						/**@todo don't need probably
 						try
 						{
 							Thread.sleep(2000);
@@ -168,7 +185,7 @@ public class Node
 						catch(InterruptedException e)
 						{
 							//don't really care
-						}
+						}*/
 					}
 					
 					JMSUtils.closeSilently(_sendSession);
@@ -193,20 +210,34 @@ public class Node
 		return _guid.toString();
 	}
 	
-	public Presence getState()
+	/**
+	 * Returns a CLONE of the current state of this Node. The actual state of
+	 * this Node may continue to change after the current state is
+	 * obtained from this method. 
+	 * @return a CLONE of the current state of this Node.
+	 */
+	public State getState()
 	{
-		return _state;
+		synchronized(_state)
+		{
+			return _state.clone();
+		}
 	}
 	
 	public void toggleState()
 	{
-		if(_state == Presence.OFFLINE)
+		synchronized(_state)
 		{
-			_state = Presence.ONLINE;
-		}
-		else
-		{
-			_state = Presence.OFFLINE;
+			if(_state.getPresence() == Presence.OFFLINE)
+			{
+				_state.setPresence(Presence.ONLINE);
+			}
+			else
+			{
+				_state.setPresence(Presence.OFFLINE);
+			}
+			
+			_state.setLastStateChangeTime( SkypeTestSystem.currentTimeMillis() );
 		}
 	}
 	
@@ -226,12 +257,65 @@ public class Node
 		}
 		else if( !_buddyIdToPresenceMap.containsKey(buddy.getGUID()) )
 		{
-			_buddyIdToPresenceMap.put( buddy.getGUID(), buddy.getState() );
+			_buddyIdToPresenceMap.put( buddy.getGUID(), buddy.getState().getPresence() );
 			return true;
 		}
 		else
 		{
 			return false;
+		}
+	}
+	
+	public int getBuddyCount()
+	{
+		return _buddyIdToPresenceMap.size();
+	}
+	
+
+	////////////////////////////// INNER CLASSES ///////////////////////////////
+	private class State
+	{
+		private volatile Presence _presence;
+		private volatile long _lastStateChangeTime;
+		
+		
+		State(Presence init, long initTime)
+		{
+			_presence = init;
+			_lastStateChangeTime = initTime;
+		}
+		
+		Presence getPresence()
+		{
+			return _presence;
+		}
+		
+		void setPresence(Presence toSet)
+		{
+			_presence = toSet;
+		}
+		
+		long getLastStateChangeTime()
+		{
+			return _lastStateChangeTime;
+		}
+		
+		void setLastStateChangeTime(long toSet)
+		{
+			_lastStateChangeTime = toSet;
+		}
+		
+		public State clone()
+		{
+			try
+			{
+				return (State)super.clone();
+			}
+			catch(CloneNotSupportedException e)
+			{
+				//will never happen
+				return null;
+			}
 		}
 	}
 }
