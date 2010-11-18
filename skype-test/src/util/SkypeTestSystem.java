@@ -46,7 +46,10 @@ public class SkypeTestSystem
 	{
 		synchronized(_latencyMetric)
 		{
-			_log.debug("Elapsed time to add: " + elapsedTimeMillis);
+			if( _log.isDebugEnabled() )
+			{
+				_log.debug("Elapsed time to add: " + elapsedTimeMillis);
+			}
 			
 			_latencyMetric._totalElapsedTime += elapsedTimeMillis;
 			_latencyMetric._numDataPoints++;
