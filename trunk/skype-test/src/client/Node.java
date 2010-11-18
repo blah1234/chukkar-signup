@@ -197,16 +197,6 @@ public class Node
 											e.getMessage(), e);
 									}
 								}
-								
-								/**@todo don't need probably
-								try
-								{
-									Thread.sleep(2000);
-								}
-								catch(InterruptedException e)
-								{
-									//don't really care
-								}*/
 							}
 							else
 							{
