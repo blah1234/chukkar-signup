@@ -39,7 +39,7 @@ public class Node
 	private Session _sendSession;
 	private Session _receiveSession;
 	private AtomicBoolean _isStarted;
-	private volatile boolean _isKilled;
+	private volatile Boolean _isKilled;
 	static private final Logger _log = Logger.getLogger(Node.class);
 	
 
@@ -70,7 +70,7 @@ public class Node
 		_simulatorBroadcast = simBroadcast;
 		
 		_isStarted = new AtomicBoolean(false);
-		_isKilled = false;
+		_isKilled = Boolean.FALSE;
 		_buddyIdToPresenceMap = new HashMap<String, Presence>();
 		
 		initSimulatorBroadcastListener();
@@ -147,45 +147,52 @@ public class Node
 				{
 					while(!_isKilled)
 					{
-						State currState = Node.this.getState();
-
-						//simulate communication failure if state is OFFLINE
-						//node can't send more than 5 msg/min
-						if( (currState.getPresence() == Presence.ONLINE) &&
-							((_lastSendTime == -1) || (SkypeTestSystem.currentTimeMillis() - _lastSendTime >= SEND_MESSAGE_INTERVAL_MILLIS)) )
+						//synchonized so we won't kill off the connection in 
+						//the middle of the loop execution
+						synchronized (_isKilled)
 						{
+							State currState = Node.this.getState();
+	
+							//simulate communication failure if state is OFFLINE
+							//node can't send more than 5 msg/min
+							if( (currState.getPresence() == Presence.ONLINE) &&
+								((_lastSendTime == -1) || (SkypeTestSystem.currentTimeMillis() - _lastSendTime >= SEND_MESSAGE_INTERVAL_MILLIS)) )
+							{
+								try
+								{
+									MessageProducer prod = _sendSession.createProducer(_simulatorInput);
+									prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+									prod.setTimeToLive(0);	//0 is unlimited
+									
+									MapMessage msg = _sendSession.createMapMessage();
+									msg.setStringProperty( Constants.NODE_GUID, Node.this.getGUID() );
+									msg.setString( Constants.NODE_STATE, currState.getPresence().toString() );
+									msg.setLong( Constants.NODE_STATE_CHANGE_TIME, currState.getLastStateChangeTime() );
+									prod.send(msg);
+									
+									_lastSendTime = SkypeTestSystem.currentTimeMillis();
+									
+									_log.debug("Node send: " + Node.this.getGUID() + " | " + _lastSendTime);
+			
+									prod.close();
+								}
+								catch(JMSException e)
+								{
+									_log.error("Error occured trying to send state message to Simulator. Trying again: " + 
+										e.getMessage(), e);
+								}
+							}
+							
+							/**@todo don't need probably
 							try
 							{
-								MessageProducer prod = _sendSession.createProducer(_simulatorInput);
-								prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-								prod.setTimeToLive(0);	//0 is unlimited
-								
-								MapMessage msg = _sendSession.createMapMessage();
-								msg.setStringProperty( Constants.NODE_GUID, Node.this.getGUID() );
-								msg.setString( Constants.NODE_STATE, currState.getPresence().toString() );
-								msg.setLong( Constants.NODE_STATE_CHANGE_TIME, currState.getLastStateChangeTime() );
-								prod.send(msg);
-								
-								_lastSendTime = SkypeTestSystem.currentTimeMillis();
-		
-								prod.close();
+								Thread.sleep(2000);
 							}
-							catch(JMSException e)
+							catch(InterruptedException e)
 							{
-								_log.error("Error occured trying to send state message to Simulator. Trying again: " + 
-									e.getMessage(), e);
-							}
+								//don't really care
+							}*/
 						}
-						
-						/**@todo don't need probably
-						try
-						{
-							Thread.sleep(2000);
-						}
-						catch(InterruptedException e)
-						{
-							//don't really care
-						}*/
 					}
 					
 					JMSUtils.closeSilently(_sendSession);
@@ -201,7 +208,11 @@ public class Node
 	 */
 	public void kill()
 	{
-		_isKilled = true;
+		synchronized(_isKilled)
+		{
+			_isKilled = Boolean.TRUE;
+		}
+		
 		JMSUtils.closeSilently(_receiveSession);
 	}
 	
@@ -307,15 +318,7 @@ public class Node
 		
 		public State clone()
 		{
-			try
-			{
-				return (State)super.clone();
-			}
-			catch(CloneNotSupportedException e)
-			{
-				//will never happen
-				return null;
-			}
+			return new State(this._presence, this._lastStateChangeTime);
 		}
 	}
 }
