@@ -9,6 +9,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -19,6 +20,7 @@ import javax.jms.Topic;
 
 import org.apache.log4j.Logger;
 
+import util.Constants;
 import util.SkypeTestSystem;
 
 import client.Node;
@@ -29,6 +31,10 @@ import jms.JetStreamConnectionFactoryBean;
 
 public class Simulator
 {
+	//////////////////////////////// CONSTANTS /////////////////////////////////
+	private static final int STATE_CHANGE_INTERVAL_MAX_SEC = 4000;
+
+
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
 	private Connection _jmsConn;
 	private Session _sendSession;
@@ -38,7 +44,6 @@ public class Simulator
 	private List<NodeStateHelper> _allNodes;
 	private Random _rand = new Random();
 	private long _numMsgSent;
-	private volatile boolean _isKilled;
 	private static final Logger _log = Logger.getLogger(Simulator.class);
 	
 
@@ -57,9 +62,6 @@ public class Simulator
 		}
 		
 		createNodes(numNodes, numBuddies);
-		startMainEventLoop();
-		
-		//TODO: close connection and sessions
 	}
 	
 	private void createJMSConstructs() throws Exception
@@ -100,7 +102,22 @@ public class Simulator
 						prod.setDeliveryMode(DeliveryMode.PERSISTENT);
 						prod.setTimeToLive(0);	//0 is unlimited
 						
+						if( _log.isTraceEnabled() )
+						{
+							_log.trace( "Simulator will send: " + ((MapMessage)msg).getStringProperty(Constants.NODE_GUID) + 
+								" | current time: " + SkypeTestSystem.currentTimeMillis() +
+								" | last state change time: " + ((MapMessage)msg).getString(Constants.NODE_STATE_CHANGE_TIME) );
+						}
+						
 						prod.send(msg);
+						
+						if( _log.isTraceEnabled() )
+						{
+							_log.trace( "Simulator sent: " + ((MapMessage)msg).getStringProperty(Constants.NODE_GUID) + 
+								" | current time: " + SkypeTestSystem.currentTimeMillis() +
+								" | last state change time: " + ((MapMessage)msg).getString(Constants.NODE_STATE_CHANGE_TIME) );
+						}
+						
 						_numMsgSent++;
 						
 						prod.close();
@@ -132,7 +149,8 @@ public class Simulator
 			currHelper._lastStateChangeTime = SkypeTestSystem.currentTimeMillis();
 			
 			//random # of seconds between 0 and 4000
-			currHelper._currentStateChangeIntervalMillis = _rand.nextInt(4001) * 1000;
+			currHelper._currentStateChangeIntervalMillis = 
+				_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1) * 1000;
 			
 			_allNodes.add(currHelper);
 		}
@@ -174,41 +192,51 @@ public class Simulator
 		}
 	}
 	
-	private void startMainEventLoop()
+	public void startMainEventLoop(long totalRunTimeMillis)
 	{
-		Runnable changeState = new Runnable()
+		long startTime = SkypeTestSystem.currentTimeMillis();
+		long totalTimeElapsed = SkypeTestSystem.currentTimeMillis() - startTime;
+		int prevPercent = -1;
+		
+		for(; 
+			totalTimeElapsed < totalRunTimeMillis; 
+			totalTimeElapsed = SkypeTestSystem.currentTimeMillis() - startTime)
 		{
-			public void run()
+			synchronized(_allNodes)
 			{
-				while(!_isKilled)
+				for(NodeStateHelper currHelper : _allNodes)
 				{
-					synchronized(_allNodes)
+					long timeElapsedMillis = SkypeTestSystem.currentTimeMillis() - currHelper._lastStateChangeTime;
+					if(timeElapsedMillis >= currHelper._currentStateChangeIntervalMillis)
 					{
-						for(NodeStateHelper currHelper : _allNodes)
-						{
-							long timeElapsedMillis = SkypeTestSystem.currentTimeMillis() - currHelper._lastStateChangeTime;
-							if(timeElapsedMillis >= currHelper._currentStateChangeIntervalMillis)
-							{
-								currHelper._node.toggleState();
-								currHelper._currentStateChangeIntervalMillis = _rand.nextInt(4001) * 1000;
-							}
-						}
+						currHelper._node.toggleState();
+						currHelper._currentStateChangeIntervalMillis = 
+							_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1) * 1000;
 					}
-					
-					/**@todo don't need probably
-					try
-					{
-						Thread.sleep(1000);
-					}
-					catch(InterruptedException e)
-					{
-						//don't really care
-					}*/
+				}
+				
+				
+				int percentElapsed = (int)(totalTimeElapsed * 100 / totalRunTimeMillis);
+				if(percentElapsed != prevPercent)
+				{
+					_log.info(percentElapsed + "% of run complete");
+					prevPercent = percentElapsed;
 				}
 			}
-		};
+			
+			/**@todo don't need probably
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e)
+			{
+				//don't really care
+			}*/
+		}
 		
-		new Thread(changeState).start();
+		kill();
+		printStatistics(totalTimeElapsed);
 	}
 	
 	/**
@@ -216,8 +244,6 @@ public class Simulator
 	 */
 	private void kill()
 	{
-		_isKilled = true;
-		
 		synchronized(_allNodes)
 		{
 			for(NodeStateHelper currHelper : _allNodes)
@@ -235,9 +261,31 @@ public class Simulator
 		//TODO: maybe drain out the queue?
 	}
 	
+	private void printStatistics(long timeElapsedMillis)
+	{
+		System.out.println("Total time elapsed (sec):");
+		System.out.println(SkypeTestSystem.computeAverageNotificationLatencyMillis() / 1000f);
+		
+		//--------------------
+		
+		System.out.println("Average latency between Node presence change and delivery of notification (sec):");
+		System.out.println(SkypeTestSystem.computeAverageNotificationLatencyMillis() / 1000f); 
+		
+		//--------------------
+		
+		System.out.println("\nNumber of messages sent / minute:");
+		
+		float numMinutes = timeElapsedMillis / 1000.0f / 60.0f;
+		float msgPerMin = _numMsgSent / numMinutes;
+		System.out.println(msgPerMin);
+	}
+	
 	static public void main(String[] args) throws Exception
     {
-    	new Simulator(1000, 20);
+    	Simulator driver = new Simulator(2, 1);
+    	driver.startMainEventLoop(30000 * 1000);
+    	
+    	//System.exit(0);
     }
 	
 
