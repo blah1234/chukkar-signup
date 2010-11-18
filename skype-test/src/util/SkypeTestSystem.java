@@ -2,12 +2,16 @@ package util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.log4j.Logger;
+
 public class SkypeTestSystem
 {
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
+	static private final Logger _log = Logger.getLogger(SkypeTestSystem.class);
 	static private final Latency _latencyMetric = new Latency();
 	static private final AtomicLong _timeCount = new AtomicLong(0);
-	static private volatile boolean _shutdown = false; 
+	static private volatile boolean _shutdown = false;
+	static
 	{
 		Runnable runClock = new Runnable()
 		{
@@ -42,8 +46,18 @@ public class SkypeTestSystem
 	{
 		synchronized(_latencyMetric)
 		{
+			_log.debug("Elapsed time to add: " + elapsedTimeMillis);
+			
 			_latencyMetric._totalElapsedTime += elapsedTimeMillis;
 			_latencyMetric._numDataPoints++;
+		}
+	}
+	
+	public static float computeAverageNotificationLatencyMillis()
+	{
+		synchronized(_latencyMetric)
+		{
+			return _latencyMetric.computeAverageLatency();
 		}
 	}
 
@@ -53,5 +67,11 @@ public class SkypeTestSystem
 	{
 		long _totalElapsedTime = 0;
 		int _numDataPoints = 0;
+		
+		
+		public float computeAverageLatency()
+		{
+			return _totalElapsedTime / (float)_numDataPoints;				
+		}
 	}
 }
