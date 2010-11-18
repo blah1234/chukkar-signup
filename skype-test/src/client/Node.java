@@ -105,10 +105,17 @@ public class Node
 								
 								Presence oldState = _buddyIdToPresenceMap.put(nodeGuid, newState);
 								
+								long stateChangeTime = mapMsg.getLong(Constants.NODE_STATE_CHANGE_TIME);
+								if( _log.isDebugEnabled() )
+								{
+									_log.debug("Node receive: " + nodeGuid + 
+										" | current time: " + SkypeTestSystem.currentTimeMillis() + 
+										" | last state change time: " + stateChangeTime);
+								}
+								
 								if(oldState != newState)
 								{
 									//record the latency between actual state change and notification
-									long stateChangeTime = mapMsg.getLong(Constants.NODE_STATE_CHANGE_TIME);
 									long elapsedTime = SkypeTestSystem.currentTimeMillis() - stateChangeTime;
 									SkypeTestSystem.addNotificationLatencyMetric(elapsedTime);
 								}
@@ -170,11 +177,17 @@ public class Node
 										msg.setStringProperty( Constants.NODE_GUID, Node.this.getGUID() );
 										msg.setString( Constants.NODE_STATE, currState.getPresence().toString() );
 										msg.setLong( Constants.NODE_STATE_CHANGE_TIME, currState.getLastStateChangeTime() );
-										prod.send(msg);
 										
 										_lastSendTime = SkypeTestSystem.currentTimeMillis();
 										
-										_log.debug("Node send: " + Node.this.getGUID() + " | " + _lastSendTime);
+										if( _log.isDebugEnabled() )
+										{
+											_log.debug( "Node send: " + Node.this.getGUID() + 
+												" | current time: " + _lastSendTime + 
+												" | last state change time: " + currState.getLastStateChangeTime() );
+										}
+										
+										prod.send(msg);
 				
 										prod.close();
 									}
