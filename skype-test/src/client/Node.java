@@ -145,53 +145,60 @@ public class Node
 				
 				public void run()
 				{
-					while(!_isKilled)
+					while(true)
 					{
 						//synchonized so we won't kill off the connection in 
 						//the middle of the loop execution
 						synchronized (_isKilled)
 						{
-							State currState = Node.this.getState();
-	
-							//simulate communication failure if state is OFFLINE
-							//node can't send more than 5 msg/min
-							if( (currState.getPresence() == Presence.ONLINE) &&
-								((_lastSendTime == -1) || (SkypeTestSystem.currentTimeMillis() - _lastSendTime >= SEND_MESSAGE_INTERVAL_MILLIS)) )
+							if(!_isKilled)
 							{
+								State currState = Node.this.getState();
+		
+								//simulate communication failure if state is OFFLINE
+								//node can't send more than 5 msg/min
+								if( (currState.getPresence() == Presence.ONLINE) &&
+									((_lastSendTime == -1) || (SkypeTestSystem.currentTimeMillis() - _lastSendTime >= SEND_MESSAGE_INTERVAL_MILLIS)) )
+								{
+									try
+									{
+										MessageProducer prod = _sendSession.createProducer(_simulatorInput);
+										prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+										prod.setTimeToLive(0);	//0 is unlimited
+										
+										MapMessage msg = _sendSession.createMapMessage();
+										msg.setStringProperty( Constants.NODE_GUID, Node.this.getGUID() );
+										msg.setString( Constants.NODE_STATE, currState.getPresence().toString() );
+										msg.setLong( Constants.NODE_STATE_CHANGE_TIME, currState.getLastStateChangeTime() );
+										prod.send(msg);
+										
+										_lastSendTime = SkypeTestSystem.currentTimeMillis();
+										
+										_log.debug("Node send: " + Node.this.getGUID() + " | " + _lastSendTime);
+				
+										prod.close();
+									}
+									catch(JMSException e)
+									{
+										_log.error("Error occured trying to send state message to Simulator. Trying again: " + 
+											e.getMessage(), e);
+									}
+								}
+								
+								/**@todo don't need probably
 								try
 								{
-									MessageProducer prod = _sendSession.createProducer(_simulatorInput);
-									prod.setDeliveryMode(DeliveryMode.PERSISTENT);
-									prod.setTimeToLive(0);	//0 is unlimited
-									
-									MapMessage msg = _sendSession.createMapMessage();
-									msg.setStringProperty( Constants.NODE_GUID, Node.this.getGUID() );
-									msg.setString( Constants.NODE_STATE, currState.getPresence().toString() );
-									msg.setLong( Constants.NODE_STATE_CHANGE_TIME, currState.getLastStateChangeTime() );
-									prod.send(msg);
-									
-									_lastSendTime = SkypeTestSystem.currentTimeMillis();
-									
-									_log.debug("Node send: " + Node.this.getGUID() + " | " + _lastSendTime);
-			
-									prod.close();
+									Thread.sleep(2000);
 								}
-								catch(JMSException e)
+								catch(InterruptedException e)
 								{
-									_log.error("Error occured trying to send state message to Simulator. Trying again: " + 
-										e.getMessage(), e);
-								}
+									//don't really care
+								}*/
 							}
-							
-							/**@todo don't need probably
-							try
+							else
 							{
-								Thread.sleep(2000);
+								break;
 							}
-							catch(InterruptedException e)
-							{
-								//don't really care
-							}*/
 						}
 					}
 					
