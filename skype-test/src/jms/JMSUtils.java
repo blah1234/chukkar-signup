@@ -13,7 +13,7 @@ public class JMSUtils
 		{
 			toClose.close();
 		}
-		catch(JMSException e) 
+		catch(Exception e) 
 		{
 			//silent
 		}
@@ -25,7 +25,7 @@ public class JMSUtils
 		{
 			toClose.close();
 		}
-		catch(JMSException e) 
+		catch(Exception e) 
 		{
 			//silent
 		}
