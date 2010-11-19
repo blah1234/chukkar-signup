@@ -90,28 +90,30 @@ public class Node
 			{
 				public void onMessage(Message msg)
 				{
-					State currState = Node.this.getState();
-
-					//simulate communication failure if state is OFFLINE
-					if(currState.getPresence() == Presence.ONLINE)
+					MapMessage mapMsg = (MapMessage)msg;
+					
+					try
 					{
-						MapMessage mapMsg = (MapMessage)msg;
+						String nodeGuid = mapMsg.getStringProperty(Constants.NODE_GUID);
 						
-						try
+						if( _buddyIdToPresenceMap.containsKey(nodeGuid) )
 						{
-							String nodeGuid = mapMsg.getStringProperty(Constants.NODE_GUID);
-							
-							if( _buddyIdToPresenceMap.containsKey(nodeGuid) )
+							State currState = Node.this.getState();
+							long stateChangeTime = mapMsg.getLong(Constants.NODE_STATE_CHANGE_TIME);
+
+							//simulate communication failure if state is OFFLINE
+							if(currState.getPresence() == Presence.ONLINE)
 							{
 								String state = mapMsg.getString(Constants.NODE_STATE);
 								Presence newState = Presence.valueOf(state);
 								
 								Presence oldState = _buddyIdToPresenceMap.put(nodeGuid, newState);
 								
-								long stateChangeTime = mapMsg.getLong(Constants.NODE_STATE_CHANGE_TIME);
 								if( _log.isDebugEnabled() )
 								{
-									_log.debug("Node receive: " + nodeGuid + 
+									_log.debug("Node receive: " + nodeGuid +
+										" | old state: " + oldState +
+										" | new state: " + newState +
 										" | current time: " + SkypeTestSystem.currentTimeSecs() + 
 										" | last state change time: " + stateChangeTime);
 								}
@@ -123,13 +125,19 @@ public class Node
 									Node.this.addNotificationLatencyMetric(elapsedTime);
 								}
 							}
+							else if( _log.isDebugEnabled() )
+							{
+								_log.debug("Node offline: " + nodeGuid +
+									" | current time: " + SkypeTestSystem.currentTimeSecs() + 
+									" | last state change time: " + stateChangeTime);
+							}
 						}
-						catch(JMSException e)
-						{
-							_log.error("Unable to unpack received message\nNode:\n" + Node.this.getGUID() + 
-								"\n\nMessage:\n" + msg.toString() + 
-								"\n\n" + e.getMessage(), e);
-						}
+					}
+					catch(JMSException e)
+					{
+						_log.error("Unable to unpack received message\nNode:\n" + Node.this.getGUID() + 
+							"\n\nMessage:\n" + msg.toString() + 
+							"\n\n" + e.getMessage(), e);
 					}
 				}
 			});
@@ -157,7 +165,7 @@ public class Node
 				{
 					while(true)
 					{
-						//synchonized so we won't kill off the connection in 
+						//synchronized so we won't kill off the connection in 
 						//the middle of the loop execution
 						synchronized (_isKilled)
 						{
@@ -212,7 +220,7 @@ public class Node
 				}
 			};
 			
-			new Thread(sendState).start();
+			new Thread( sendState, "Node Send Message - " + getGUID() ).start();
 		}
 	}
 	
