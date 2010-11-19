@@ -272,7 +272,7 @@ public class Simulator
 		//--------------------
 		
 		System.out.println("\nAverage latency between Node presence change and delivery of notification (simulated sec):");
-		System.out.println( SkypeTestSystem.computeAverageNotificationLatencySecs() );
+		System.out.println( Node.computeAverageNotificationLatencySecs() );
 		
 		
 		System.out.println("\nNumber of messages sent / minute (simulated time):");
@@ -289,7 +289,7 @@ public class Simulator
 		System.out.println( SkypeTestSystem.getNanosPerSimulatedTimeIncrement() );
 		
 		System.out.println("\nAverage latency between Node presence change and delivery of notification (interpolated real sec):");
-		System.out.println(SkypeTestSystem.computeAverageNotificationLatencySecs() * SkypeTestSystem.getNanosPerSimulatedTimeIncrement() / 1e9f);
+		System.out.println(Node.computeAverageNotificationLatencySecs() * SkypeTestSystem.getNanosPerSimulatedTimeIncrement() / 1e9f);
 
 		
 		System.out.println("\nNumber of messages sent / minute (interpolated real time):");
