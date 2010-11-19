@@ -1,7 +1,6 @@
 package simulator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -133,7 +132,7 @@ public class Simulator
 	
 	private void createNodes(int numNodes, int numBuddies, boolean isBuddyBidirectional)
 	{
-		_allNodes = Collections.synchronizedList( new ArrayList<NodeStateHelper>(numNodes) );
+		_allNodes = new ArrayList<NodeStateHelper>(numNodes);
 		
 		//---------- create the nodes --------------
 		for(int i=0; i<numNodes; i++)
@@ -219,28 +218,27 @@ public class Simulator
 			totalTimeElapsed < totalRunTimeSecs; 
 			totalTimeElapsed = SkypeTestSystem.currentTimeSecs() - startTime)
 		{
-			synchronized(_allNodes)
+			for(NodeStateHelper currHelper : _allNodes)
 			{
-				for(NodeStateHelper currHelper : _allNodes)
+				long timeElapsedSecs = SkypeTestSystem.currentTimeSecs() - currHelper._lastStateChangeTime;
+				if(timeElapsedSecs >= currHelper._currentStateChangeIntervalSecs)
 				{
-					long timeElapsedSecs = SkypeTestSystem.currentTimeSecs() - currHelper._lastStateChangeTime;
-					if(timeElapsedSecs >= currHelper._currentStateChangeIntervalSecs)
-					{
-						currHelper._node.toggleState();
-						currHelper._currentStateChangeIntervalSecs = 
-							_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1);
-					}
-				}
-				
-				
-				int percentElapsed = (int)(totalTimeElapsed * 100 / totalRunTimeSecs);
-				if(percentElapsed != prevPercent)
-				{
-					_log.info(percentElapsed + "% of run complete");
-					prevPercent = percentElapsed;
+					currHelper._node.toggleState();
+					currHelper._currentStateChangeIntervalSecs = 
+						_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1);
 				}
 			}
+			
+			
+			int percentElapsed = (int)(totalTimeElapsed * 100 / totalRunTimeSecs);
+			if(percentElapsed != prevPercent)
+			{
+				_log.info(percentElapsed + "% of run complete");
+				prevPercent = percentElapsed;
+			}
 		}
+		
+		_log.info("Run complete.  Shutting down nodes now...");
 		
 		kill();
 		printStatistics(totalTimeElapsed);
@@ -251,16 +249,14 @@ public class Simulator
 	 */
 	private void kill()
 	{
-		synchronized(_allNodes)
-		{
-			for(NodeStateHelper currHelper : _allNodes)
-			{
-				currHelper._node.kill();
-			}
-		}
-		
 		JMSUtils.closeSilently(_receiveSession);
 		JMSUtils.closeSilently(_sendSession);
+		
+		for(NodeStateHelper currHelper : _allNodes)
+		{
+			currHelper._node.kill();
+		}
+		
 		JMSUtils.closeSilently(_jmsConn);
 		
 		SkypeTestSystem.stopClock();
@@ -286,6 +282,11 @@ public class Simulator
 		System.out.println(msgPerMin);
 		
 		//--------------------
+		
+		System.out.println("\n---------------------------");
+		
+		System.out.println("\nNumber of nanos per simulated time increment:");
+		System.out.println( SkypeTestSystem.getNanosPerSimulatedTimeIncrement() );
 		
 		System.out.println("\nAverage latency between Node presence change and delivery of notification (interpolated real sec):");
 		System.out.println(SkypeTestSystem.computeAverageNotificationLatencySecs() * SkypeTestSystem.getNanosPerSimulatedTimeIncrement() / 1e9f);
