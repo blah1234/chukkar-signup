@@ -27,7 +27,7 @@ import util.SkypeTestSystem;
 public class Node
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
-	static private final long SEND_MESSAGE_INTERVAL_MILLIS = 12000;
+	static private final long SEND_MESSAGE_INTERVAL_SEC = 12;
 
 
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
@@ -53,7 +53,7 @@ public class Node
 	 */
 	public Node(Presence initState, Connection jmsConn, Queue simInQueue, Topic simBroadcast)
 	{
-		_state = new State( initState, SkypeTestSystem.currentTimeMillis() );
+		_state = new State( initState, SkypeTestSystem.currentTimeSecs() );
 		
 		try
 		{
@@ -109,14 +109,14 @@ public class Node
 								if( _log.isDebugEnabled() )
 								{
 									_log.debug("Node receive: " + nodeGuid + 
-										" | current time: " + SkypeTestSystem.currentTimeMillis() + 
+										" | current time: " + SkypeTestSystem.currentTimeSecs() + 
 										" | last state change time: " + stateChangeTime);
 								}
 								
 								if(oldState != newState)
 								{
 									//record the latency between actual state change and notification
-									long elapsedTime = SkypeTestSystem.currentTimeMillis() - stateChangeTime;
+									long elapsedTime = SkypeTestSystem.currentTimeSecs() - stateChangeTime;
 									SkypeTestSystem.addNotificationLatencyMetric(elapsedTime);
 								}
 							}
@@ -165,7 +165,7 @@ public class Node
 								//simulate communication failure if state is OFFLINE
 								//node can't send more than 5 msg/min
 								if( (currState.getPresence() == Presence.ONLINE) &&
-									((_lastSendTime == -1) || (SkypeTestSystem.currentTimeMillis() - _lastSendTime >= SEND_MESSAGE_INTERVAL_MILLIS)) )
+									((_lastSendTime == -1) || (SkypeTestSystem.currentTimeSecs() - _lastSendTime >= SEND_MESSAGE_INTERVAL_SEC)) )
 								{
 									try
 									{
@@ -178,7 +178,7 @@ public class Node
 										msg.setString( Constants.NODE_STATE, currState.getPresence().toString() );
 										msg.setLong( Constants.NODE_STATE_CHANGE_TIME, currState.getLastStateChangeTime() );
 										
-										_lastSendTime = SkypeTestSystem.currentTimeMillis();
+										_lastSendTime = SkypeTestSystem.currentTimeSecs();
 										
 										if( _log.isDebugEnabled() )
 										{
@@ -258,7 +258,7 @@ public class Node
 				_state.setPresence(Presence.OFFLINE);
 			}
 			
-			_state.setLastStateChangeTime( SkypeTestSystem.currentTimeMillis() );
+			_state.setLastStateChangeTime( SkypeTestSystem.currentTimeSecs() );
 		}
 	}
 	

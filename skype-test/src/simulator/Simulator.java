@@ -105,7 +105,7 @@ public class Simulator
 						if( _log.isTraceEnabled() )
 						{
 							_log.trace( "Simulator will send: " + ((MapMessage)msg).getStringProperty(Constants.NODE_GUID) + 
-								" | current time: " + SkypeTestSystem.currentTimeMillis() +
+								" | current time: " + SkypeTestSystem.currentTimeSecs() +
 								" | last state change time: " + ((MapMessage)msg).getString(Constants.NODE_STATE_CHANGE_TIME) );
 						}
 						
@@ -114,7 +114,7 @@ public class Simulator
 						if( _log.isTraceEnabled() )
 						{
 							_log.trace( "Simulator sent: " + ((MapMessage)msg).getStringProperty(Constants.NODE_GUID) + 
-								" | current time: " + SkypeTestSystem.currentTimeMillis() +
+								" | current time: " + SkypeTestSystem.currentTimeSecs() +
 								" | last state change time: " + ((MapMessage)msg).getString(Constants.NODE_STATE_CHANGE_TIME) );
 						}
 						
@@ -146,11 +146,11 @@ public class Simulator
 			Node currNode = new Node(initState, _jmsConn, _nodeInput, _broadcastOut);
 			
 			currHelper._node = currNode;
-			currHelper._lastStateChangeTime = SkypeTestSystem.currentTimeMillis();
+			currHelper._lastStateChangeTime = SkypeTestSystem.currentTimeSecs();
 			
 			//random # of seconds between 0 and 4000
-			currHelper._currentStateChangeIntervalMillis = 
-				_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1) * 1000;
+			currHelper._currentStateChangeIntervalSecs = 
+				_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1);
 			
 			_allNodes.add(currHelper);
 		}
@@ -209,31 +209,31 @@ public class Simulator
 		}
 	}
 	
-	public void startMainEventLoop(long totalRunTimeMillis)
+	public void startMainEventLoop(long totalRunTimeSecs)
 	{
-		long startTime = SkypeTestSystem.currentTimeMillis();
-		long totalTimeElapsed = SkypeTestSystem.currentTimeMillis() - startTime;
+		long startTime = SkypeTestSystem.currentTimeSecs();
+		long totalTimeElapsed = SkypeTestSystem.currentTimeSecs() - startTime;
 		int prevPercent = -1;
 		
 		for(; 
-			totalTimeElapsed < totalRunTimeMillis; 
-			totalTimeElapsed = SkypeTestSystem.currentTimeMillis() - startTime)
+			totalTimeElapsed < totalRunTimeSecs; 
+			totalTimeElapsed = SkypeTestSystem.currentTimeSecs() - startTime)
 		{
 			synchronized(_allNodes)
 			{
 				for(NodeStateHelper currHelper : _allNodes)
 				{
-					long timeElapsedMillis = SkypeTestSystem.currentTimeMillis() - currHelper._lastStateChangeTime;
-					if(timeElapsedMillis >= currHelper._currentStateChangeIntervalMillis)
+					long timeElapsedSecs = SkypeTestSystem.currentTimeSecs() - currHelper._lastStateChangeTime;
+					if(timeElapsedSecs >= currHelper._currentStateChangeIntervalSecs)
 					{
 						currHelper._node.toggleState();
-						currHelper._currentStateChangeIntervalMillis = 
-							_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1) * 1000;
+						currHelper._currentStateChangeIntervalSecs = 
+							_rand.nextInt(STATE_CHANGE_INTERVAL_MAX_SEC + 1);
 					}
 				}
 				
 				
-				int percentElapsed = (int)(totalTimeElapsed * 100 / totalRunTimeMillis);
+				int percentElapsed = (int)(totalTimeElapsed * 100 / totalRunTimeSecs);
 				if(percentElapsed != prevPercent)
 				{
 					_log.info(percentElapsed + "% of run complete");
@@ -268,29 +268,40 @@ public class Simulator
 		//TODO: maybe drain out the queue?
 	}
 	
-	private void printStatistics(long timeElapsedMillis)
+	private void printStatistics(long timeElapsedSecs)
 	{
-		System.out.println("\nTotal time elapsed (sec):");
-		System.out.println(timeElapsedMillis / 1000f);
+		System.out.println("\nTotal time elapsed (simulated sec):");
+		System.out.println(timeElapsedSecs);
 		
 		//--------------------
 		
-		System.out.println("\nAverage latency between Node presence change and delivery of notification (sec):");
-		System.out.println(SkypeTestSystem.computeAverageNotificationLatencyMillis() / 1000f); 
+		System.out.println("\nAverage latency between Node presence change and delivery of notification (simulated sec):");
+		System.out.println( SkypeTestSystem.computeAverageNotificationLatencySecs() );
 		
-		//--------------------
 		
-		System.out.println("\nNumber of messages sent / minute:");
+		System.out.println("\nNumber of messages sent / minute (simulated time):");
 		
-		float numMinutes = timeElapsedMillis / 1000.0f / 60.0f;
+		float numMinutes = timeElapsedSecs / 60.0f;
 		float msgPerMin = _numMsgSent / numMinutes;
+		System.out.println(msgPerMin);
+		
+		//--------------------
+		
+		System.out.println("\nAverage latency between Node presence change and delivery of notification (interpolated real sec):");
+		System.out.println(SkypeTestSystem.computeAverageNotificationLatencySecs() * SkypeTestSystem.getNanosPerSimulatedTimeIncrement() / 1e9f);
+
+		
+		System.out.println("\nNumber of messages sent / minute (interpolated real time):");
+		
+		numMinutes = timeElapsedSecs * SkypeTestSystem.getNanosPerSimulatedTimeIncrement() / 1e9f / 60.0f;
+		msgPerMin = _numMsgSent / numMinutes;
 		System.out.println(msgPerMin);
 	}
 	
 	static public void main(String[] args) throws Exception
     {
     	Simulator driver = new Simulator(1000, 20, false);
-    	driver.startMainEventLoop(30000 * 1000);
+    	driver.startMainEventLoop(7776000l);
     	
     	System.exit(0);
     }
@@ -301,6 +312,6 @@ public class Simulator
 	{
 		Node _node;
 		long _lastStateChangeTime;
-		long _currentStateChangeIntervalMillis;
+		long _currentStateChangeIntervalSecs;
 	}
 }
