@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -40,6 +42,7 @@ public class Node
 	private Session _receiveSession;
 	private AtomicBoolean _isStarted;
 	private volatile Boolean _isKilled;
+	static private final Latency _latencyMetric = new Latency();
 	static private final Logger _log = Logger.getLogger(Node.class);
 	
 
@@ -117,7 +120,7 @@ public class Node
 								{
 									//record the latency between actual state change and notification
 									long elapsedTime = SkypeTestSystem.currentTimeSecs() - stateChangeTime;
-									SkypeTestSystem.addNotificationLatencyMetric(elapsedTime);
+									Node.this.addNotificationLatencyMetric(elapsedTime);
 								}
 							}
 						}
@@ -291,7 +294,23 @@ public class Node
 	{
 		return _buddyIdToPresenceMap.size();
 	}
-	
+
+	static public float computeAverageNotificationLatencySecs()
+	{
+		return _latencyMetric.computeAverageLatency();
+	}
+
+	private void addNotificationLatencyMetric(long elapsedTimeSecs)
+	{
+		if( _log.isDebugEnabled() )
+		{
+			_log.debug("Elapsed time to add: " + elapsedTimeSecs);
+		}
+		
+		Node._latencyMetric._totalElapsedTime.addAndGet(elapsedTimeSecs);
+		Node._latencyMetric._numDataPoints.incrementAndGet();
+	}
+
 
 	////////////////////////////// INNER CLASSES ///////////////////////////////
 	private class State
@@ -329,6 +348,26 @@ public class Node
 		public State clone()
 		{
 			return new State(this._presence, this._lastStateChangeTime);
+		}
+	}
+
+
+	private static class Latency
+	{
+		public AtomicLong _totalElapsedTime = new AtomicLong(0);
+		public AtomicInteger _numDataPoints = new AtomicInteger(0);
+		
+		
+		public float computeAverageLatency()
+		{
+			float ret = _totalElapsedTime.get() / (float)_numDataPoints.get();
+			return ret; 				
+		}
+		
+		public void resetMetrics()
+		{
+			_totalElapsedTime.set(0);
+			_numDataPoints.set(0);
 		}
 	}
 }
