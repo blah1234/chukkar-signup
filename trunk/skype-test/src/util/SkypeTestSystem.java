@@ -1,5 +1,6 @@
 package util;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
@@ -50,24 +51,18 @@ public class SkypeTestSystem
 	
 	public static void addNotificationLatencyMetric(long elapsedTimeSecs)
 	{
-		synchronized(_latencyMetric)
+		if( _log.isDebugEnabled() )
 		{
-			if( _log.isDebugEnabled() )
-			{
-				_log.debug("Elapsed time to add: " + elapsedTimeSecs);
-			}
-			
-			_latencyMetric._totalElapsedTime += elapsedTimeSecs;
-			_latencyMetric._numDataPoints++;
+			_log.debug("Elapsed time to add: " + elapsedTimeSecs);
 		}
+		
+		_latencyMetric._totalElapsedTime.addAndGet(elapsedTimeSecs);
+		_latencyMetric._numDataPoints.incrementAndGet();
 	}
 	
 	public static float computeAverageNotificationLatencySecs()
 	{
-		synchronized(_latencyMetric)
-		{
-			return _latencyMetric.computeAverageLatency();
-		}
+		return _latencyMetric.computeAverageLatency();
 	}
 	
 	public static long getNanosPerSimulatedTimeIncrement()
@@ -79,13 +74,22 @@ public class SkypeTestSystem
 	////////////////////////////// INNER CLASSES ///////////////////////////////
 	private static class Latency
 	{
-		long _totalElapsedTime = 0;
-		int _numDataPoints = 0;
+		AtomicLong _totalElapsedTime = new AtomicLong(0);
+		AtomicInteger _numDataPoints = new AtomicInteger(0);
 		
 		
 		public float computeAverageLatency()
 		{
-			return _totalElapsedTime / (float)_numDataPoints;				
+			float ret = _totalElapsedTime.get() / (float)_numDataPoints.get();
+			resetMetrics();
+			
+			return ret; 				
+		}
+		
+		private void resetMetrics()
+		{
+			_totalElapsedTime.set(0);
+			_numDataPoints.set(0);
 		}
 	}
 }
