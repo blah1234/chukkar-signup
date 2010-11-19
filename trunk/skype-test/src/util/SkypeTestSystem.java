@@ -81,12 +81,10 @@ public class SkypeTestSystem
 		public float computeAverageLatency()
 		{
 			float ret = _totalElapsedTime.get() / (float)_numDataPoints.get();
-			resetMetrics();
-			
 			return ret; 				
 		}
 		
-		private void resetMetrics()
+		public void resetMetrics()
 		{
 			_totalElapsedTime.set(0);
 			_numDataPoints.set(0);
