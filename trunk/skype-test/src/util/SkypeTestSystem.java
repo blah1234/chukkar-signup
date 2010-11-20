@@ -27,7 +27,7 @@ public class SkypeTestSystem
 			}
 		};
 		
-		new Thread(runClock).start();
+		new Thread(runClock, "Simulated Time Clock").start();
 	}
  
 	
