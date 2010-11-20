@@ -3,6 +3,7 @@ package simulator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -301,8 +302,21 @@ public class Simulator
 	
 	static public void main(String[] args) throws Exception
     {
-    	Simulator driver = new Simulator(1000, 20, false);
-    	driver.startMainEventLoop(7776000l);
+		Scanner in = new Scanner(System.in);
+
+	    System.out.println("Enter the number of Nodes to create:");
+	    int numNodes = Integer.parseInt( in.nextLine() );
+
+	    System.out.println("Enter the number of Buddies for each Nodes:");
+	    int numBuddies = Integer.parseInt( in.nextLine() );
+	    
+	    System.out.println("Enter the run time length (sec):");
+	    long runtime = Long.parseLong( in.nextLine() );
+
+	    in.close();            
+		
+		Simulator driver = new Simulator(numNodes, numBuddies, false);
+    	driver.startMainEventLoop(runtime);
     	
     	System.exit(0);
     }
