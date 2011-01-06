@@ -32,7 +32,7 @@ public class LoginInfo implements Serializable
 	//this is the "name" for the system-generated key
 	@Persistent
     @Extension(vendorName="datanucleus", key="gae.pk-name", value="true")
-    private String keyName = Long.toString( ID_GEN.nextLong() );
+    private String _keyName = Long.toString( ID_GEN.nextLong() );
 	
 	@NotPersistent
 	private boolean _loggedIn = false;
