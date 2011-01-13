@@ -141,7 +141,12 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		}
 	}
 	
-	public List<Player> getPlayers() 
+	public List<Player> getPlayers()
+	{
+		return getPlayersImpl();
+	}
+	
+	static protected List<Player> getPlayersImpl() 
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
