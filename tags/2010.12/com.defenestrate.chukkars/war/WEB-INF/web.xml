@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+  
+  <!-- Servlets -->
+  <servlet>
+    <servlet-name>adminService</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.AdminServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>adminService</servlet-name>
+    <url-pattern>/signup/admin</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>loginService</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.LoginServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>loginService</servlet-name>
+    <url-pattern>/signup/login</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>playerServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.PlayerServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>playerServiceImpl</servlet-name>
+    <url-pattern>/signup/player</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>cronServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.CronServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>cronServiceImpl</servlet-name>
+    <url-pattern>/signup/cron/*</url-pattern>
+  </servlet-mapping>
+  
+  
+  <security-constraint>
+    <web-resource-collection>
+  		<url-pattern>/signup/cron/*</url-pattern>
+	</web-resource-collection>
+    <auth-constraint>
+    	<role-name>admin</role-name>
+	</auth-constraint>
+  </security-constraint>
+  
+  
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>Signup.html</welcome-file>
+  </welcome-file-list>
+
+</web-app>
