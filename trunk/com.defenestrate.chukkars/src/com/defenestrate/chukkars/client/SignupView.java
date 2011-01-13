@@ -30,6 +30,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.DecoratedStackPanel;
+import com.google.gwt.user.client.ui.DecoratedTabPanel;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -40,6 +42,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.StackPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -80,6 +83,16 @@ public class SignupView implements EntryPoint
 	private DockPanel _topLevelPanel;
 	InsertPanelExample _dndExample;
 	
+	private Button _satPublishBtn;
+	private Button _sunPublishBtn; 
+	private TextBox _satLineupRecipientEmailTxt;
+	private TextBox _sunLineupRecipientEmailTxt;
+	private TextArea _satLineupMsgBodyTxt;
+	private TextArea _sunLineupMsgBodyTxt;
+	private Button _copyBtn;
+	private FlexTable _copyLineupTable;
+	private DockPanel _lineupPanel;
+	
 	private CheckBox _enableEmailChk;
 	private TextBox _recipientEmailTxt;
 	private TextArea _signupNoticeTxt;
@@ -87,6 +100,9 @@ public class SignupView implements EntryPoint
 	private Button _saveAdminSettingsBtn;
 	private FlexTable _adminTable;
 	
+	private StackPanel _linkPanel;
+	
+	private Anchor _logInLink;
 	private Anchor _logOutLink;
 	private BusyIndicator _busy;
 	
@@ -138,21 +154,33 @@ public class SignupView implements EntryPoint
 		_topLevelPanel = new DockPanel();
 		_topLevelPanel.addStyleName("mainPanel");
 		
+		layoutNavigationComponents();
 		layoutSignupComponents();
+		layoutLineupComponents();
 		layoutAdminComponents();
 		
 		
-//TODO:	_topLevelPanel.add(linkPanel, DockPanel.WEST);
+		if( (_loginInfo != null) && _loginInfo.isLoggedIn() && _loginInfo.isAdmin() )
+		{
+			_topLevelPanel.add(_linkPanel, DockPanel.WEST);
+		}
 		
-		if( !initToken.equals("admin") )
+		if( initToken.isEmpty() || initToken.equals("signup") )
 		{
 			_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
 			_ctrl.loadPlayers();
+			_linkPanel.showStack(0);
 		}
-		else
+		else if( initToken.equals("admin") )
 		{
 			_topLevelPanel.add(_adminTable, DockPanel.CENTER);
 			_ctrl.loadAdminData(_loginInfo);
+			_linkPanel.showStack(1);
+		}
+		else if( initToken.equals("lineup") )
+		{
+			_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
+			_linkPanel.showStack(1);
 		}
 /**@todo		
 		//Dnd components
@@ -176,6 +204,28 @@ public class SignupView implements EntryPoint
 		}
 		
 		RootPanel.get("signupPanel").add(_topLevelPanel);
+	}
+	
+	private void layoutNavigationComponents()
+	{
+		//links to different "pages"
+		Hyperlink signupLink = new Hyperlink("Signup&nbsp;Page", true, "signup");
+	    Hyperlink lineupLink = new Hyperlink("Create&nbsp;Lineup", true, "lineup");
+	    Hyperlink emailLink = new Hyperlink("Email&nbsp;Settings", true, "admin");
+	    
+	    VerticalPanel signupLinkPanel = new VerticalPanel();
+	    signupLinkPanel.setSpacing(5);
+	    signupLinkPanel.add(signupLink);
+	    
+	    VerticalPanel adminLinkPanel = new VerticalPanel();
+	    adminLinkPanel.setSpacing(5);
+	    adminLinkPanel.add(lineupLink);
+	    adminLinkPanel.add(emailLink);
+	    
+	    _linkPanel = new DecoratedStackPanel();
+	    _linkPanel.addStyleDependentName("linkPanel");
+	    _linkPanel.add(signupLinkPanel, "Chukkar Signup");
+	    _linkPanel.add(adminLinkPanel, "Admin Tasks");
 	}
 	
 	private void layoutSignupComponents()
@@ -230,7 +280,7 @@ public class SignupView implements EntryPoint
 		mainPanel.add(_satSignupTable);
 		mainPanel.add(satGameChukkarsPanel);
 		
-		_tabPanel = new TabPanel();
+		_tabPanel = new DecoratedTabPanel();
 		_tabPanel.setAnimationEnabled(true);
 		_tabPanel.add(mainPanel, "Saturday");
 		
@@ -291,22 +341,12 @@ public class SignupView implements EntryPoint
 		
 		//----------------------------------
 		
-		//links to different "pages"
-		Hyperlink signupLink = new Hyperlink("Chukkar&nbsp;Signup", true, "signup");
-	    Hyperlink lineupLink = new Hyperlink("Create&nbsp;Lineup", true, "lineup");
-	    
-	    VerticalPanel linkPanel = new VerticalPanel();
-	    linkPanel.add(signupLink);
-	    linkPanel.add(lineupLink);
-		
-		//----------------------------------
-	    
 		if( (_loginInfo != null) && _loginInfo.isLoggedIn() )
 		{
 			// Set up log out hyperlink.
 			_logOutLink = new Anchor("Logout");
 			_logOutLink.setHref( _loginInfo.getLogoutUrl() );
-			_logOutLink.addStyleDependentName("logoutLink");
+			_logOutLink.addStyleDependentName("loginLogoutLink");
 			
 			Label nicknameLbl = new Label( _loginInfo.getNickname() + ":" );
 			nicknameLbl.addStyleDependentName("userNicknameLbl");
@@ -355,6 +395,115 @@ public class SignupView implements EntryPoint
     			sunGameChukkarsPanel.insert(sunTotalChukkarsTitleLbl, 0);
 		    }
 		}
+		else
+		{
+			// Set up log in hyperlink.
+			_logInLink = new Anchor("Login");
+			_logInLink.setHref( _loginInfo.getLoginUrl() );
+			_logInLink.addStyleDependentName("loginLogoutLink");
+			
+			HorizontalPanel loginPanel = new HorizontalPanel();
+			loginPanel.addStyleName("loginPanel");
+			loginPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+			loginPanel.add(_logInLink);
+			_topLevelPanel.add(loginPanel, DockPanel.NORTH);
+		}
+	}
+	
+	private void layoutLineupComponents()
+	{
+		_copyBtn = new Button("Copy");
+		_copyBtn.addStyleDependentName("copy");
+		
+		_copyLineupTable = new FlexTable();
+		_copyLineupTable.addStyleName("adminTable");
+		
+		_copyLineupTable.setText(0, 0, "Copy signups to spreadsheet:");
+		_copyLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
+		
+		_copyLineupTable.setText(1, 0, "Copied signups at:");
+		_copyLineupTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
+		
+		_copyLineupTable.setWidget(0, 1, _copyBtn);
+		
+		//--------------------
+		
+		_satLineupRecipientEmailTxt = new TextBox();
+		_satLineupRecipientEmailTxt.addStyleDependentName("recipientEmail");
+		_satLineupRecipientEmailTxt.setText("horseparkpolo@yahoogroups.com");
+				
+		String satMsgBodyPrefix = "Here it is for Sat.  Start time at 11am.  _ chukkars total.  Printable lineup available at: ";
+		_satLineupMsgBodyTxt = new TextArea();
+		_satLineupMsgBodyTxt.addStyleDependentName("signupTxt");
+		_satLineupMsgBodyTxt.setText(satMsgBodyPrefix);
+		
+		_satPublishBtn = new Button("Publish");
+		_satPublishBtn.addStyleDependentName("saveAdminSettings");
+				
+		FlexTable satLineupTable = new FlexTable();
+		satLineupTable.addStyleName("adminTable");
+		
+		satLineupTable.setText(0, 0, "To:");
+		satLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
+		
+		satLineupTable.setText(1, 0, "Lineup Message Body Prefix:");
+		satLineupTable.getCellFormatter().addStyleName(1, 0, "rightTopAlignLbl");
+		
+		satLineupTable.setWidget(0, 1, _satLineupRecipientEmailTxt);
+		satLineupTable.setWidget(1, 1, _satLineupMsgBodyTxt);
+		satLineupTable.setWidget(2, 1, _satPublishBtn);
+		
+		//---------------------
+		
+		_sunLineupRecipientEmailTxt = new TextBox();
+		_sunLineupRecipientEmailTxt.addStyleDependentName("recipientEmail");
+		_sunLineupRecipientEmailTxt.setText("horseparkpolo@yahoogroups.com");
+				
+		String sunMsgBodyPrefix = "Here it is for Sun.  Start time at 11am.  _ chukkars total.  Printable lineup available at: ";
+		_sunLineupMsgBodyTxt = new TextArea();
+		_sunLineupMsgBodyTxt.addStyleDependentName("signupTxt");
+		_sunLineupMsgBodyTxt.setText(sunMsgBodyPrefix);
+		
+		_sunPublishBtn = new Button("Publish");
+		_sunPublishBtn.addStyleDependentName("saveAdminSettings");
+				
+		FlexTable sunLineupTable = new FlexTable();
+		sunLineupTable.addStyleName("adminTable");
+		
+		sunLineupTable.setText(0, 0, "To:");
+		sunLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
+		
+		sunLineupTable.setText(1, 0, "Lineup Message Body Prefix:");
+		sunLineupTable.getCellFormatter().addStyleName(1, 0, "rightTopAlignLbl");
+		
+		sunLineupTable.setWidget(0, 1, _sunLineupRecipientEmailTxt);
+		sunLineupTable.setWidget(1, 1, _sunLineupMsgBodyTxt);
+		sunLineupTable.setWidget(2, 1, _sunPublishBtn);
+		
+		//---------------------
+		
+		TabPanel tabPanel = new DecoratedTabPanel();
+		tabPanel.setAnimationEnabled(true);
+		
+		tabPanel.add(satLineupTable, "Saturday");
+		tabPanel.add(sunLineupTable, "Sunday");
+		tabPanel.selectTab(0);
+		
+		//----------------------
+		
+		_lineupPanel = new DockPanel();
+		_lineupPanel.addStyleName("lineupPanel");
+		_lineupPanel.add(_copyLineupTable, DockPanel.NORTH);
+		_lineupPanel.add(tabPanel, DockPanel.CENTER);
+	}
+	
+	public void addCopiedSignupsLink(String spreadsheetLink)
+	{
+		Anchor link = new Anchor(spreadsheetLink);
+		link.setHref(spreadsheetLink);
+		link.setTarget("_blank");
+		
+		_copyLineupTable.setWidget(1, 1, link);
 	}
 	
 	private void layoutAdminComponents()
@@ -378,16 +527,16 @@ public class SignupView implements EntryPoint
 		_adminTable.addStyleName("adminTable");
 		
 		_adminTable.setText(0, 0, "Enable weekly emails:");
-		_adminTable.getCellFormatter().addStyleName(0, 0, "adminLbl");
+		_adminTable.getCellFormatter().addStyleName(0, 0, "rightTopAlignLbl");
 		
 		_adminTable.setText(1, 0, "To:");
-		_adminTable.getCellFormatter().addStyleName(1, 0, "adminLbl");
+		_adminTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
 		
 		_adminTable.setText(2, 0, "Signup notice body:");
-		_adminTable.getCellFormatter().addStyleName(2, 0, "adminLbl");
+		_adminTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
 		
 		_adminTable.setText(3, 0, "Signup reminder body:");
-		_adminTable.getCellFormatter().addStyleName(3, 0, "adminLbl");
+		_adminTable.getCellFormatter().addStyleName(3, 0, "rightTopAlignLbl");
 		
 		
 		_adminTable.setWidget(0, 1, _enableEmailChk);
@@ -406,14 +555,21 @@ public class SignupView implements EntryPoint
     		{
 		        if( "lineup".equalsIgnoreCase(event.getValue()) )
 		        {
-		        	_topLevelPanel.remove(_tabPanel);
-		        	_topLevelPanel.remove(_adminTable);
-		        	
-		        	_topLevelPanel.add(_dndExample, DockPanel.CENTER);
+		        	if( _loginInfo.isLoggedIn() )
+		        	{
+			        	_topLevelPanel.remove(_tabPanel);
+			        	_topLevelPanel.remove(_adminTable);
+			        	
+			        	_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
+		        	}
+		        	else
+		        	{
+		        		_ctrl.loginRequest( event.getValue() );
+		        	}
 		        }
 		        else if( "signup".equalsIgnoreCase(event.getValue()) )
 		        {
-//TODO:		        	_topLevelPanel.remove(_dndExample);
+		        	_topLevelPanel.remove(_lineupPanel);
 		        	_topLevelPanel.remove(_adminTable);
 		        	
 		        	_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
@@ -424,7 +580,7 @@ public class SignupView implements EntryPoint
 		        {
 		        	if( _loginInfo.isLoggedIn() )
 		        	{
-//TODO:		        	_topLevelPanel.remove(_dndExample);
+		        		_topLevelPanel.remove(_lineupPanel);
 			        	_topLevelPanel.remove(_tabPanel);
 			        	
 			        	_topLevelPanel.add(_adminTable, DockPanel.CENTER);
@@ -545,12 +701,46 @@ public class SignupView implements EntryPoint
 			}
 		});
 		
+		//--------------------------
+		
 		_saveAdminSettingsBtn.addClickHandler(new ClickHandler()
 		{
 			public void onClick(ClickEvent event)
 			{
 				writeAdminSettings();
 				_ctrl.saveAdminSettings(_adminData);
+			}
+		});
+		
+		//--------------------------
+		
+		_copyBtn.addClickHandler(new ClickHandler()
+		{
+			public void onClick(ClickEvent event)
+			{
+				_ctrl.exportSignups();
+			}
+		});
+		
+		_satPublishBtn.addClickHandler(new ClickHandler()
+		{
+			public void onClick(ClickEvent event)
+			{
+				_ctrl.importAndPublishLineup(
+					Day.SATURDAY, 
+					_satLineupRecipientEmailTxt.getValue().trim(),
+					_satLineupMsgBodyTxt.getValue().trim() );
+			}
+		}); 
+		
+		_sunPublishBtn.addClickHandler(new ClickHandler()
+		{
+			public void onClick(ClickEvent event)
+			{
+				_ctrl.importAndPublishLineup(
+					Day.SUNDAY, 
+					_sunLineupRecipientEmailTxt.getValue().trim(),
+					_sunLineupMsgBodyTxt.getValue().trim() );
 			}
 		});
 	}

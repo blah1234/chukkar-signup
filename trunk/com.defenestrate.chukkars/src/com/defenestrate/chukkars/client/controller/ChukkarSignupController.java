@@ -52,7 +52,7 @@ public class ChukkarSignupController
 	    		_view.setLoginInfo(result);
 	    		
 	    		if( !result.isLoggedIn() &&
-	    			(initToken.equals("login") || initToken.equals("admin")) )
+	    			(initToken.equals("login") || initToken.equals("admin") || initToken.equals("lineup")) )
 	    		{
 	    			_view.loadLogin( result.getLoginUrl() );
 	    		}
@@ -247,5 +247,37 @@ public class ChukkarSignupController
 	    };
 		
 		_adminSvc.saveMessageData(adminData, callback);
+	}
+	
+	public void exportSignups()
+	{
+		_view.setBusy(true);
+		
+		AsyncCallback<String> callback = new AsyncCallback<String>() 
+	    {
+	    	public void onFailure(Throwable caught) 
+	    	{
+	    		_view.showErrorDialog("Unable to export signups to Google Spreadsheets. See App Engine log for stack trace.", Day.SATURDAY, null);
+	    		_view.setBusy(false, false);
+	    	}
+
+	    	public void onSuccess(String spreadsheetLink) 
+	    	{
+	    		_view.addCopiedSignupsLink(spreadsheetLink);
+	    		_view.setBusy(false, false);
+	    	}
+	    };
+		
+		_adminSvc.exportSignups(callback);
+	}
+	
+	public void importAndPublishLineup(Day dayOfWeek,
+									   String recipientEmailAddress,
+									   String msgBodyPrefix)
+	{
+		_view.setBusy(true);
+		
+		//TODO:
+		
 	}
 }
