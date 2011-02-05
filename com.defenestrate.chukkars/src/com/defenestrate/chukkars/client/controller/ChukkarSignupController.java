@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.defenestrate.chukkars.client.AdminService;
 import com.defenestrate.chukkars.client.AdminServiceAsync;
+import com.defenestrate.chukkars.client.EmailService;
+import com.defenestrate.chukkars.client.EmailServiceAsync;
 import com.defenestrate.chukkars.client.LoginService;
 import com.defenestrate.chukkars.client.LoginServiceAsync;
 import com.defenestrate.chukkars.client.PlayerService;
@@ -23,6 +25,7 @@ public class ChukkarSignupController
 	private PlayerServiceAsync _playerSvc;
 	private LoginServiceAsync _loginSvc;
 	private AdminServiceAsync _adminSvc;
+	private EmailServiceAsync _emailSvc;
 	
 
 	/////////////////////////////// CONSTRUCTORS ///////////////////////////////
@@ -32,6 +35,7 @@ public class ChukkarSignupController
 		_playerSvc = GWT.create(PlayerService.class);
 		_loginSvc = GWT.create(LoginService.class);
 		_adminSvc = GWT.create(AdminService.class);
+		_emailSvc = GWT.create(EmailService.class);
 	}
 	
 
@@ -271,13 +275,46 @@ public class ChukkarSignupController
 		_adminSvc.exportSignups(callback);
 	}
 	
-	public void importAndPublishLineup(Day dayOfWeek,
-									   String recipientEmailAddress,
-									   String msgBodyPrefix)
+	public void importLineup(final Day dayOfWeek, final String msgBodyPrefix)
 	{
 		_view.setBusy(true);
 		
-		//TODO:
+		AsyncCallback<String> callback = new AsyncCallback<String>() 
+	    {
+	    	public void onFailure(Throwable caught) 
+	    	{
+	    		_view.showErrorDialog("Unable to import lineups from Google Spreadsheets. See App Engine log for stack trace.", Day.SATURDAY, null);
+	    		_view.setBusy(false, false);
+	    	}
+
+	    	public void onSuccess(String importedLineup) 
+	    	{
+	    		_view.setImportedLineup(dayOfWeek, msgBodyPrefix + "\n\n" + importedLineup);
+	    		_view.setBusy(false, false);
+	    	}
+	    };
 		
+		_adminSvc.importLineup(dayOfWeek, callback);
+	}
+	
+	public void publishLineup(Day dayOfWeek, LoginInfo login, String recipientAddress, String msgBody)
+	{
+		_view.setBusy(true);
+		
+		AsyncCallback<Void> callback = new AsyncCallback<Void>() 
+	    {
+	    	public void onFailure(Throwable caught) 
+	    	{
+	    		_view.showErrorDialog("Unable to publish lineups by email. See App Engine log for stack trace.", Day.SATURDAY, null);
+	    		_view.setBusy(false, false);
+	    	}
+
+	    	public void onSuccess(Void ignore) 
+	    	{
+	    		_view.setBusy(false, false);
+	    	}
+	    };
+		
+		_emailSvc.sendEmail(recipientAddress, dayOfWeek + " lineup", msgBody, login, callback);
 	}
 }
