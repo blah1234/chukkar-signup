@@ -121,7 +121,7 @@ public class CronServiceImpl extends HttpServlet
 		if(data != null)
 		{
 			String msgBody = data.getSignupNoticeMessage();
-			sendEmail("signup for weekend", msgBody, data);
+			EmailServiceImpl.sendEmail("signup for weekend", msgBody, data);
 		}
 	}
 	
@@ -132,35 +132,7 @@ public class CronServiceImpl extends HttpServlet
 		if(data != null)
 		{
 			String msgBody = data.getSignupReminderMessage();
-			sendEmail("signup by 12 noon", msgBody, data);
+			EmailServiceImpl.sendEmail("signup by 12 noon", msgBody, data);
 		}
-	}
-	
-	private void sendEmail(String subject, String msgBody, MessageAdmin data) throws ServletException
-	{
-		Properties props = new Properties();
-        Session session = Session.getDefaultInstance(props, null);
-
-        try 
-        {
-            Message msg = new MimeMessage(session);
-            msg.setFrom( new InternetAddress(data.getAdmin().getEmailAddress(), data.getAdmin().getNickname()) );
-            msg.addRecipient( Message.RecipientType.TO, new InternetAddress(data.getRecipientEmailAddress()) );
-            msg.setSubject(subject);
-            msg.setText(msgBody);
-            Transport.send(msg);
-        } 
-        catch(AddressException e) 
-        {
-        	throw new ServletException(e);
-        } 
-        catch(MessagingException e) 
-        {
-        	throw new ServletException(e);
-        }
-        catch(UnsupportedEncodingException e)
-        {
-        	throw new ServletException(e);	
-        }
 	}
 }
