@@ -40,6 +40,17 @@
   
   
   <servlet>
+    <servlet-name>emailServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.EmailServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>emailServiceImpl</servlet-name>
+    <url-pattern>/signup/email</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
     <servlet-name>cronServiceImpl</servlet-name>
     <servlet-class>com.defenestrate.chukkars.server.CronServiceImpl</servlet-class>
   </servlet>
