@@ -62,7 +62,6 @@ public class SignupView implements EntryPoint
 	static private final int CHUKKARS_COLUMN_INDEX = 2;
 	static private final int ACTION_COLUMN_INDEX = 3;
 	static private final int DELETE_COLUMN_INDEX = 4;
-	static private final int ROW_NUM_COLUMN_INDEX = 5;
 
 
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
@@ -83,6 +82,8 @@ public class SignupView implements EntryPoint
 	private DockPanel _topLevelPanel;
 	InsertPanelExample _dndExample;
 	
+	private Button _satImportBtn;
+	private Button _sunImportBtn;
 	private Button _satPublishBtn;
 	private Button _sunPublishBtn; 
 	private TextBox _satLineupRecipientEmailTxt;
@@ -373,18 +374,9 @@ public class SignupView implements EntryPoint
     			_satSignupTable.setText(0, DELETE_COLUMN_INDEX, "Delete");
     			_satSignupTable.getCellFormatter().addStyleName(0, DELETE_COLUMN_INDEX, "signupActionColumn");
     			
-    			//only show the "row num" column if logged in user is an admin
-    			_satSignupTable.setText(0, ROW_NUM_COLUMN_INDEX, "Row");
-    			_satSignupTable.getCellFormatter().addStyleName(0, ROW_NUM_COLUMN_INDEX, "signupActionColumn");
-    			
-    			
     			//only show the "delete" column if logged in user is an admin
     			_sunSignupTable.setText(0, DELETE_COLUMN_INDEX, "Delete");
     			_sunSignupTable.getCellFormatter().addStyleName(0, DELETE_COLUMN_INDEX, "signupActionColumn");
-    			
-    			//only show the "row num" column if logged in user is an admin
-    			_sunSignupTable.setText(0, ROW_NUM_COLUMN_INDEX, "Row");
-    			_sunSignupTable.getCellFormatter().addStyleName(0, ROW_NUM_COLUMN_INDEX, "signupActionColumn");
     			
     			
     			//only show these labels if logged in user is an admin
@@ -437,8 +429,16 @@ public class SignupView implements EntryPoint
 		_satLineupMsgBodyTxt.addStyleDependentName("signupTxt");
 		_satLineupMsgBodyTxt.setText(satMsgBodyPrefix);
 		
+		_satImportBtn = new Button("Import");
+		_satImportBtn.addStyleDependentName("copy");
+		
 		_satPublishBtn = new Button("Publish");
-		_satPublishBtn.addStyleDependentName("saveAdminSettings");
+		_satPublishBtn.addStyleDependentName("copy");
+		
+		HorizontalPanel btnPanel = new HorizontalPanel();
+		btnPanel.addStyleName("btnPanel");
+		btnPanel.add(_satImportBtn);
+		btnPanel.add(_satPublishBtn);
 				
 		FlexTable satLineupTable = new FlexTable();
 		satLineupTable.addStyleName("adminTable");
@@ -446,12 +446,12 @@ public class SignupView implements EntryPoint
 		satLineupTable.setText(0, 0, "To:");
 		satLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
 		
-		satLineupTable.setText(1, 0, "Lineup Message Body Prefix:");
+		satLineupTable.setText(1, 0, "Lineup Message Body:");
 		satLineupTable.getCellFormatter().addStyleName(1, 0, "rightTopAlignLbl");
 		
 		satLineupTable.setWidget(0, 1, _satLineupRecipientEmailTxt);
 		satLineupTable.setWidget(1, 1, _satLineupMsgBodyTxt);
-		satLineupTable.setWidget(2, 1, _satPublishBtn);
+		satLineupTable.setWidget(2, 1, btnPanel);
 		
 		//---------------------
 		
@@ -464,8 +464,16 @@ public class SignupView implements EntryPoint
 		_sunLineupMsgBodyTxt.addStyleDependentName("signupTxt");
 		_sunLineupMsgBodyTxt.setText(sunMsgBodyPrefix);
 		
+		_sunImportBtn = new Button("Import");
+		_sunImportBtn.addStyleDependentName("copy");
+		
 		_sunPublishBtn = new Button("Publish");
-		_sunPublishBtn.addStyleDependentName("saveAdminSettings");
+		_sunPublishBtn.addStyleDependentName("copy");
+		
+		btnPanel = new HorizontalPanel();
+		btnPanel.addStyleName("btnPanel");
+		btnPanel.add(_sunImportBtn);
+		btnPanel.add(_sunPublishBtn);
 				
 		FlexTable sunLineupTable = new FlexTable();
 		sunLineupTable.addStyleName("adminTable");
@@ -473,12 +481,12 @@ public class SignupView implements EntryPoint
 		sunLineupTable.setText(0, 0, "To:");
 		sunLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
 		
-		sunLineupTable.setText(1, 0, "Lineup Message Body Prefix:");
+		sunLineupTable.setText(1, 0, "Lineup Message Body:");
 		sunLineupTable.getCellFormatter().addStyleName(1, 0, "rightTopAlignLbl");
 		
 		sunLineupTable.setWidget(0, 1, _sunLineupRecipientEmailTxt);
 		sunLineupTable.setWidget(1, 1, _sunLineupMsgBodyTxt);
-		sunLineupTable.setWidget(2, 1, _sunPublishBtn);
+		sunLineupTable.setWidget(2, 1, btnPanel);
 		
 		//---------------------
 		
@@ -504,6 +512,22 @@ public class SignupView implements EntryPoint
 		link.setTarget("_blank");
 		
 		_copyLineupTable.setWidget(1, 1, link);
+	}
+	
+	public void setImportedLineup(Day dayOfWeek, String msgBody)
+	{
+		TextArea msgTxt;
+		
+		if(dayOfWeek == Day.SATURDAY)
+		{
+			msgTxt = _satLineupMsgBodyTxt;
+		}
+		else
+		{
+			msgTxt = _sunLineupMsgBodyTxt;
+		}
+		
+		msgTxt.setText(msgBody);
 	}
 	
 	private void layoutAdminComponents()
@@ -722,25 +746,43 @@ public class SignupView implements EntryPoint
 			}
 		});
 		
+		_satImportBtn.addClickHandler(new ClickHandler()
+		{
+			public void onClick(ClickEvent event)
+			{
+				_ctrl.importLineup( Day.SATURDAY, 
+								    _satLineupMsgBodyTxt.getValue().trim() );
+			}
+		});
+		
 		_satPublishBtn.addClickHandler(new ClickHandler()
 		{
 			public void onClick(ClickEvent event)
 			{
-				_ctrl.importAndPublishLineup(
-					Day.SATURDAY, 
-					_satLineupRecipientEmailTxt.getValue().trim(),
-					_satLineupMsgBodyTxt.getValue().trim() );
+				_ctrl.publishLineup( Day.SATURDAY,
+									 _loginInfo,
+									 _satLineupRecipientEmailTxt.getValue().trim(),
+								     _satLineupMsgBodyTxt.getValue().trim() );
 			}
 		}); 
+		
+		_sunImportBtn.addClickHandler(new ClickHandler()
+		{
+			public void onClick(ClickEvent event)
+			{
+				_ctrl.importLineup( Day.SUNDAY, 
+									_sunLineupMsgBodyTxt.getValue().trim() );
+			}
+		});
 		
 		_sunPublishBtn.addClickHandler(new ClickHandler()
 		{
 			public void onClick(ClickEvent event)
 			{
-				_ctrl.importAndPublishLineup(
-					Day.SUNDAY, 
-					_sunLineupRecipientEmailTxt.getValue().trim(),
-					_sunLineupMsgBodyTxt.getValue().trim() );
+				_ctrl.publishLineup( Day.SUNDAY,
+									 _loginInfo,
+									 _sunLineupRecipientEmailTxt.getValue().trim(),
+								     _sunLineupMsgBodyTxt.getValue().trim() );
 			}
 		});
 	}
@@ -1082,10 +1124,6 @@ public class SignupView implements EntryPoint
 		    
 		    signupTable.setWidget(rowInd, DELETE_COLUMN_INDEX, deleteButton);
 		    signupTable.getCellFormatter().addStyleName(rowInd, DELETE_COLUMN_INDEX, "signupActionColumn");
-		    
-		    //only show the "row num" column if logged in user is an admin
-		    signupTable.setText( rowInd, ROW_NUM_COLUMN_INDEX, Integer.toString(rowInd) );
-		    signupTable.getCellFormatter().addStyleName(rowInd, ROW_NUM_COLUMN_INDEX, "signupActionColumn");
 		}
 	    
 	    //----------------------------
@@ -1119,9 +1157,6 @@ public class SignupView implements EntryPoint
 			//update row referenced by "delete" button
 			ButtonExtend btn = (ButtonExtend)signupTable.getWidget(i, DELETE_COLUMN_INDEX);
 			btn.setRow(i);
-			
-			//update row number
-			signupTable.setText( i, ROW_NUM_COLUMN_INDEX, Integer.toString(i) );
 		}
 		
 		calculateGameChukkars(dayOfWeek);
