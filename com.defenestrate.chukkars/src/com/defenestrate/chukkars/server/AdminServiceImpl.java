@@ -3,6 +3,8 @@ package com.defenestrate.chukkars.server;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,6 +12,8 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.defenestrate.chukkars.client.AdminService;
 import com.defenestrate.chukkars.shared.Day;
@@ -24,9 +28,11 @@ import com.google.gdata.data.spreadsheet.Data;
 import com.google.gdata.data.spreadsheet.Field;
 import com.google.gdata.data.spreadsheet.Header;
 import com.google.gdata.data.spreadsheet.RecordEntry;
+import com.google.gdata.data.spreadsheet.RecordFeed;
 import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 import com.google.gdata.data.spreadsheet.TableEntry;
+import com.google.gdata.data.spreadsheet.TableFeed;
 import com.google.gdata.data.spreadsheet.Worksheet;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.data.spreadsheet.WorksheetFeed;
@@ -398,110 +404,86 @@ public class AdminServiceImpl extends RemoteServiceServlet
 	
 	public String importLineup(Day dayOfWeek)
 	{
-/*		try
+		try
 		{
+			SpreadsheetService service = getDefaultSpreadsheetService();
 			SpreadsheetEntry lineupsEntry = getLineupsEntry();
-			List<WorksheetEntry> worksheets = lineupsEntry.getWorksheets();
-			WorksheetEntry currDayEntry = null;
+			FeedURLFactory factory = FeedURLFactory.getDefault();
+			URL tableFeedUrl = factory.getTableFeedUrl(lineupsEntry.getKey());
+			TableFeed feed = service.getFeed(tableFeedUrl, TableFeed.class);
+			TableEntry lineupTblEntry = null;
 			
-			for(int i=0; i<worksheets.size(); i++) 
+			for( TableEntry entry : feed.getEntries() ) 
 			{
-				WorksheetEntry worksheet = worksheets.get(i);
-				String title = worksheet.getTitle().getPlainText();
-				if( dayOfWeek.toString().equals(title) )
+				if( entry.getTitle().getPlainText().equalsIgnoreCase(dayOfWeek.toString() + " Lineup Table") )
 				{
-					currDayEntry = worksheet;
+					lineupTblEntry = entry;
 					break;
 				}
 			}
-				
-			try
+			
+			String[] parts = lineupTblEntry.getId().split("\\/");
+			String tableId = parts[parts.length - 1];
+			URL recordFeedUrl = factory.getRecordFeedUrl(lineupsEntry.getKey(), tableId);
+			RecordFeed recordFeed = service.getFeed(recordFeedUrl, RecordFeed.class);
+	
+			StringBuffer strBuf = new StringBuffer();
+			
+			for( RecordEntry entry : recordFeed.getEntries() ) 
 			{
-				int rowCount = currDayEntry.getRowCount();
-				int colCount = currDayEntry.getColCount();
-				
-				
-				URL recordFeedUrl = tableEntry.getRecordFeedUrl();
-				RecordFeed feed = service.getFeed(recordFeedUrl, RecordFeed.class);
-				for( RecordEntry entry : feed.getEntries() ) {
-				  System.out.println("Title: " + entry.getTitle().getPlainText());
-				  for (Field field : entry.getFields()) {
-				    System.out.println("<field name=" + field.getName() + ">"
-				      + field.getValue() + "</field>");
-				  }
-				}
-				
-				//clear existing worksheet
-				URL cellFeedUrl = currDayEntry.getCellFeedUrl();
-				CellFeed cellFeed = service.getFeed(cellFeedUrl, CellFeed.class);
-				for( CellEntry cell : cellFeed.getEntries() ) 
+				List<Field> fieldList = entry.getFields();
+				Collections.sort(fieldList, new Comparator<Field>()
 				{
-					cell.delete();
-				}
-				
-
-				//populate with players and chukkars
-				for(int i=1; i<=numGameChukkars; i++)
-				{
-					//indices start at 1
-					CellEntry newEntry = new CellEntry( 1, i+1, Integer.toString(i) );
-					service.insert(cellFeedUrl, newEntry);
-				}
-				
-				for(int i=0, n=allPlayersList.size(), halfWay=numPlayersPerDay/2, currRow=2, currPlayerCount=0; i<n; i++)
-				{
-					if(i == 0)
+					public int compare(Field f1, Field f2)
 					{
-						CellEntry newEntry = new CellEntry(currRow++, 1, "light");
-						service.insert(cellFeedUrl, newEntry);
-					}
-					else if(currPlayerCount == halfWay)
-					{
-						currRow += 2;
-
-						CellEntry newEntry = new CellEntry(currRow++, 1, "dark");
-						service.insert(cellFeedUrl, newEntry);
-					}
-					
-					
-					Player currPlayer = allPlayersList.get(i);
-											
-					if(currPlayer.getRequestDay() == currTitle)
-					{
-						CellEntry newEntry = new CellEntry( currRow, 1, currPlayer.getName().toString() );
-						service.insert(cellFeedUrl, newEntry);
-				
-						for(int j=0, m=currPlayer.getChukkarCount(), currCol=2; j<m; j++, currCol++)
-						{
-							newEntry = new CellEntry(currRow, currCol, "x");
-							service.insert(cellFeedUrl, newEntry);
-						}
+						boolean isF1Digit = Character.isDigit( f1.getName().charAt(0) );
+						boolean isF2Digit = Character.isDigit( f2.getName().charAt(0) );
 						
-						currRow++;
-						currPlayerCount++;
+						if(!isF1Digit && isF2Digit)
+						{
+							return -1;
+						}
+						else if(isF1Digit && !isF2Digit)
+						{
+							return 1;
+						}
+						else
+						{
+							return new Integer(Integer.parseInt(f1.getName())).compareTo( 
+								new Integer(Integer.parseInt(f2.getName())) );
+						}
+					}
+					
+					public boolean equals(Object o)
+					{
+						return super.equals(o);
+					}
+				});
+				
+				for(Field currField : fieldList) 
+				{
+					if( currField.getName().equalsIgnoreCase("Name") )
+					{
+						strBuf.append(currField.getValue() != null ? currField.getValue() : "");
+						strBuf.append("\t");
+					}
+					else if( StringUtils.isNotBlank(currField.getValue()) )
+					{
+						strBuf.append( currField.getName() );
+						strBuf.append(",");
 					}
 				}
-			}
-			catch(ServiceException e)
-			{
-				LOG.log(
-					Level.SEVERE,
-					"Error manipulating Google spreadsheet",
-					e);
 				
-				throw new RuntimeException(e);
-			}
-			catch(IOException e)
-			{
-				LOG.log(
-					Level.SEVERE,
-					"Error manipulating Google spreadsheet",
-					e);
+				if(strBuf.charAt(strBuf.length()-1) == ',')
+				{
+					strBuf.setLength(strBuf.length() - 1);
+				}
 				
-				throw new RuntimeException(e);
+				strBuf.append("\n");
 			}
-		
-		return lineupsEntry.getSpreadsheetLink().getHref();
+			
+			
+			return strBuf.toString();
 		}
 		catch(MalformedURLException e)
 		{
@@ -538,7 +520,6 @@ public class AdminServiceImpl extends RemoteServiceServlet
 				e);
 			
 			throw new RuntimeException(e);
-		}*/
-		return "";
+		}
 	}
 }
