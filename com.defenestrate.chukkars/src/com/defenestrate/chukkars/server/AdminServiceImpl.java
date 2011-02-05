@@ -200,12 +200,18 @@ public class AdminServiceImpl extends RemoteServiceServlet
 				//calculate # of game chukkars
 				int totalChukkars = 0;
 				int numPlayersPerDay = 0;
+				int maxPlayerNumChukkars = 0;
 				for(Player currPlayer : allPlayersList)
 				{
 					if(currPlayer.getRequestDay() == currTitle)
 					{
 						totalChukkars += currPlayer.getChukkarCount();
 						numPlayersPerDay++;
+						
+						if( maxPlayerNumChukkars < currPlayer.getChukkarCount() )
+						{
+							maxPlayerNumChukkars = currPlayer.getChukkarCount();
+						}
 					}
 				}
 				
@@ -221,6 +227,12 @@ public class AdminServiceImpl extends RemoteServiceServlet
 				else
 				{
 					numGameChukkars = totalChukkars / 4;
+				}
+				
+				
+				if(numGameChukkars < maxPlayerNumChukkars)
+				{
+					numGameChukkars = maxPlayerNumChukkars;
 				}
 				
 				
