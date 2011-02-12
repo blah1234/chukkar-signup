@@ -33,7 +33,7 @@ h1 {
 
 /* num chukkar column */
 .signupNumericColumn {
-  text-align: right;
+  text-align: left;
   width:4em;
 }
 
