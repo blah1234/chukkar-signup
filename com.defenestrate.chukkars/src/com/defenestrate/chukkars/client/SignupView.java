@@ -410,7 +410,7 @@ public class SignupView implements EntryPoint
 		_copyLineupTable = new FlexTable();
 		_copyLineupTable.addStyleName("adminTable");
 		
-		_copyLineupTable.setText(0, 0, "Copy signups to spreadsheet:");
+		_copyLineupTable.setText(0, 0, "Signups to spreadsheet:");
 		_copyLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
 		
 		_copyLineupTable.setText(1, 0, "Copied signups at:");
@@ -433,25 +433,24 @@ public class SignupView implements EntryPoint
 		_satImportBtn.addStyleDependentName("copy");
 		
 		_satPublishBtn = new Button("Publish");
-		_satPublishBtn.addStyleDependentName("copy");
-		
-		HorizontalPanel btnPanel = new HorizontalPanel();
-		btnPanel.addStyleName("btnPanel");
-		btnPanel.add(_satImportBtn);
-		btnPanel.add(_satPublishBtn);
+		_satPublishBtn.addStyleDependentName("saveAdminSettings");
 				
 		FlexTable satLineupTable = new FlexTable();
 		satLineupTable.addStyleName("adminTable");
 		
-		satLineupTable.setText(0, 0, "To:");
+		satLineupTable.setText(0, 0, "Spreadsheet lineup:");
 		satLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
 		
-		satLineupTable.setText(1, 0, "Lineup Message Body:");
-		satLineupTable.getCellFormatter().addStyleName(1, 0, "rightTopAlignLbl");
+		satLineupTable.setText(1, 0, "To:");
+		satLineupTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
 		
-		satLineupTable.setWidget(0, 1, _satLineupRecipientEmailTxt);
-		satLineupTable.setWidget(1, 1, _satLineupMsgBodyTxt);
-		satLineupTable.setWidget(2, 1, btnPanel);
+		satLineupTable.setText(2, 0, "Lineup message body:");
+		satLineupTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
+		
+		satLineupTable.setWidget(0, 1, _satImportBtn);
+		satLineupTable.setWidget(1, 1, _satLineupRecipientEmailTxt);
+		satLineupTable.setWidget(2, 1, _satLineupMsgBodyTxt);
+		satLineupTable.setWidget(3, 1, _satPublishBtn);
 		
 		//---------------------
 		
@@ -468,25 +467,24 @@ public class SignupView implements EntryPoint
 		_sunImportBtn.addStyleDependentName("copy");
 		
 		_sunPublishBtn = new Button("Publish");
-		_sunPublishBtn.addStyleDependentName("copy");
+		_sunPublishBtn.addStyleDependentName("saveAdminSettings");
 		
-		btnPanel = new HorizontalPanel();
-		btnPanel.addStyleName("btnPanel");
-		btnPanel.add(_sunImportBtn);
-		btnPanel.add(_sunPublishBtn);
-				
 		FlexTable sunLineupTable = new FlexTable();
 		sunLineupTable.addStyleName("adminTable");
 		
-		sunLineupTable.setText(0, 0, "To:");
+		sunLineupTable.setText(0, 0, "Spreadsheet lineup:");
 		sunLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
 		
-		sunLineupTable.setText(1, 0, "Lineup Message Body:");
-		sunLineupTable.getCellFormatter().addStyleName(1, 0, "rightTopAlignLbl");
+		sunLineupTable.setText(1, 0, "To:");
+		sunLineupTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
 		
-		sunLineupTable.setWidget(0, 1, _sunLineupRecipientEmailTxt);
-		sunLineupTable.setWidget(1, 1, _sunLineupMsgBodyTxt);
-		sunLineupTable.setWidget(2, 1, btnPanel);
+		sunLineupTable.setText(2, 0, "Lineup message body:");
+		sunLineupTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
+		
+		sunLineupTable.setWidget(0, 1, _sunImportBtn);
+		sunLineupTable.setWidget(1, 1, _sunLineupRecipientEmailTxt);
+		sunLineupTable.setWidget(2, 1, _sunLineupMsgBodyTxt);
+		sunLineupTable.setWidget(3, 1, _sunPublishBtn);
 		
 		//---------------------
 		
