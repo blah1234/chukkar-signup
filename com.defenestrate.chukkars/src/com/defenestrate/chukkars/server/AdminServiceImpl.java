@@ -322,6 +322,9 @@ public class AdminServiceImpl extends RemoteServiceServlet
 							colorEntry.addField( new Field(null, "Name", "dark") );
 							padRemainingColumns(colorEntry, 1, numChukkarCols);
 							service.insert(recordFeedUrl, colorEntry);
+							
+							//get counter variable off of "halfway" mark
+							currPlayerCount++;
 						}
 						
 						
