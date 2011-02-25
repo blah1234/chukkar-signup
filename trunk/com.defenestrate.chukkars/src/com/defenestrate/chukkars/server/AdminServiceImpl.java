@@ -329,18 +329,21 @@ public class AdminServiceImpl extends RemoteServiceServlet
 												
 						if(currPlayer.getRequestDay() == currTitle)
 						{
-							RecordEntry playerEntry = new RecordEntry();
-							playerEntry.addField( new Field(null, "Name", currPlayer.getName()) );
-							
-							int j=1;
-							for(int m=currPlayer.getChukkarCount(); j<=m; j++)
+							if(currPlayer.getChukkarCount() > 0)
 							{
-								playerEntry.addField( new Field(null, Integer.toString(j), "x") );
+								RecordEntry playerEntry = new RecordEntry();
+								playerEntry.addField( new Field(null, "Name", currPlayer.getName()) );
+								
+								int j=1;
+								for(int m=currPlayer.getChukkarCount(); j<=m; j++)
+								{
+									playerEntry.addField( new Field(null, Integer.toString(j), "x") );
+								}
+								
+								padRemainingColumns(playerEntry, j, numChukkarCols);
+								
+								service.insert(recordFeedUrl, playerEntry);
 							}
-							
-							padRemainingColumns(playerEntry, j, numChukkarCols);
-							
-							service.insert(recordFeedUrl, playerEntry);
 							
 							currPlayerCount++;
 						}
