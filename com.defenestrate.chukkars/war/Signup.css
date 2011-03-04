@@ -171,6 +171,23 @@ h1 {
 }
 
 
+/* ------------ Accounts page ------------ */
+
+.gwt-Label-title {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  font-size: 25px;
+}
+
+.gwt-Label-status {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  font-style: italic;
+  font-size: 15px;
+  color: graytext;
+}
+
+
 /* ------------ Busy Indicator Dialog ------------ */
 .dialogVPanel {
   margin: 50px 100px 50px 100px;
