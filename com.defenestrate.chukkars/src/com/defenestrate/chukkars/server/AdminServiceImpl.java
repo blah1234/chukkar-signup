@@ -540,4 +540,48 @@ public class AdminServiceImpl extends RemoteServiceServlet
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public void createAdminUser(String emailAddress, String nickname)
+	{
+		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
+		
+		Transaction tx = pm.currentTransaction();
+
+		try
+		{
+		    tx.begin();
+
+		    LoginInfo loginInfo = new LoginInfo();
+			loginInfo.setIsAdmin(true);
+			loginInfo.setEmailAddress(emailAddress);
+			loginInfo.setNickname(nickname);
+			
+		    MessageAdmin persistData = new MessageAdmin();
+		    persistData.setAdmin(loginInfo);
+		    persistData.setRecipientEmailAddress("horseparkpolo@yahoogroups.com");
+			persistData.setWeeklyEmailsEnabled(false);
+			persistData.setSignupNoticeMessage("");
+			persistData.setSignupReminderMessage("");
+			
+			pm.makePersistent(persistData);
+			
+		    tx.commit();
+		}
+		catch(Exception e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to create a new admin: (" + emailAddress + ", " + nickname + ")", 
+				e);
+			
+		    if( tx.isActive() )
+		    {
+		        tx.rollback();
+		    }
+		}
+		finally 
+		{
+			pm.close();
+		}
+	}
 }
