@@ -56,7 +56,7 @@ public class ChukkarSignupController
 	    		_view.setLoginInfo(result);
 	    		
 	    		if( !result.isLoggedIn() &&
-	    			(initToken.equals("login") || initToken.equals("admin") || initToken.equals("lineup")) )
+	    			(initToken.equals("login") || initToken.equals("email") || initToken.equals("lineup") || initToken.equals("accounts")) )
 	    		{
 	    			_view.loadLogin( result.getLoginUrl() );
 	    		}
@@ -247,6 +247,7 @@ public class ChukkarSignupController
 	    	public void onSuccess(Void ignore) 
 	    	{
 	    		_view.setBusy(false, false);
+	    		_view.setStatus("Settings saved");
 	    	}
 	    };
 		
@@ -297,7 +298,7 @@ public class ChukkarSignupController
 		_adminSvc.importLineup(dayOfWeek, callback);
 	}
 	
-	public void publishLineup(Day dayOfWeek, LoginInfo login, String recipientAddress, String msgBody)
+	public void publishLineup(final Day dayOfWeek, LoginInfo login, final String recipientAddress, String msgBody)
 	{
 		_view.setBusy(true);
 		
@@ -312,9 +313,32 @@ public class ChukkarSignupController
 	    	public void onSuccess(Void ignore) 
 	    	{
 	    		_view.setBusy(false, false);
+	    		_view.setStatus(dayOfWeek.toString() + " lineup successfully emailed to \"" + recipientAddress + "\"");
 	    	}
 	    };
 		
 		_emailSvc.sendEmail(recipientAddress, dayOfWeek + " lineup", msgBody, login, callback);
+	}
+	
+	public void createAdminUser(final String emailAddr, final String nickname)
+	{
+		_view.setBusy(true);
+		
+		AsyncCallback<Void> callback = new AsyncCallback<Void>() 
+	    {
+	    	public void onFailure(Throwable caught) 
+	    	{
+	    		_view.showErrorDialog("Unable to create new admin user: (" + emailAddr + ", " + nickname + ")", Day.SATURDAY, null);
+	    		_view.setBusy(false, false);
+	    	}
+
+	    	public void onSuccess(Void ignore) 
+	    	{
+	    		_view.setBusy(false, false);
+	    		_view.setStatus("New admin successfully created: (" + emailAddr + ", " + nickname + ")");
+	    	}
+	    };
+		
+		_adminSvc.createAdminUser(emailAddr, nickname, callback);
 	}
 }
