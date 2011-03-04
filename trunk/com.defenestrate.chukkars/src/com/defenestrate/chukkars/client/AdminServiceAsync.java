@@ -11,4 +11,5 @@ public interface AdminServiceAsync
 	void saveMessageData(MessageAdminClientCopy data, AsyncCallback<Void> async);
 	void exportSignups(AsyncCallback<String> async);
 	void importLineup(Day dayOfWeek, AsyncCallback<String> async);
+	void createAdminUser(String emailAddress, String nickname, AsyncCallback<Void> async);
 }
