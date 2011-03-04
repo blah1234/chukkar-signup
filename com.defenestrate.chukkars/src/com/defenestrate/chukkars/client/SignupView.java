@@ -26,6 +26,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -99,13 +100,19 @@ public class SignupView implements EntryPoint
 	private TextArea _signupNoticeTxt;
 	private TextArea _signupReminderTxt;
 	private Button _saveAdminSettingsBtn;
-	private FlexTable _adminTable;
+	private FlexTable _emailSettingsTable;
+	
+	private TextBox _emailAddrTxt;
+	private TextBox _nicknameTxt; 
+	private Button _createAdminBtn; 
+	private DockPanel _accountsPanel; 
 	
 	private StackPanel _linkPanel;
 	
 	private Anchor _logInLink;
 	private Anchor _logOutLink;
 	private BusyIndicator _busy;
+	private Label _statusLbl;
 	
 	private LoginInfo _loginInfo;
 	private MessageAdminClientCopy _adminData;
@@ -158,7 +165,8 @@ public class SignupView implements EntryPoint
 		layoutNavigationComponents();
 		layoutSignupComponents();
 		layoutLineupComponents();
-		layoutAdminComponents();
+		layoutEmailSettingsComponents();
+		layoutAccountsComponents();
 		
 		
 		if( (_loginInfo != null) && _loginInfo.isLoggedIn() && _loginInfo.isAdmin() )
@@ -166,21 +174,29 @@ public class SignupView implements EntryPoint
 			_topLevelPanel.add(_linkPanel, DockPanel.WEST);
 		}
 		
-		if( initToken.isEmpty() || initToken.equals("signup") )
+		if( initToken.isEmpty() || 
+			initToken.equals("signup") || 
+			initToken.equals("login") || 
+			!_loginInfo.isAdmin() )
 		{
 			_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
 			_ctrl.loadPlayers();
 			_linkPanel.showStack(0);
 		}
-		else if( initToken.equals("admin") )
+		else if( initToken.equals("email") )
 		{
-			_topLevelPanel.add(_adminTable, DockPanel.CENTER);
+			_topLevelPanel.add(_emailSettingsTable, DockPanel.CENTER);
 			_ctrl.loadAdminData(_loginInfo);
 			_linkPanel.showStack(1);
 		}
 		else if( initToken.equals("lineup") )
 		{
 			_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
+			_linkPanel.showStack(1);
+		}
+		else if( initToken.equals("accounts") )
+		{
+			_topLevelPanel.add(_accountsPanel, DockPanel.CENTER);
 			_linkPanel.showStack(1);
 		}
 /**@todo		
@@ -197,6 +213,11 @@ public class SignupView implements EntryPoint
 		_topLevelPanel.add(eventTextArea, DockPanel.EAST);
 */		
 		
+		_statusLbl = new Label();
+		_statusLbl.addStyleDependentName("status");
+		_topLevelPanel.add(_statusLbl, DockPanel.SOUTH);
+		
+		
 		//remove anything previously there
 		int numWidgets = RootPanel.get("signupPanel").getWidgetCount();
 		for(int i=numWidgets-1; i>=0; i--)
@@ -212,7 +233,8 @@ public class SignupView implements EntryPoint
 		//links to different "pages"
 		Hyperlink signupLink = new Hyperlink("Signup&nbsp;Page", true, "signup");
 	    Hyperlink lineupLink = new Hyperlink("Create&nbsp;Lineup", true, "lineup");
-	    Hyperlink emailLink = new Hyperlink("Email&nbsp;Settings", true, "admin");
+	    Hyperlink emailLink = new Hyperlink("Email&nbsp;Settings", true, "email");
+	    Hyperlink accountsLink = new Hyperlink("Accounts", true, "accounts");
 	    
 	    VerticalPanel signupLinkPanel = new VerticalPanel();
 	    signupLinkPanel.setSpacing(5);
@@ -222,6 +244,7 @@ public class SignupView implements EntryPoint
 	    adminLinkPanel.setSpacing(5);
 	    adminLinkPanel.add(lineupLink);
 	    adminLinkPanel.add(emailLink);
+	    adminLinkPanel.add(accountsLink);
 	    
 	    _linkPanel = new DecoratedStackPanel();
 	    _linkPanel.addStyleDependentName("linkPanel");
@@ -528,7 +551,7 @@ public class SignupView implements EntryPoint
 		msgTxt.setText(msgBody);
 	}
 	
-	private void layoutAdminComponents()
+	private void layoutEmailSettingsComponents()
 	{
 		_enableEmailChk = new CheckBox();
 		
@@ -545,27 +568,64 @@ public class SignupView implements EntryPoint
 		_saveAdminSettingsBtn.addStyleDependentName("saveAdminSettings");
 
 		
-		_adminTable = new FlexTable();
-		_adminTable.addStyleName("adminTable");
+		_emailSettingsTable = new FlexTable();
+		_emailSettingsTable.addStyleName("adminTable");
 		
-		_adminTable.setText(0, 0, "Enable weekly emails:");
-		_adminTable.getCellFormatter().addStyleName(0, 0, "rightTopAlignLbl");
+		_emailSettingsTable.setText(0, 0, "Enable weekly emails:");
+		_emailSettingsTable.getCellFormatter().addStyleName(0, 0, "rightTopAlignLbl");
 		
-		_adminTable.setText(1, 0, "To:");
-		_adminTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
+		_emailSettingsTable.setText(1, 0, "To:");
+		_emailSettingsTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
 		
-		_adminTable.setText(2, 0, "Signup notice body:");
-		_adminTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
+		_emailSettingsTable.setText(2, 0, "Signup notice body:");
+		_emailSettingsTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
 		
-		_adminTable.setText(3, 0, "Signup reminder body:");
-		_adminTable.getCellFormatter().addStyleName(3, 0, "rightTopAlignLbl");
+		_emailSettingsTable.setText(3, 0, "Signup reminder body:");
+		_emailSettingsTable.getCellFormatter().addStyleName(3, 0, "rightTopAlignLbl");
 		
 		
-		_adminTable.setWidget(0, 1, _enableEmailChk);
-		_adminTable.setWidget(1, 1, _recipientEmailTxt);
-		_adminTable.setWidget(2, 1, _signupNoticeTxt);
-		_adminTable.setWidget(3, 1, _signupReminderTxt);
-		_adminTable.setWidget(4, 1, _saveAdminSettingsBtn);
+		_emailSettingsTable.setWidget(0, 1, _enableEmailChk);
+		_emailSettingsTable.setWidget(1, 1, _recipientEmailTxt);
+		_emailSettingsTable.setWidget(2, 1, _signupNoticeTxt);
+		_emailSettingsTable.setWidget(3, 1, _signupReminderTxt);
+		_emailSettingsTable.setWidget(4, 1, _saveAdminSettingsBtn);
+	}
+	
+	private void layoutAccountsComponents()
+	{
+		_emailAddrTxt = new TextBox();
+		_emailAddrTxt.addStyleDependentName("recipientEmail");
+		
+		_nicknameTxt = new TextBox();
+		_nicknameTxt.addStyleDependentName("recipientEmail");
+		
+		_createAdminBtn = new Button("Create");
+		_createAdminBtn.addStyleDependentName("saveAdminSettings");
+
+		
+		FlexTable createAdminTable = new FlexTable();
+		createAdminTable.addStyleName("adminTable");
+		
+		createAdminTable.setText(0, 0, "Email Address:");
+		createAdminTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
+		
+		createAdminTable.setText(1, 0, "Nickname:");
+		createAdminTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
+		
+		
+		createAdminTable.setWidget(0, 1, _emailAddrTxt);
+		createAdminTable.setWidget(1, 1, _nicknameTxt);
+		createAdminTable.setWidget(2, 1, _createAdminBtn);
+		
+		//----------------
+		
+		Label createAdminLbl = new Label("Create New Admin");
+		createAdminLbl.addStyleDependentName("title");
+		
+		_accountsPanel = new DockPanel();
+		_accountsPanel.addStyleName("lineupPanel");
+		_accountsPanel.add(createAdminLbl, DockPanel.NORTH);
+		_accountsPanel.add(createAdminTable, DockPanel.CENTER);
 	}
 	
 	private void setupListeners()
@@ -575,49 +635,8 @@ public class SignupView implements EntryPoint
 		{
     		public void onValueChange(ValueChangeEvent<String> event) 
     		{
-		        if( "lineup".equalsIgnoreCase(event.getValue()) )
-		        {
-		        	if( _loginInfo.isLoggedIn() )
-		        	{
-			        	_topLevelPanel.remove(_tabPanel);
-			        	_topLevelPanel.remove(_adminTable);
-			        	
-			        	_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
-		        	}
-		        	else
-		        	{
-		        		_ctrl.loginRequest( event.getValue() );
-		        	}
-		        }
-		        else if( "signup".equalsIgnoreCase(event.getValue()) )
-		        {
-		        	_topLevelPanel.remove(_lineupPanel);
-		        	_topLevelPanel.remove(_adminTable);
-		        	
-		        	_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
-		        	
-		        	_ctrl.loadPlayers();
-		        }
-		        else if( "admin".equalsIgnoreCase(event.getValue()) )
-		        {
-		        	if( _loginInfo.isLoggedIn() )
-		        	{
-		        		_topLevelPanel.remove(_lineupPanel);
-			        	_topLevelPanel.remove(_tabPanel);
-			        	
-			        	_topLevelPanel.add(_adminTable, DockPanel.CENTER);
-			        	
-			        	_ctrl.loadAdminData(_loginInfo);
-		        	}
-		        	else
-		        	{
-		        		_ctrl.loginRequest( event.getValue() );
-		        	}
-		        }
-		        else if( "login".equalsIgnoreCase(event.getValue()) )
-		        {
-	        		_ctrl.loginRequest( event.getValue() );
-		        }
+    			String navToken = event.getValue();
+    			handleNavigation(navToken);
     		}
 		});
 
@@ -783,6 +802,104 @@ public class SignupView implements EntryPoint
 								     _sunLineupMsgBodyTxt.getValue().trim() );
 			}
 		});
+		
+		_createAdminBtn.addClickHandler(new ClickHandler()
+		{
+			public void onClick(ClickEvent event)
+			{
+				_ctrl.createAdminUser( _emailAddrTxt.getValue().trim(), 
+									   _nicknameTxt.getValue().trim() );
+				
+				_emailAddrTxt.setText("");
+				_nicknameTxt.setText("");
+			}
+		});
+	}
+	
+	private void handleNavigation(String navToken)
+	{
+		if( "lineup".equalsIgnoreCase(navToken) )
+        {
+        	if( _loginInfo.isLoggedIn() )
+        	{
+        		if( _loginInfo.isAdmin() )
+        		{
+		        	_topLevelPanel.remove(_tabPanel);
+		        	_topLevelPanel.remove(_emailSettingsTable);
+		        	_topLevelPanel.remove(_accountsPanel);
+		        	
+		        	_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
+        		}
+        		else
+        		{
+        			History.newItem("signup");
+        		}
+        	}
+        	else
+        	{
+        		_ctrl.loginRequest(navToken);
+        	}
+        }
+        else if( "signup".equalsIgnoreCase(navToken) )
+        {
+        	_topLevelPanel.remove(_lineupPanel);
+        	_topLevelPanel.remove(_emailSettingsTable);
+        	_topLevelPanel.remove(_accountsPanel);
+        	
+        	_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
+        	
+        	_ctrl.loadPlayers();
+        }
+        else if( "email".equalsIgnoreCase(navToken) )
+        {
+        	if( _loginInfo.isLoggedIn() )
+        	{
+        		if( _loginInfo.isAdmin() )
+        		{
+	        		_topLevelPanel.remove(_lineupPanel);
+		        	_topLevelPanel.remove(_tabPanel);
+		        	_topLevelPanel.remove(_accountsPanel);
+		        	
+		        	_topLevelPanel.add(_emailSettingsTable, DockPanel.CENTER);
+		        	
+		        	_ctrl.loadAdminData(_loginInfo);
+        		}
+        		else
+        		{
+        			History.newItem("signup");
+        		}
+        	}
+        	else
+        	{
+        		_ctrl.loginRequest(navToken);
+        	}
+        }
+        else if( "accounts".equalsIgnoreCase(navToken) )
+        {
+        	if( _loginInfo.isLoggedIn() )
+        	{
+        		if( _loginInfo.isAdmin() )
+        		{
+	        		_topLevelPanel.remove(_lineupPanel);
+		        	_topLevelPanel.remove(_tabPanel);
+		        	_topLevelPanel.remove(_emailSettingsTable);
+		        	
+		        	_topLevelPanel.add(_accountsPanel, DockPanel.CENTER);
+        		}
+        		else
+        		{
+        			History.newItem("signup");
+        		}
+        	}
+        	else
+        	{
+        		_ctrl.loginRequest(navToken);
+        	}
+        }
+        else if( "login".equalsIgnoreCase(navToken) )
+        {
+    		_ctrl.loginRequest(navToken);
+        }
 	}
 	
 	private void writeAdminSettings()
@@ -1279,5 +1396,22 @@ public class SignupView implements EntryPoint
 		}
 		
 		return numChukkarsTxtBox.getText();
+	}
+	
+	public void setStatus(String status)
+	{
+		_statusLbl.setText(status);
+		
+		Timer t = new Timer() 
+		{
+			@Override
+			public void run() 
+			{
+		        _statusLbl.setText("");
+			}
+		};
+
+		// Schedule the timer to run once in 5 seconds.
+		t.schedule(5000);
 	}
 }
