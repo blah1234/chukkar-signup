@@ -13,4 +13,5 @@ public interface AdminService extends RemoteService
 	void saveMessageData(MessageAdminClientCopy data);
 	String exportSignups();
 	String importLineup(Day dayOfWeek);
+	void createAdminUser(String emailAddress, String nickname);
 }
