@@ -61,6 +61,17 @@
   </servlet-mapping>
   
   
+  <servlet>
+    <servlet-name>jsonServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.JSONServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>jsonServiceImpl</servlet-name>
+    <url-pattern>/signup/json/*</url-pattern>
+  </servlet-mapping>
+  
+  
   <security-constraint>
     <web-resource-collection>
   		<url-pattern>/signup/cron/*</url-pattern>
