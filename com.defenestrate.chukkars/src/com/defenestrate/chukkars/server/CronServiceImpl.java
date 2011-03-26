@@ -1,10 +1,8 @@
 package com.defenestrate.chukkars.server;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,13 +10,6 @@ import javax.jdo.Extent;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -82,6 +73,55 @@ public class CronServiceImpl extends HttpServlet
 				Level.SEVERE, 
 				"Error encountered trying to remove all players:\n" + e.getMessage(), 
 				e);
+		}
+		finally 
+		{
+			pm.close();
+		}
+		
+		logTask(CronTask.RESET);
+	}
+	
+	private void logTask(String taskName)
+	{
+		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
+		
+		Transaction tx = pm.currentTransaction();
+
+		try
+		{
+		    tx.begin();
+
+		    Query q = pm.newQuery(CronTask.class);
+			q.setFilter("_name == name");
+			q.declareParameters("String name");
+			q.setUnique(true);
+			CronTask currTask = (CronTask)q.execute(taskName);
+
+			if(currTask != null) 
+			{
+				currTask.setRunDateToNow();
+			}
+			else
+			{
+				//create the task entry
+				CronTask newTask = new CronTask(taskName);
+				pm.makePersistent(newTask);
+			}
+
+		    tx.commit();
+		}
+		catch(Exception e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to log task " + taskName + ":\n" + e.getMessage(), 
+				e);
+			
+		    if( tx.isActive() )
+		    {
+		        tx.rollback();
+		    }
 		}
 		finally 
 		{
