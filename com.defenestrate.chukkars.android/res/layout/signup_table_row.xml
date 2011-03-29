@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/player_table_row">
+	
+	<TextView
+		android:id="@+id/player_id_col"
+    	android:text="" />
+	<TextView
+		android:id="@+id/player_time_col"
+    	android:text=""
+        android:padding="3dip" />
+	<TextView
+		android:id="@+id/player_name_col"
+    	android:text=""
+        android:padding="3dip" />
+	<TextView
+		android:id="@+id/player_chukkars_col"
+    	android:text=""
+        android:gravity="right"
+        android:padding="3dip" />
+</TableRow>

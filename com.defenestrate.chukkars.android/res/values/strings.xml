@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HPPC Chukkars</string>
+    <string name="time_col_header">Time</string>
+    <string name="name_col_header">Name</string>
+    <string name="chukkars_col_header">Chukkars</string>
+    
+    <string name="get_players_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/getAllPlayers</string>
+    <string name="player_id_field">_id</string>
+    <string name="player_name_field">_name</string>
+    <string name="player_numChukkars_field">_numChukkars</string>
+    <string name="player_createDate_field">_createDate</string>
+    <string name="player_requestDay_field">_requestDay</string>
+</resources>
