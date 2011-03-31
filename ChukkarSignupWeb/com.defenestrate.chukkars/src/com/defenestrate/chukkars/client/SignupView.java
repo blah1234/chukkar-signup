@@ -1299,11 +1299,12 @@ public class SignupView implements EntryPoint
 		int totalChukkars = 0;
 		
 		//last row is the "add" row
-		int n = signupTable.getRowCount() - 1;
+		//row 0 is the header row
+		int n = signupTable.getRowCount() - 2;
 		int totalPlayers = n;
 		
 		//row 0 is the header row
-		for(int i=1; i<n; i++)
+		for(int i=1; i<=n; i++)
 		{
 			int currChukkarCount = Integer.parseInt( signupTable.getText(i, CHUKKARS_COLUMN_INDEX) );
 			
@@ -1318,11 +1319,11 @@ public class SignupView implements EntryPoint
 		totalChukkarsLbl.setText( Integer.toString(totalChukkars) );
 
 		int numGameChukkars;
-		if(totalPlayers <= 4)
+		if(totalPlayers < 4)
 		{
 			numGameChukkars = 0;
 		}
-		else if(totalPlayers > 6)
+		else if(totalPlayers >= 6)
 		{
 			numGameChukkars = totalChukkars / 6;
 		}
