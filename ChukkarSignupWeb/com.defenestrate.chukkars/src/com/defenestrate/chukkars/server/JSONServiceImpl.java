@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
 import com.google.gson.Gson;
 
@@ -56,12 +62,21 @@ public class JSONServiceImpl extends HttpServlet
 		}
 	}
 	
+	/**
+	 * Returns a list of all players and a list of total game chukkars by day.
+	 * A <code>TotalsAndPlayers</code> object will be written into JSON in the
+	 * HTTP response.
+	 * @param req
+	 * @param resp
+	 */
 	public void getAllPlayers(HttpServletRequest req, HttpServletResponse resp) 
 	{
 		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
+		List<DayTotal> totalsList = calculateGameChukkars(playersList);
+		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList);
 		
 		Gson gson = new Gson();
-		String json = gson.toJson(playersList);
+		String json = gson.toJson(responseObj);
 		
 		resp.setContentType("text/plain;charset=UTF-8");
 		
@@ -79,6 +94,106 @@ public class JSONServiceImpl extends HttpServlet
 				Level.SEVERE, 
 				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
 				e);
+		}
+	}
+	
+	private List<DayTotal> calculateGameChukkars(List<Player> playersList)
+	{
+		Map<Day, Total> dayToTotalsMap = new HashMap<Day, Total>();
+		
+		for(Player currPlayer : playersList)
+		{
+			Total currTotal;
+			
+			if( dayToTotalsMap.containsKey(currPlayer.getRequestDay()) )
+			{
+				currTotal = dayToTotalsMap.get( currPlayer.getRequestDay() );
+			}
+			else
+			{
+				currTotal = new Total();
+				dayToTotalsMap.put(currPlayer.getRequestDay(), currTotal);
+			}
+			
+			if(currPlayer.getChukkarCount() > 0)
+			{
+				currTotal._numPlayers++;
+			}
+			
+			currTotal._numChukkars += currPlayer.getChukkarCount();
+		}
+		
+		
+		List<DayTotal> totalsList = new ArrayList<DayTotal>();
+		
+		for( Day currDay : dayToTotalsMap.keySet() )
+		{
+			Total currTotal = dayToTotalsMap.get(currDay);
+			int numGameChukkars;
+				
+			if(currTotal._numPlayers < 4)
+			{
+				numGameChukkars = 0;
+			}
+			else if(currTotal._numPlayers >= 6)
+			{
+				numGameChukkars = currTotal._numChukkars / 6;
+			}
+			else
+			{
+				numGameChukkars = currTotal._numChukkars / 4;
+			}
+			
+			
+			DayTotal currDayTotal = new DayTotal(currDay, numGameChukkars);
+			
+			int index = Collections.binarySearch(totalsList, currDayTotal, new Comparator<DayTotal>()
+			{
+				public int compare(DayTotal o1, DayTotal o2)
+				{
+					return o1._day.compareTo(o2._day);
+				}
+			});
+			
+			//index = (-(insertion point) - 1);
+			int insertIndex = (index + 1) * -1;
+			totalsList.add(insertIndex, currDayTotal);
+		}
+		
+		return totalsList;
+	}
+	
+
+	////////////////////////////// INNER CLASSES ///////////////////////////////
+	private class Total
+	{
+		int _numPlayers = 0;
+		int _numChukkars = 0;
+	}
+	
+	private class DayTotal
+	{
+		Day _day;
+		int _numGameChukkars;
+		
+		
+		DayTotal(Day day, int numGameChukkars)
+		{
+			_day = day;
+			_numGameChukkars = numGameChukkars;
+		}
+	}
+	
+	private class TotalsAndPlayers
+	{
+		List<DayTotal> _totalsList;
+		List<Player> _playersList;
+		
+		
+		TotalsAndPlayers(List<DayTotal> totalsList, List<Player> playersList)
+		{
+			_totalsList = totalsList;
+			_playersList = playersList;
 		}
 	}
 }
