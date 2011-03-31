@@ -85,6 +85,10 @@ public class ChukkarSignupController
 		    try
 		    {
 		    	numChukkars = Integer.parseInt(numChukkarsStr);
+		    	if(numChukkars < 0)
+		    	{
+		    		throw new NumberFormatException("Negative numbers are not allowed.");
+		    	}
 		    	
 		    	AsyncCallback<Player> callback = new AsyncCallback<Player>() 
 			    {
