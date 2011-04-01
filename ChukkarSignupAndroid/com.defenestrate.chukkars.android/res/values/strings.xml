@@ -5,10 +5,23 @@
     <string name="name_col_header">Name</string>
     <string name="chukkars_col_header">Chukkars</string>
     
+    <string name="load_dialog_message">Loading. Please wait...</string>
+    
+    <string name="day0_init_tab_title">SATURDAY</string>
+    <string name="day1_init_tab_title">SUNDAY</string>
+    <string name="tab_title">{0} ({1} game chukkars)</string>
+    
     <string name="get_players_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/getAllPlayers</string>
+    <string name="totals_list_field">_totalsList</string>
+    <string name="players_list_field">_playersList</string>
+    <string name="total_day_field">_day</string>
+    <string name="total_num_chukkars_field">_numGameChukkars</string>
     <string name="player_id_field">_id</string>
     <string name="player_name_field">_name</string>
     <string name="player_numChukkars_field">_numChukkars</string>
     <string name="player_createDate_field">_createDate</string>
     <string name="player_requestDay_field">_requestDay</string>
+    
+    <string name="menu_add">Add Player</string>
+    <string name="menu_edit">Update Chukkars</string>
 </resources>
