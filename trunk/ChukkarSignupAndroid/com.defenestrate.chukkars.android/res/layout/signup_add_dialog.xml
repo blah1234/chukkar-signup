@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/add_dialog_root"
+              	android:layout_width="match_parent"
+              	android:layout_height="match_parent">
+    
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    		  android:id="@+id/name_root"
+              android:orientation="vertical"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_alignParentLeft="true"
+              android:padding="10dp">
+	    <TextView android:id="@+id/name_label"
+	              android:layout_width="wrap_content"
+	              android:layout_height="wrap_content"
+	              android:text="Name:"/>
+	    <EditText android:id="@+id/name_edit" 
+				  android:layout_width="match_parent"
+				  android:layout_height="wrap_content"/>
+    </LinearLayout>
+    
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_alignParentRight="true"
+              android:padding="10dp"
+              android:layout_toRightOf="@id/name_root">
+	    <TextView android:id="@+id/chukkars_label"
+	              android:layout_width="wrap_content"
+	              android:layout_height="wrap_content"
+	              android:text="Chukkars:"/>
+	    <com.defenestrate.chukkars.android.widget.NumberPicker android:id="@+id/chukkars_picker"
+	    		  android:layout_width="match_parent"
+				  android:layout_height="wrap_content"/>
+	</LinearLayout>
+    
+</RelativeLayout>
