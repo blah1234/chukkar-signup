@@ -46,6 +46,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -127,7 +128,8 @@ abstract public class SignupActivity extends Activity
     {
     	Dialog dialog;
         
-    	switch(id) {
+    	switch(id) 
+    	{
         case SIGNUP_ADD_DIALOG:
             dialog = createAddNewDialog();
             break;
@@ -140,6 +142,20 @@ abstract public class SignupActivity extends Activity
         }
         
         return dialog;
+    }
+    
+    @Override
+    protected void onPrepareDialog (int id, Dialog dialog, Bundle args)
+    {
+    	switch(id) 
+    	{
+        case SIGNUP_ADD_DIALOG:
+            prepareAddNewDialog(dialog);
+            break;
+        case SIGNUP_EDIT_DIALOG:
+            //TODO:
+            break;
+        }
     }
     
     @Override
@@ -166,17 +182,13 @@ abstract public class SignupActivity extends Activity
     		R.layout.signup_add_dialog, 
     		(ViewGroup)findViewById(R.id.add_dialog_root) );
     	
-    	NumberPicker numPick = (NumberPicker)layout.findViewById(R.id.chukkars_picker);
-    	numPick.setRange(0, 10);
-    	numPick.setCurrent(2);
-
     	Resources res = getResources();
 
     	builder = new AlertDialog.Builder(this);
     	builder.setView(layout);
     	builder.setCancelable(true);
     	builder.setTitle( res.getString(R.string.menu_add) );
-    	builder.setPositiveButton("Save", new DialogInterface.OnClickListener() 
+    	builder.setPositiveButton(res.getString(R.string.button_save), new DialogInterface.OnClickListener() 
     	{
     		public void onClick(DialogInterface dialog, int id) 
     		{
@@ -184,7 +196,7 @@ abstract public class SignupActivity extends Activity
     		}
     	});
 
-    	builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() 
+    	builder.setNegativeButton(res.getString(R.string.button_cancel), new DialogInterface.OnClickListener() 
     	{
     		public void onClick(DialogInterface dialog, int id) 
     		{
@@ -195,6 +207,16 @@ abstract public class SignupActivity extends Activity
     	alertDialog = builder.create();
     	
     	return alertDialog;
+    }
+    
+    private void prepareAddNewDialog(Dialog dialog)
+    {
+    	EditText nameEdit = (EditText)dialog.findViewById(R.id.name_edit);
+    	nameEdit.setText("");
+    	
+    	NumberPicker numPick = (NumberPicker)dialog.findViewById(R.id.chukkars_picker);
+    	numPick.setRange(0, 10);
+    	numPick.setCurrent(2);
     }
     
     protected void loadPlayers(Day selectedDay)
@@ -220,7 +242,7 @@ abstract public class SignupActivity extends Activity
     		loadPlayersImpl(selectedDay);
     	}
     }
-    	
+    
     private void loadPlayersImpl(Day selectedDay)
     {
     	FileInputStream fis = null;
