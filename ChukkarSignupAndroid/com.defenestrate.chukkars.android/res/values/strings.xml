@@ -24,4 +24,6 @@
     
     <string name="menu_add">Add Player</string>
     <string name="menu_edit">Update Chukkars</string>
+    <string name="button_save">"Save"</string>
+    <string name="button_cancel">"Cancel"</string>
 </resources>
