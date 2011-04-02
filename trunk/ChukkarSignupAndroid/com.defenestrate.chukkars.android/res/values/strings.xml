@@ -12,8 +12,10 @@
     <string name="tab_title">{0} ({1} game chukkars)</string>
     
     <string name="get_players_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/getAllPlayers</string>
+    <string name="add_player_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/addPlayer</string>
     <string name="totals_list_field">_totalsList</string>
     <string name="players_list_field">_playersList</string>
+    <string name="curr_player_persisted_field">_currPersisted</string>
     <string name="total_day_field">_day</string>
     <string name="total_num_chukkars_field">_numGameChukkars</string>
     <string name="player_id_field">_id</string>
