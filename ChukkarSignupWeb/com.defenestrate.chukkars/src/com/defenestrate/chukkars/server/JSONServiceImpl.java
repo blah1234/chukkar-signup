@@ -30,7 +30,21 @@ public class JSONServiceImpl extends HttpServlet
 
 	
 	///////////////////////////////// METHODS //////////////////////////////////
+	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) 
+		throws ServletException, java.io.IOException
+	{
+		handleRequest(req, resp);
+	}
+	
+	@Override
+	public void doPost(HttpServletRequest req, HttpServletResponse resp) 
+		throws ServletException, java.io.IOException
+	{
+		handleRequest(req, resp);
+	}
+	
+	private void handleRequest(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, java.io.IOException
 	{
 		String path = req.getPathInfo();
@@ -74,6 +88,47 @@ public class JSONServiceImpl extends HttpServlet
 		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
 		List<DayTotal> totalsList = calculateGameChukkars(playersList);
 		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList);
+		
+		Gson gson = new Gson();
+		String json = gson.toJson(responseObj);
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		
+		try
+		{
+			PrintWriter charWriter = resp.getWriter();
+			charWriter.write(json);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				e);
+		}
+	}
+	
+	/**
+	 * Returns a list of all players and a list of total game chukkars by day.
+	 * A <code>TotalsAndPlayers</code> object will be written into JSON in the
+	 * HTTP response.
+	 * @param req
+	 * @param resp
+	 */
+	public void addPlayer(HttpServletRequest req, HttpServletResponse resp) 
+	{
+		Day requestDay = Day.valueOf( req.getParameter("_requestDay") );
+		String name = req.getParameter("_name");
+		int numChukkars = Integer.parseInt( req.getParameter("_numChukkars") );
+		
+		Player addedPlayer = PlayerServiceImpl.addPlayerImpl(name, numChukkars, requestDay);
+		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
+		List<DayTotal> totalsList = calculateGameChukkars(playersList);
+		
+		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, addedPlayer);
 		
 		Gson gson = new Gson();
 		String json = gson.toJson(responseObj);
@@ -188,12 +243,19 @@ public class JSONServiceImpl extends HttpServlet
 	{
 		List<DayTotal> _totalsList;
 		List<Player> _playersList;
+		Player _currPersisted;
 		
 		
 		TotalsAndPlayers(List<DayTotal> totalsList, List<Player> playersList)
 		{
+			this(totalsList, playersList, null);
+		}
+		
+		TotalsAndPlayers(List<DayTotal> totalsList, List<Player> playersList, Player currPersisted)
+		{
 			_totalsList = totalsList;
 			_playersList = playersList;
+			_currPersisted = currPersisted;
 		}
 	}
 }
