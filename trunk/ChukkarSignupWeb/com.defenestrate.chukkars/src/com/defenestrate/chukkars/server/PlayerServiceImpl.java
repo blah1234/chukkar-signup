@@ -33,6 +33,11 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 	 */
 	public Player addPlayer(String name, Integer numChukkars, Day requestDay)  
 	{
+		return addPlayerImpl(name, numChukkars, requestDay);
+	}
+	
+	static protected Player addPlayerImpl(String name, Integer numChukkars, Day requestDay)
+	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
 		try 
