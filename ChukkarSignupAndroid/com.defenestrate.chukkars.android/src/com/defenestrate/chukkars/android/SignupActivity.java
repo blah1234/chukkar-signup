@@ -1,8 +1,8 @@
 package com.defenestrate.chukkars.android;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,13 +12,19 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,6 +72,8 @@ abstract public class SignupActivity extends Activity
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
 	private ProgressDialog _progressDlg;
 	private Handler _handler;
+	private Day _selectedDay;
+	private long _fileLastModified = -1;
 
 
 	//////////////////////////// Activity METHODS //////////////////////////////
@@ -85,10 +93,26 @@ abstract public class SignupActivity extends Activity
                 
                 if(msg.what != MESSAGE_WHAT_ERROR)
                 {
-                	loadPlayersImpl( (Day)msg.obj );
+                	loadPlayersImpl(msg.arg1);
                 }
             }
         };
+    }
+    
+    protected void onResume()
+    {
+    	super.onResume();
+    	
+    	File file = getFileStreamPath(SERVER_DATA_FILENAME);
+		long lastModified = file.lastModified();
+    
+		if(lastModified != _fileLastModified)
+		{
+			_fileLastModified = lastModified;
+        
+            int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
+    		loadPlayers(tabIndex);
+		}
     }
     
     @Override
@@ -178,7 +202,7 @@ abstract public class SignupActivity extends Activity
     	AlertDialog alertDialog;
 
     	LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
-    	View layout = inflater.inflate( 
+    	final View layout = inflater.inflate( 
     		R.layout.signup_add_dialog, 
     		(ViewGroup)findViewById(R.id.add_dialog_root) );
     	
@@ -192,7 +216,17 @@ abstract public class SignupActivity extends Activity
     	{
     		public void onClick(DialogInterface dialog, int id) 
     		{
-    			//TODO:
+    			EditText nameWidget = (EditText)layout.findViewById(R.id.name_edit);
+    			NumberPicker numChukkarsWidget = (NumberPicker)layout.findViewById(R.id.chukkars_picker);
+    			
+    			if(_selectedDay != null)
+    			{
+    				addPlayer( _selectedDay, nameWidget.getText().toString(), numChukkarsWidget.getCurrent() );
+    			}
+    			else
+    			{
+    				throw new RuntimeException("_selectedDay cannot be null. It should have been set as a result of calls made in onResume()!");
+    			}
     		}
     	});
 
@@ -209,7 +243,7 @@ abstract public class SignupActivity extends Activity
     	return alertDialog;
     }
     
-    private void prepareAddNewDialog(Dialog dialog)
+	private void prepareAddNewDialog(Dialog dialog)
     {
     	EditText nameEdit = (EditText)dialog.findViewById(R.id.name_edit);
     	nameEdit.setText("");
@@ -217,9 +251,52 @@ abstract public class SignupActivity extends Activity
     	NumberPicker numPick = (NumberPicker)dialog.findViewById(R.id.chukkars_picker);
     	numPick.setRange(0, 10);
     	numPick.setCurrent(2);
+    	
+    	nameEdit.requestFocus();
     }
+	
+	protected void addPlayer(final Day selectedDay, final String name, final int numChukkars)
+	{
+		_progressDlg = ProgressDialog.show(
+	    	this, "", getResources().getString(R.string.load_dialog_message), true);
+		
+		Thread thread = new Thread(new Runnable()
+		{
+			public void run()
+			{
+				Resources res = getResources(); 
+
+				try
+				{
+					//http post
+					HttpClient httpclient = new DefaultHttpClient();
+					HttpPost post = new HttpPost( res.getString(R.string.add_player_url) );
+					
+					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_requestDay_field), selectedDay.toString()) );
+			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_name_field), name) );
+			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), Integer.toString(numChukkars)) );
+			        post.setEntity( new UrlEncodedFormEntity(nameValuePairs) );
+			        
+					HttpResponse response = httpclient.execute(post);
+					
+					int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
+					writeServerData(response, tabIndex);
+			    }
+				catch(IOException e)
+				{
+					_handler.sendEmptyMessage(MESSAGE_WHAT_ERROR);
+					
+					//TODO:
+		            throw new RuntimeException(e);
+				}
+			}
+		});
+		
+        thread.start();
+	}
     
-    protected void loadPlayers(Day selectedDay)
+    protected void loadPlayers(int tabIndex)
     {
     	String[] existingFiles = fileList();
     	boolean doesDataFileExist = false;
@@ -235,15 +312,15 @@ abstract public class SignupActivity extends Activity
     	
     	if(!doesDataFileExist)
     	{
-    		writeServerData(selectedDay);
+    		getServerData(tabIndex);
     	}
     	else
     	{
-    		loadPlayersImpl(selectedDay);
+    		loadPlayersImpl(tabIndex);
     	}
     }
     
-    private void loadPlayersImpl(Day selectedDay)
+    private void loadPlayersImpl(int tabIndex)
     {
     	FileInputStream fis = null;
     	String result = "";
@@ -292,14 +369,16 @@ abstract public class SignupActivity extends Activity
 	    		throw new RuntimeException("Unexpected length for _totalsList in JSON: " + jArray.toString(4));
 	    	}
 	    	
+	    	String dayStr = jArray.getJSONObject(tabIndex).getString( res.getString(R.string.total_day_field) );
+	    	_selectedDay = Day.valueOf(dayStr);
+	    	
 	    	//format the titles in the tabs
 	    	TabHost tabHost = (TabHost)getParent().findViewById(android.R.id.tabhost);
-	    	int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
 	    	TextView tabTitle = (TextView)tabHost.getTabWidget().getChildTabViewAt(tabIndex).findViewById(android.R.id.title);
 	    	String title = MessageFormat.format(
 	    		res.getString(R.string.tab_title), 
-	    		new Object[] {jArray.getJSONObject(tabIndex).getString( res.getString(R.string.total_day_field)), 
-	    					  jArray.getJSONObject(tabIndex).getString( res.getString(R.string.total_num_chukkars_field))} );
+	    		new Object[] {dayStr, 
+	    					  jArray.getJSONObject(tabIndex).getString(res.getString(R.string.total_num_chukkars_field))} );
 	    	tabTitle.setText(title);
 	    	
 	    	//-----------------
@@ -323,7 +402,7 @@ abstract public class SignupActivity extends Activity
                 JSONObject currPlayer = jArray.getJSONObject(i);
                 
                 Day currRequestDay = Day.valueOf( currPlayer.getString( res.getString(R.string.player_requestDay_field)) );
-                if(currRequestDay == selectedDay)
+                if(currRequestDay == _selectedDay)
                 {
                 	/* Create and add a new row */
                 	View rootView = inflater.inflate(R.layout.signup_table_row, tl, false);
@@ -366,6 +445,13 @@ abstract public class SignupActivity extends Activity
                 	chukkarsText.setText( currPlayer.getString(res.getString(R.string.player_numChukkars_field)) );
                 }
             }
+            
+            
+            if( data.has(res.getString(R.string.curr_player_persisted_field)) )
+            {
+            	//TODO persist the Id of the newly persisted Player --> ONLY if
+            	//it doesn't already exist in the DB
+            }
 	    }
 	    catch(JSONException e)
 	    {
@@ -374,7 +460,7 @@ abstract public class SignupActivity extends Activity
 	    }
     }
     
-	private void writeServerData(final Day selectedDay) 
+	private void getServerData(final int tabIndex) 
 	{
 		_progressDlg = ProgressDialog.show(
 	    	this, "", getResources().getString(R.string.load_dialog_message), true);
@@ -383,9 +469,6 @@ abstract public class SignupActivity extends Activity
 		{
 			public void run()
 			{
-				InputStream is = null;
-				String result = "";
-				FileOutputStream fos = null;
 				Resources res = getResources(); 
 
 				try
@@ -394,35 +477,8 @@ abstract public class SignupActivity extends Activity
 					HttpClient httpclient = new DefaultHttpClient();
 					HttpGet get = new HttpGet( res.getString(R.string.get_players_url) );
 					HttpResponse response = httpclient.execute(get);
-					HttpEntity entity = response.getEntity();
-					is = entity.getContent();
-
-					//convert response to string
-			    	BufferedReader reader = new BufferedReader( new InputStreamReader(is,"utf-8") );
-			    	StringWriter strWrite = new StringWriter();
-			    	
-			    	String line = null;
-			    	while( (line = reader.readLine()) != null ) 
-			    	{
-			    		strWrite.append(line + "\n");
-			    	}
-				            
-			    	result = strWrite.toString();
-			    	
-			    	//write json data to file
-			    	fos = openFileOutput(SERVER_DATA_FILENAME, Context.MODE_PRIVATE);
-			    	fos.write( result.getBytes() );
-			    	fos.close();
-			    	
-			    	Message msg = _handler.obtainMessage(MESSAGE_WHAT_SUCCESS, selectedDay);
-			    	_handler.sendMessage(msg);
-			    }
-				catch(FileNotFoundException e)
-			    {
-					_handler.sendEmptyMessage(MESSAGE_WHAT_ERROR);
 					
-			    	//TODO:
-		            throw new RuntimeException(e);
+					writeServerData(response, tabIndex);
 			    }
 				catch(IOException e)
 				{
@@ -431,36 +487,66 @@ abstract public class SignupActivity extends Activity
 					//TODO:
 		            throw new RuntimeException(e);
 				}
-			    catch(Exception e)
-			    {
-			    	_handler.sendEmptyMessage(MESSAGE_WHAT_ERROR);
-			    	
-			    	//TODO:
-		            throw new RuntimeException(e);
-			    }
-			    finally
-			    {
-			    	try
-			    	{
-			    		if(is != null)
-			    		{
-			    			is.close();
-			    		}
-			    	}
-			    	catch(IOException e) {}
-			    	
-			    	try
-			    	{
-			    		if(fos != null)
-			    		{
-			    			fos.close();
-			    		}
-			    	}
-			    	catch(IOException e) {}
-			    }
 			}
 		});
 		
         thread.start();
-	}   
+	}
+	
+	private void writeServerData(HttpResponse response, int tabIndex) throws IOException
+	{
+		InputStream is = null;
+		FileOutputStream fos = null;
+		
+		try
+		{
+			HttpEntity entity = response.getEntity();
+			is = entity.getContent();
+	
+			//convert response to string
+	    	BufferedReader reader = new BufferedReader( new InputStreamReader(is,"utf-8") );
+	    	StringWriter strWrite = new StringWriter();
+	    	
+	    	String line = null;
+	    	while( (line = reader.readLine()) != null ) 
+	    	{
+	    		strWrite.append(line + "\n");
+	    	}
+		            
+	    	String result = strWrite.toString();
+	    	
+	    	//write json data to file
+	    	fos = openFileOutput(SERVER_DATA_FILENAME, Context.MODE_PRIVATE);
+	    	fos.write( result.getBytes() );
+	    	fos.flush();
+	    	
+	    	Message msg = _handler.obtainMessage(MESSAGE_WHAT_SUCCESS);
+	    	msg.arg1 = tabIndex;
+	    	_handler.sendMessage(msg);
+		}
+	    finally
+	    {
+	    	try
+	    	{
+	    		if(is != null)
+	    		{
+	    			is.close();
+	    		}
+	    	}
+	    	catch(IOException e) {}
+	    	
+	    	try
+	    	{
+	    		if(fos != null)
+	    		{
+	    			fos.close();
+	    		}
+	    	}
+	    	catch(IOException e) {}
+	    }
+	    
+	    
+	    File file = getFileStreamPath(SERVER_DATA_FILENAME);
+	    _fileLastModified = file.lastModified();
+	}
 }
