@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import yuku.iconcontextmenu.IconContextMenu;
+import yuku.iconcontextmenu.IconContextMenu.IconContextItemSelectedListener;
 
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.widget.NumberPicker;
@@ -62,11 +63,10 @@ abstract public class SignupActivity extends Activity
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	static private final String SERVER_DATA_FILENAME = "all-players.json";
-	static private final int MESSAGE_WHAT_ERROR = -1;
-	static private final int MESSAGE_WHAT_SUCCESS = 1;
 	
-	static final int SIGNUP_ADD_DIALOG = 0;
-	static final int SIGNUP_EDIT_DIALOG = 1;
+	static private final String PLAYER_ID_KEY = "PLAYER_ID_KEY"; 
+	static private final String PLAYER_NAME_KEY = "PLAYER_NAME_KEY";
+	static private final String PLAYER_NUM_CHUKKARS_KEY = "PLAYER_NUM_CHUKKARS_KEY";
 	
 	
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
@@ -91,7 +91,7 @@ abstract public class SignupActivity extends Activity
             {
                 _progressDlg.dismiss();
                 
-                if(msg.what != MESSAGE_WHAT_ERROR)
+                if(msg.what != R.id.message_what_error)
                 {
                 	loadPlayersImpl(msg.arg1);
                 }
@@ -140,7 +140,7 @@ abstract public class SignupActivity extends Activity
         switch( item.getItemId() ) 
         {
         case R.id.new_player:
-            showDialog(SIGNUP_ADD_DIALOG);
+            showDialog(R.id.signup_add_dialog);
             return true;
         default:
             return super.onOptionsItemSelected(item);
@@ -154,12 +154,11 @@ abstract public class SignupActivity extends Activity
         
     	switch(id) 
     	{
-        case SIGNUP_ADD_DIALOG:
+        case R.id.signup_add_dialog:
             dialog = createAddNewDialog();
             break;
-        case SIGNUP_EDIT_DIALOG:
-            //TODO:
-        	dialog = null;
+        case R.id.signup_edit_dialog:
+        	dialog = createEditChukkarsDialog();
             break;
         default:
             dialog = null;
@@ -169,15 +168,15 @@ abstract public class SignupActivity extends Activity
     }
     
     @Override
-    protected void onPrepareDialog (int id, Dialog dialog, Bundle args)
+    protected void onPrepareDialog(int id, Dialog dialog, Bundle args)
     {
     	switch(id) 
     	{
-        case SIGNUP_ADD_DIALOG:
+        case R.id.signup_add_dialog:
             prepareAddNewDialog(dialog);
             break;
-        case SIGNUP_EDIT_DIALOG:
-            //TODO:
+        case R.id.signup_edit_dialog:
+        	prepareEditChukkarsDialog(dialog, args);
             break;
         }
     }
@@ -187,10 +186,39 @@ abstract public class SignupActivity extends Activity
     {
         super.onCreateContextMenu(menu, v, menuInfo);
         
+        //get the Player Id associated with the clicked-on table row
+        TextView idCol = (TextView)v.findViewById(R.id.player_id_col);
+        String playerId = idCol.getText().toString();
+        
+        TextView nameCol = (TextView)v.findViewById(R.id.player_name_col);
+        String playerName = nameCol.getText().toString();
+        
+        TextView numChukkarsCol = (TextView)v.findViewById(R.id.player_chukkars_col);
+        int numChukkars = Integer.parseInt( numChukkarsCol.getText().toString() );
+        
         //TODO: store player Id's in DB, and see if clicked on item has a stored
         //id. Only show context 
         IconContextMenu cm = new IconContextMenu(this, R.menu.context_menu);
-//TODO:        cm.setOnIconContextItemSelectedListener(IconContextItemSelectedListener).
+        
+        Bundle args = new Bundle();
+        args.putString(PLAYER_ID_KEY, playerId);
+        args.putString(PLAYER_NAME_KEY, playerName);
+        args.putInt(PLAYER_NUM_CHUKKARS_KEY, numChukkars);
+        cm.setInfo(args);
+        
+        cm.setOnIconContextItemSelectedListener(new IconContextItemSelectedListener()
+		{
+			public void onIconContextItemSelected(MenuItem item, Object info)
+			{
+				switch( item.getItemId() ) 
+		        {
+		        case R.id.edit_player:
+		        	Bundle args = (Bundle)info;
+		            showDialog(R.id.signup_edit_dialog, args);
+		        }
+			}
+		});
+        
         cm.show();
     }
 
@@ -243,6 +271,63 @@ abstract public class SignupActivity extends Activity
     	return alertDialog;
     }
     
+    private Dialog createEditChukkarsDialog()
+    {
+    	AlertDialog.Builder builder;
+    	AlertDialog alertDialog;
+
+    	LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+    	final View layout = inflater.inflate( 
+    		R.layout.signup_edit_chukkars_dialog, 
+    		(ViewGroup)findViewById(R.id.edit_chukkars_dialog_root) );
+    	
+    	Resources res = getResources();
+    	
+    	builder = new AlertDialog.Builder(this);
+    	builder.setView(layout);
+    	builder.setCancelable(true);
+    	builder.setTitle( res.getString(R.string.menu_edit) );
+    	builder.setPositiveButton(res.getString(R.string.button_save), new DialogInterface.OnClickListener() 
+    	{
+    		public void onClick(DialogInterface dialog, int id) 
+    		{
+    			View nameWidget = layout.findViewById(R.id.name_value);
+    			String playerId = (String)nameWidget.getTag(R.id.player_id_tag);
+    			
+				//TODO:
+				int i=0;
+				i++;
+				//addPlayer( _selectedDay, nameWidget.getText().toString(), numChukkarsWidget.getCurrent() );
+    		}
+    	});
+
+    	builder.setNegativeButton(res.getString(R.string.button_cancel), new DialogInterface.OnClickListener() 
+    	{
+    		public void onClick(DialogInterface dialog, int id) 
+    		{
+    			dialog.cancel();
+    		}
+    	});
+    	
+    	alertDialog = builder.create();
+    	
+    	return alertDialog;
+    }
+    
+    private void prepareEditChukkarsDialog(Dialog dialog, Bundle args)
+    {
+    	TextView nameWidget = (TextView)dialog.findViewById(R.id.name_value);
+    	nameWidget.setText( args.getString(PLAYER_NAME_KEY) );
+    	nameWidget.setTag( R.id.player_id_tag, args.getString(PLAYER_ID_KEY) );
+    	
+    	NumberPicker numPick = (NumberPicker)dialog.findViewById(R.id.chukkars_picker);
+    	numPick.setRange(0, 10);
+    	
+    	numPick.setCurrent( args.getInt(PLAYER_NUM_CHUKKARS_KEY) );
+    	
+    	numPick.requestFocus();
+    }
+    
 	private void prepareAddNewDialog(Dialog dialog)
     {
     	EditText nameEdit = (EditText)dialog.findViewById(R.id.name_edit);
@@ -285,7 +370,7 @@ abstract public class SignupActivity extends Activity
 			    }
 				catch(IOException e)
 				{
-					_handler.sendEmptyMessage(MESSAGE_WHAT_ERROR);
+					_handler.sendEmptyMessage(R.id.message_what_error);
 					
 					//TODO:
 		            throw new RuntimeException(e);
@@ -482,7 +567,7 @@ abstract public class SignupActivity extends Activity
 			    }
 				catch(IOException e)
 				{
-					_handler.sendEmptyMessage(MESSAGE_WHAT_ERROR);
+					_handler.sendEmptyMessage(R.id.message_what_error);
 					
 					//TODO:
 		            throw new RuntimeException(e);
@@ -520,7 +605,7 @@ abstract public class SignupActivity extends Activity
 	    	fos.write( result.getBytes() );
 	    	fos.flush();
 	    	
-	    	Message msg = _handler.obtainMessage(MESSAGE_WHAT_SUCCESS);
+	    	Message msg = _handler.obtainMessage(R.id.message_what_success);
 	    	msg.arg1 = tabIndex;
 	    	_handler.sendMessage(msg);
 		}
