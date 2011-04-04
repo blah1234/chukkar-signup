@@ -112,9 +112,10 @@ public class JSONServiceImpl extends HttpServlet
 	}
 	
 	/**
-	 * Returns a list of all players and a list of total game chukkars by day.
-	 * A <code>TotalsAndPlayers</code> object will be written into JSON in the
-	 * HTTP response.
+	 * Add a new player's name, requested play day, and requested number of 
+	 * chukkars to the signup. Returns a list of all players and a list of total 
+	 * game chukkars by day. A <code>TotalsAndPlayers</code> object will be 
+	 * written into JSON in the HTTP response.
 	 * @param req
 	 * @param resp
 	 */
@@ -122,13 +123,54 @@ public class JSONServiceImpl extends HttpServlet
 	{
 		Day requestDay = Day.valueOf( req.getParameter("_requestDay") );
 		String name = req.getParameter("_name");
-		int numChukkars = Integer.parseInt( req.getParameter("_numChukkars") );
+		Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
 		
 		Player addedPlayer = PlayerServiceImpl.addPlayerImpl(name, numChukkars, requestDay);
 		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
 		List<DayTotal> totalsList = calculateGameChukkars(playersList);
 		
 		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, addedPlayer);
+		
+		Gson gson = new Gson();
+		String json = gson.toJson(responseObj);
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		
+		try
+		{
+			PrintWriter charWriter = resp.getWriter();
+			charWriter.write(json);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				e);
+		}
+	}
+	
+	/**
+	 * Looks up an existing player and edits the number of chukkars signed up.
+	 * Returns a list of all players and a list of total game chukkars by day.
+	 * A <code>TotalsAndPlayers</code> object will be written into JSON in the
+	 * HTTP response.
+	 * @param req
+	 * @param resp
+	 */
+	public void editChukkars(HttpServletRequest req, HttpServletResponse resp) 
+	{
+		Long playerId = new Long( req.getParameter("_id") );
+		Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
+		
+		PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
+		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
+		List<DayTotal> totalsList = calculateGameChukkars(playersList);
+		
+		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList);
 		
 		Gson gson = new Gson();
 		String json = gson.toJson(responseObj);

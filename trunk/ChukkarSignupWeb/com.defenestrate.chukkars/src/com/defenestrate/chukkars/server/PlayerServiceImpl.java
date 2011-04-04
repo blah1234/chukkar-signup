@@ -62,6 +62,11 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 	
 	public void editChukkars(Long playerId, Integer numChukkars) 
 	{
+		editChukkarsImpl(playerId, numChukkars);
+	}
+	
+	static protected void editChukkarsImpl(Long playerId, Integer numChukkars)
+	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
 		Transaction tx = pm.currentTransaction();
