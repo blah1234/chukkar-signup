@@ -294,10 +294,9 @@ abstract public class SignupActivity extends Activity
     			View nameWidget = layout.findViewById(R.id.name_value);
     			String playerId = (String)nameWidget.getTag(R.id.player_id_tag);
     			
-				//TODO:
-				int i=0;
-				i++;
-				//addPlayer( _selectedDay, nameWidget.getText().toString(), numChukkarsWidget.getCurrent() );
+    			NumberPicker numChukkarsWidget = (NumberPicker)layout.findViewById(R.id.chukkars_picker);
+    			
+				editNumChukkars( playerId, numChukkarsWidget.getCurrent() );
     		}
     	});
 
@@ -340,7 +339,47 @@ abstract public class SignupActivity extends Activity
     	nameEdit.requestFocus();
     }
 	
-	protected void addPlayer(final Day selectedDay, final String name, final int numChukkars)
+	private void editNumChukkars(final String playerId, final int numChukkars)
+	{
+		_progressDlg = ProgressDialog.show(
+	    	this, "", getResources().getString(R.string.load_dialog_message), true);
+		
+		Thread thread = new Thread(new Runnable()
+		{
+			public void run()
+			{
+				Resources res = getResources(); 
+
+				try
+				{
+					//http post
+					HttpClient httpclient = new DefaultHttpClient();
+					HttpPost post = new HttpPost( res.getString(R.string.edit_chukkars_url) );
+					
+					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_id_field), playerId) );
+			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), Integer.toString(numChukkars)) );
+			        post.setEntity( new UrlEncodedFormEntity(nameValuePairs) );
+			        
+					HttpResponse response = httpclient.execute(post);
+					
+					int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
+					writeServerData(response, tabIndex);
+			    }
+				catch(IOException e)
+				{
+					_handler.sendEmptyMessage(R.id.message_what_error);
+					
+					//TODO:
+		            throw new RuntimeException(e);
+				}
+			}
+		});
+		
+        thread.start();
+	}
+	
+	private void addPlayer(final Day selectedDay, final String name, final int numChukkars)
 	{
 		_progressDlg = ProgressDialog.show(
 	    	this, "", getResources().getString(R.string.load_dialog_message), true);
