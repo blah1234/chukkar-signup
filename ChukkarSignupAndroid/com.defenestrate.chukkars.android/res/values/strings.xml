@@ -13,6 +13,7 @@
     
     <string name="get_players_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/getAllPlayers</string>
     <string name="add_player_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/addPlayer</string>
+    <string name="edit_chukkars_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/editChukkars</string>
     <string name="totals_list_field">_totalsList</string>
     <string name="players_list_field">_playersList</string>
     <string name="curr_player_persisted_field">_currPersisted</string>
