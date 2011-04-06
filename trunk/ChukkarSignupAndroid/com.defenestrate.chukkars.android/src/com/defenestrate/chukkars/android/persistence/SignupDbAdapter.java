@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2008 Google Inc.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
-
 package com.defenestrate.chukkars.android.persistence;
 
 import android.content.ContentValues;
@@ -57,7 +41,7 @@ public class SignupDbAdapter
     
 	///////////////////////////////// METHODS //////////////////////////////////
     /**
-     * Open the notes database. If it cannot be opened, try to create a new
+     * Open the signup database. If it cannot be opened, try to create a new
      * instance of the database. If it cannot be created, throw an exception to
      * signal the failure
      * 
@@ -80,7 +64,7 @@ public class SignupDbAdapter
 
     /**
      * Adds a new player id entry using the id and name provided. If the player is
-     * successfully created return the new rowId for that note, otherwise return
+     * successfully created return the new rowId for that player, otherwise return
      * a -1 to indicate failure.
      * 
      * @param id the id assigned to the player in the webapp persistent storage
