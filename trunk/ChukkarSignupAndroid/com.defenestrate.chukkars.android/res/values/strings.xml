@@ -14,6 +14,7 @@
     <string name="get_players_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/getAllPlayers</string>
     <string name="add_player_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/addPlayer</string>
     <string name="edit_chukkars_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/editChukkars</string>
+    <string name="query_reset_url">http://chukkarsignup-3.defenestrate2.appspot.com/signup/json/getResetDate</string>
     <string name="totals_list_field">_totalsList</string>
     <string name="players_list_field">_playersList</string>
     <string name="curr_player_persisted_field">_currPersisted</string>
@@ -29,4 +30,5 @@
     <string name="menu_edit">Update Chukkars</string>
     <string name="button_save">"Save"</string>
     <string name="button_cancel">"Cancel"</string>
+    <string name="edit_chukkars_warning">"You''ve previously only created or edited:\n{0}\nDon''t be evil..."</string>
 </resources>
