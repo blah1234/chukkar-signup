@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class JSONServiceImpl extends HttpServlet
 	private static final Logger LOG = Logger.getLogger( JSONServiceImpl.class.getName() );
 
 	
-	///////////////////////////////// METHODS //////////////////////////////////
+	/////////////////////////// HttpServlet METHODS ////////////////////////////
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) 
 		throws ServletException, java.io.IOException
@@ -44,6 +45,8 @@ public class JSONServiceImpl extends HttpServlet
 		handleRequest(req, resp);
 	}
 	
+
+	///////////////////////////////// METHODS //////////////////////////////////
 	private void handleRequest(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, java.io.IOException
 	{
@@ -166,11 +169,11 @@ public class JSONServiceImpl extends HttpServlet
 		Long playerId = new Long( req.getParameter("_id") );
 		Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
 		
-		PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
+		Player editedPlayer = PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
 		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
 		List<DayTotal> totalsList = calculateGameChukkars(playersList);
-		
-		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList);
+
+		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, editedPlayer);
 		
 		Gson gson = new Gson();
 		String json = gson.toJson(responseObj);
@@ -258,6 +261,39 @@ public class JSONServiceImpl extends HttpServlet
 		}
 		
 		return totalsList;
+	}
+	
+	/**
+	 * Looks up from the CronTask table the last time all player signup data
+	 * was reset. A <code>Date</code> object will be written into JSON in the
+	 * HTTP response. If the RESET task cannot be found in the CronTask table,
+	 * then the current Date will be returned.
+	 * @param req
+	 * @param resp
+	 */
+	public void getResetDate(HttpServletRequest req, HttpServletResponse resp)
+	{
+		Date responseObj = CronServiceImpl.getTaskRunDate(CronTask.RESET);
+		Gson gson = new Gson();
+		String json = gson.toJson(responseObj);
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		
+		try
+		{
+			PrintWriter charWriter = resp.getWriter();
+			charWriter.write(json);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				e);
+		}
 	}
 	
 
