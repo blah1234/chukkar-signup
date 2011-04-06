@@ -2,6 +2,7 @@ package com.defenestrate.chukkars.server;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,6 +128,41 @@ public class CronServiceImpl extends HttpServlet
 		{
 			pm.close();
 		}
+	}
+	
+	static protected Date getTaskRunDate(String taskName)
+	{
+		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
+		
+		//default is "now"
+		Date ret = new Date();
+		
+		try
+		{
+		    Query q = pm.newQuery(CronTask.class);
+			q.setFilter("_name == name");
+			q.declareParameters("String name");
+			q.setUnique(true);
+			CronTask currTask = (CronTask)q.execute(taskName);
+
+			if(currTask != null) 
+			{
+				ret = currTask.getRunDate();
+			}
+		}
+		catch(Exception e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to find task " + taskName + ":\n" + e.getMessage(), 
+				e);
+		}
+		finally 
+		{
+			pm.close();
+		}
+		
+		return ret;
 	}
 	
 	private MessageAdmin getEnabledMessageAdmin()
