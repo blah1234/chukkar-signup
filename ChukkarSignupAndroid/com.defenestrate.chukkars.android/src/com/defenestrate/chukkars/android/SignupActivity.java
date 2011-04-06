@@ -14,7 +14,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -33,6 +35,7 @@ import yuku.iconcontextmenu.IconContextMenu;
 import yuku.iconcontextmenu.IconContextMenu.IconContextItemSelectedListener;
 
 import com.defenestrate.chukkars.android.entity.Day;
+import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 import com.defenestrate.chukkars.android.widget.NumberPicker;
 
 import android.app.Activity;
@@ -41,7 +44,10 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnShowListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -74,6 +80,8 @@ abstract public class SignupActivity extends Activity
 	private Handler _handler;
 	private Day _selectedDay;
 	private long _fileLastModified = -1;
+	private SignupDbAdapter _dbHelper;
+	private Set<Integer> _dialogsCurrentlyShowing;
 
 
 	//////////////////////////// Activity METHODS //////////////////////////////
@@ -97,8 +105,11 @@ abstract public class SignupActivity extends Activity
                 }
             }
         };
+        
+        _dialogsCurrentlyShowing = new HashSet<Integer>();
     }
     
+    @Override
     protected void onResume()
     {
     	super.onResume();
@@ -120,8 +131,25 @@ abstract public class SignupActivity extends Activity
 	{
     	// The activity is no longer visible (it is now "stopped")
 		super.onStop();
+		
+		for(int currId : _dialogsCurrentlyShowing)
+		{
+			dismissDialog(currId);
+		}
+		
 		deleteFile(SERVER_DATA_FILENAME);
 	}
+    
+    @Override
+    protected void onDestroy()
+    {
+    	super.onDestroy();
+    	
+    	if(_dbHelper != null)
+    	{
+	        _dbHelper.close();
+    	}
+    }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) 
@@ -196,8 +224,6 @@ abstract public class SignupActivity extends Activity
         TextView numChukkarsCol = (TextView)v.findViewById(R.id.player_chukkars_col);
         int numChukkars = Integer.parseInt( numChukkarsCol.getText().toString() );
         
-        //TODO: store player Id's in DB, and see if clicked on item has a stored
-        //id. Only show context 
         IconContextMenu cm = new IconContextMenu(this, R.menu.context_menu);
         
         Bundle args = new Bundle();
@@ -224,6 +250,17 @@ abstract public class SignupActivity extends Activity
 
     
 	///////////////////////////////// METHODS //////////////////////////////////
+    private SignupDbAdapter getDBHelper()
+    {
+    	if(_dbHelper == null)
+    	{
+	    	_dbHelper = new SignupDbAdapter(this);
+	        _dbHelper.open();
+    	}
+        
+        return _dbHelper;
+    }
+    
     private Dialog createAddNewDialog()
     {
     	AlertDialog.Builder builder;
@@ -268,6 +305,22 @@ abstract public class SignupActivity extends Activity
     	
     	alertDialog = builder.create();
     	
+    	alertDialog.setOnShowListener(new OnShowListener()
+		{
+			public void onShow(DialogInterface dialog)
+			{
+				_dialogsCurrentlyShowing.add(R.id.signup_add_dialog);
+			}
+		});
+    	
+    	alertDialog.setOnDismissListener(new OnDismissListener()
+		{
+			public void onDismiss(DialogInterface dialog)
+			{
+				_dialogsCurrentlyShowing.remove(R.id.signup_add_dialog);
+			}
+		});
+    	
     	return alertDialog;
     }
     
@@ -310,11 +363,71 @@ abstract public class SignupActivity extends Activity
     	
     	alertDialog = builder.create();
     	
+    	alertDialog.setOnShowListener(new OnShowListener()
+		{
+			public void onShow(DialogInterface dialog)
+			{
+				_dialogsCurrentlyShowing.add(R.id.signup_edit_dialog);
+			}
+		});
+    	
+    	alertDialog.setOnDismissListener(new OnDismissListener()
+		{
+			public void onDismiss(DialogInterface dialog)
+			{
+				_dialogsCurrentlyShowing.remove(R.id.signup_edit_dialog);
+			}
+		});
+    	
     	return alertDialog;
     }
     
     private void prepareEditChukkarsDialog(Dialog dialog, Bundle args)
     {
+    	SignupDbAdapter db = getDBHelper();
+    	String warning = null;
+
+    	if(db.getPlayerCount() > 0)
+    	{
+    		long currId = Long.parseLong( args.getString(PLAYER_ID_KEY) );
+    		if( !db.containsPlayer(currId) )
+    		{
+    			Cursor c = db.fetchAllPlayerNames();
+    			startManagingCursor(c);
+    			
+    			StringBuffer buf = new StringBuffer();
+    			
+    			for( boolean noUse = c.isBeforeFirst() ? c.moveToFirst() : false ;
+    				 !c.isAfterLast();
+    				 c.moveToNext() )
+    			{
+    				buf.append( c.getString(c.getColumnIndexOrThrow(SignupDbAdapter.KEY_NAME)) );
+    				
+    				if( !c.isLast() )
+    				{
+    					buf.append(", ");
+    				}
+    			}
+    			
+    			warning = MessageFormat.format(
+		    		getResources().getString(R.string.edit_chukkars_warning), 
+		    		new Object[] {buf.toString()} );
+    		}
+    	}
+    	
+    	TextView msgWidget = (TextView)dialog.findViewById(R.id.message_value);
+    	
+    	if(warning == null)
+    	{
+    		msgWidget.setText("");
+    		msgWidget.setVisibility(View.GONE);
+    	}
+    	else
+    	{
+    		msgWidget.setText(warning);
+    		msgWidget.setVisibility(View.VISIBLE);
+    	}
+    	
     	TextView nameWidget = (TextView)dialog.findViewById(R.id.name_value);
     	nameWidget.setText( args.getString(PLAYER_NAME_KEY) );
     	nameWidget.setTag( R.id.player_id_tag, args.getString(PLAYER_ID_KEY) );
@@ -533,7 +646,6 @@ abstract public class SignupActivity extends Activity
                 	
                 	//attach row to table
                 	TableRow tr = (TableRow)rootView.findViewById(R.id.player_table_row);
-//TODO: only make current user clickable
                 	tr.setClickable(true);
                 	registerForContextMenu(tr);
                 	tl.addView(tr);
@@ -573,13 +685,22 @@ abstract public class SignupActivity extends Activity
             
             if( data.has(res.getString(R.string.curr_player_persisted_field)) )
             {
-            	//TODO persist the Id of the newly persisted Player --> ONLY if
+            	//persist the Id of the newly persisted Player, ONLY if
             	//it doesn't already exist in the DB
+            	JSONObject persistedPlayer = data.getJSONObject( res.getString(R.string.curr_player_persisted_field) );
+            	long id = persistedPlayer.getLong( res.getString(R.string.player_id_field) );
+            	SignupDbAdapter db = getDBHelper();
+
+            	if( !db.containsPlayer(id) )
+            	{
+            		String name = persistedPlayer.getString( res.getString(R.string.player_name_field) );
+            		db.createPlayer(id, name);
+            	}
             }
 	    }
 	    catch(JSONException e)
 	    {
-		    	//TODO:
+	    	//TODO:
             throw new RuntimeException(e);
 	    }
     }
