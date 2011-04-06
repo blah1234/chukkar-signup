@@ -65,17 +65,18 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		editChukkarsImpl(playerId, numChukkars);
 	}
 	
-	static protected void editChukkarsImpl(Long playerId, Integer numChukkars)
+	static protected Player editChukkarsImpl(Long playerId, Integer numChukkars)
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
+		Player editPlayer = null;
 		Transaction tx = pm.currentTransaction();
 
 		try
 		{
 		    tx.begin();
 
-		    Player editPlayer = pm.getObjectById(Player.class, playerId);
+		    editPlayer = pm.getObjectById(Player.class, playerId);
 
 			if(editPlayer != null) 
 			{
@@ -106,6 +107,8 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		{
 			pm.close();
 		}
+		
+		return editPlayer;
 	}
 
 	public void removePlayer(Long id) 
