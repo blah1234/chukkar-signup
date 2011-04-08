@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -631,6 +632,7 @@ abstract public class SignupActivity extends Activity
             
             DateFormat inParser = DateFormat.getDateTimeInstance();
             DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
+            outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
 	    	
             jArray = data.getJSONArray( res.getString(R.string.players_list_field) );
             
