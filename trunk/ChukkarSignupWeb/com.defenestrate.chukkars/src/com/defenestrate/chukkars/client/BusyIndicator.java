@@ -23,6 +23,8 @@ public class BusyIndicator extends PopupPanel
 	///////////////////////////////// METHODS //////////////////////////////////
 	private void layoutComponents()
 	{
+		this.setModal(true);
+		
 		_msgLabel = new Label("Loading...");
 		_msgLabel.addStyleDependentName("busyLbl");
 
