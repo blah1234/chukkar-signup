@@ -12,9 +12,7 @@
 
 <pl.polidea.customwidget.TheMissingTabHost
 	xmlns:android="http://schemas.android.com/apk/res/android" android:id="@android:id/tabhost"
-	xmlns:missingtabhost="http://schemas.android.com/apk/res/pl.polidea.demo"
-	android:layout_width="fill_parent" android:layout_height="fill_parent"
-	missingtabhost:pictures_in_landscape_above="false" >
+	android:layout_width="fill_parent" android:layout_height="fill_parent" >
 	<LinearLayout android:orientation="horizontal"
 		android:layout_width="fill_parent" android:layout_height="fill_parent">
 		<pl.polidea.customwidget.TheMissingTabWidget
