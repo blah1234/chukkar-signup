@@ -3,7 +3,6 @@ package pl.polidea.customwidget;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import pl.polidea.demo.R;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
