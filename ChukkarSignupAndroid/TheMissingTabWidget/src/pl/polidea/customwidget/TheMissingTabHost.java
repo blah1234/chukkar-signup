@@ -19,7 +19,6 @@ package pl.polidea.customwidget;
 import java.util.ArrayList;
 import java.util.List;
 
-import pl.polidea.demo.R;
 import android.app.LocalActivityManager;
 import android.content.Context;
 import android.content.Intent;

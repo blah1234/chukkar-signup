@@ -16,7 +16,6 @@
 
 package pl.polidea.customwidget;
 
-import pl.polidea.demo.R;
 import android.app.Activity;
 import android.app.ActivityGroup;
 import android.os.Bundle;
