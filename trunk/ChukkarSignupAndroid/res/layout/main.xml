@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="fill_parent"
+	android:layout_height="wrap_content" android:orientation="vertical">
+	<TextView android:text="@string/Choose" android:id="@+id/TextView01" android:layout_width="wrap_content"
+		android:layout_height="wrap_content"></TextView>
+	<Button android:text="@string/Original" android:id="@+id/OriginalButton" android:layout_width="fill_parent"
+		android:layout_height="wrap_content"></Button>
+	<Button android:text="@string/TheMissing" android:id="@+id/TheMissingButton" android:layout_width="fill_parent"
+		android:layout_height="wrap_content"></Button>
+	<Button android:text="@string/TheMissingPicturesAbove" android:id="@+id/TheMissingButtonPicturesAbove"
+	    android:layout_width="fill_parent" android:layout_height="wrap_content"></Button>
+</LinearLayout>
