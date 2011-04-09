@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TheMissingTabWidget</string>
+    <string name="Original">Original Widget</string>
+    <string name="TheMissing">The Missing Widget</string>
+    <string name="TheMissingPicturesAbove">The Missing Widget with Pictures above</string>
+    <string name="Choose">Choose widget to launch</string>
+</resources>
