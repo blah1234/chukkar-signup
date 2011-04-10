@@ -52,6 +52,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -104,6 +105,11 @@ abstract public class SignupActivity extends Activity
                 {
                 	loadPlayersImpl(msg.arg1);
                 }
+                else if(msg.arg1 != 0)
+                {
+            		ErrorToast.show( SignupActivity.this, 
+            						 getResources().getString(msg.arg1) );
+                }
             }
         };
         
@@ -115,10 +121,22 @@ abstract public class SignupActivity extends Activity
     {
     	super.onResume();
     	
+    	String[] existingFiles = fileList();
+    	boolean doesDataFileExist = false;
+    	
+    	for(String currFilename : existingFiles)
+    	{
+    		if( SERVER_DATA_FILENAME.equals(currFilename) )
+    		{
+    			doesDataFileExist = true;
+    			break;
+    		}
+    	}
+    	
     	File file = getFileStreamPath(SERVER_DATA_FILENAME);
 		long lastModified = file.lastModified();
     
-		if(lastModified != _fileLastModified)
+		if( !doesDataFileExist || (lastModified != _fileLastModified) )
 		{
 			_fileLastModified = lastModified;
         
@@ -291,7 +309,14 @@ abstract public class SignupActivity extends Activity
     			}
     			else
     			{
-    				throw new RuntimeException("_selectedDay cannot be null. It should have been set as a result of calls made in onResume()!");
+    				//application in incorrect state; should never happen
+    				//show error toast on GUI thread
+    				Message msg = _handler.obtainMessage(R.id.message_what_error);
+    		    	msg.arg1 = R.string.incorrect_app_state_error;
+    				_handler.sendMessage(msg);
+    				
+    				String errMsg = "_selectedDay cannot be null. It should have been set as a result of calls made in onResume()!";
+    				Log.e( this.getClass().getName(), errMsg, new Throwable().fillInStackTrace() );
     			}
     		}
     	});
@@ -482,10 +507,13 @@ abstract public class SignupActivity extends Activity
 			    }
 				catch(IOException e)
 				{
-					_handler.sendEmptyMessage(R.id.message_what_error);
+					//unable to connect to server
+					//show error toast on GUI thread
+					Message msg = _handler.obtainMessage(R.id.message_what_error);
+			    	msg.arg1 = R.string.server_connect_error;
+					_handler.sendMessage(msg);
 					
-					//TODO:
-		            throw new RuntimeException(e);
+					Log.e(this.getClass().getName(), e.getMessage(), e);
 				}
 			}
 		});
@@ -523,10 +551,13 @@ abstract public class SignupActivity extends Activity
 			    }
 				catch(IOException e)
 				{
-					_handler.sendEmptyMessage(R.id.message_what_error);
+					//unable to connect to server
+					//show error toast on GUI thread
+					Message msg = _handler.obtainMessage(R.id.message_what_error);
+			    	msg.arg1 = R.string.server_connect_error;
+					_handler.sendMessage(msg);
 					
-					//TODO:
-		            throw new RuntimeException(e);
+					Log.e(this.getClass().getName(), e.getMessage(), e);
 				}
 			}
 		});
@@ -577,10 +608,16 @@ abstract public class SignupActivity extends Activity
 		            
 	    	result = strWrite.toString();
     	}
-    	catch(Exception e)
+    	catch(IOException e)
     	{
-    		//TODO:
-            throw new RuntimeException(e);
+    		//unable to open data file on device.
+    		//show error toast on GUI thread
+			Message msg = _handler.obtainMessage(R.id.message_what_error);
+	    	msg.arg1 = R.string.open_data_file_error;
+			_handler.sendMessage(msg);
+			
+			Log.e(this.getClass().getName(), e.getMessage(), e);
+            return;
     	}
     	finally
     	{
@@ -602,9 +639,16 @@ abstract public class SignupActivity extends Activity
 	    	JSONObject data = new JSONObject(result);
 	    	JSONArray jArray = data.getJSONArray( res.getString(R.string.totals_list_field) );
 	    	
-	    	if(jArray.length() != 2)
+	    	if(jArray.length() <= tabIndex)
 	    	{
-	    		throw new RuntimeException("Unexpected length for _totalsList in JSON: " + jArray.toString(4));
+	    		//incorrect app state
+	    		//show error toast on GUI thread
+				Message msg = _handler.obtainMessage(R.id.message_what_error);
+		    	msg.arg1 = R.string.incorrect_app_state_error;
+				_handler.sendMessage(msg);
+				
+				String errMsg = "Unexpected length for _totalsList in JSON: " + jArray.toString(4);
+				Log.e( this.getClass().getName(), errMsg, new Throwable().fillInStackTrace() );
 	    	}
 	    	
 	    	String dayStr = jArray.getJSONObject(tabIndex).getString( res.getString(R.string.total_day_field) );
@@ -612,12 +656,11 @@ abstract public class SignupActivity extends Activity
 	    	
 	    	//format the titles in the tabs
 	    	TabHost tabHost = (TabHost)getParent().findViewById(android.R.id.tabhost);
-	    	TextView tabTitle = (TextView)tabHost.getTabWidget().getChildTabViewAt(tabIndex).findViewById(android.R.id.title);
+	    	TextView tabTitle2 = (TextView)tabHost.getTabWidget().getChildTabViewAt(tabIndex).findViewById(R.id.title2);
 	    	String title = MessageFormat.format(
 	    		res.getString(R.string.tab_title), 
-	    		new Object[] {dayStr, 
-	    					  jArray.getJSONObject(tabIndex).getString(res.getString(R.string.total_num_chukkars_field))} );
-	    	tabTitle.setText(title);
+	    		new Object[] {jArray.getJSONObject(tabIndex).getString(res.getString(R.string.total_num_chukkars_field))} );
+	    	tabTitle2.setText(title);
 	    	
 	    	//-----------------
 	    	
@@ -668,8 +711,13 @@ abstract public class SignupActivity extends Activity
             		}
             		catch(ParseException e)
             		{
-            			//TODO:
-            			throw new RuntimeException(e);
+            			//error on parsing time. Should never happen. Just use
+            			//the current time to avoid ugly error messages
+            			String displayDateTime = outFormatter.format( new Date() );
+            			timeText.setText(displayDateTime);
+            			
+            			//log it
+            			Log.e(this.getClass().getName(), e.getMessage(), e);
             		}
                 	
             		//-------------
@@ -702,8 +750,13 @@ abstract public class SignupActivity extends Activity
 	    }
 	    catch(JSONException e)
 	    {
-	    	//TODO:
-            throw new RuntimeException(e);
+	    	//JSON response string does not match what we are expecting
+	    	//show error toast on GUI thread
+			Message msg = _handler.obtainMessage(R.id.message_what_error);
+	    	msg.arg1 = R.string.unexpected_json_error;
+			_handler.sendMessage(msg);
+			
+			Log.e(this.getClass().getName(), e.getMessage() + "\n\nHTTP response:\n" + result, e);
 	    }
     }
     
@@ -729,10 +782,13 @@ abstract public class SignupActivity extends Activity
 			    }
 				catch(IOException e)
 				{
-					_handler.sendEmptyMessage(R.id.message_what_error);
+					//unable to connect to server
+					//show error toast on GUI thread
+					Message msg = _handler.obtainMessage(R.id.message_what_error);
+			    	msg.arg1 = R.string.server_connect_error;
+					_handler.sendMessage(msg);
 					
-					//TODO:
-		            throw new RuntimeException(e);
+					Log.e(this.getClass().getName(), e.getMessage(), e);
 				}
 			}
 		});
