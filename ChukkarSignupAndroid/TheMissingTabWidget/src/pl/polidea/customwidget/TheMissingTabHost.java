@@ -233,7 +233,7 @@ public class TheMissingTabHost extends FrameLayout implements ViewTreeObserver.O
         // If this is a custom view, then do not draw the bottom strips for
         // the tab indicators.
         if (tabSpec.mIndicatorStrategy instanceof ViewIndicatorStrategy) {
-            mTabWidget.setStripEnabled(false);
+//            mTabWidget.setStripEnabled(false);
         }
         mTabWidget.addView(tabIndicator);
         mTabSpecs.add(tabSpec);
