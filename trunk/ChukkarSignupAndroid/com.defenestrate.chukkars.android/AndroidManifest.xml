@@ -16,8 +16,7 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".SaturdaySignupActivity"/>
-        <activity android:name=".SundaySignupActivity"/>
+        <activity android:name=".SignupActivity"/>
 
     </application>
 </manifest>
