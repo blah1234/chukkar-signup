@@ -17,20 +17,33 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import pl.polidea.customwidget.TheMissingTabActivity;
+import pl.polidea.customwidget.TheMissingTabHost;
+import pl.polidea.customwidget.TheMissingTabHost.TheMissingTabSpec;
+import pl.polidea.customwidget.TheMissingTabWidget;
+
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 
-import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.widget.TabHost;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 
-public class ChukkarSignup extends TabActivity
+public class ChukkarSignup extends TheMissingTabActivity
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	static private final String RESET_DATE_FILENAME = "last-reset-date.txt";
-	static final String TAB_INDEX_KEY = "TAB_INDEX_KEY"; 
+	static final String TAB_INDEX_KEY = "TAB_INDEX_KEY";
+	
+	
+	//////////////////////////// MEMBER VARIABLES //////////////////////////////
+	private Handler _handler;
 
 
 	//////////////////////////// Activity METHODS //////////////////////////////
@@ -39,30 +52,52 @@ public class ChukkarSignup extends TabActivity
 	{
 		super.onCreate(savedInstanceState);
 		
+		_handler = new Handler() 
+        {
+            @Override
+            public void handleMessage(Message msg) 
+            {
+                if(msg.what == R.id.message_what_error)
+                {
+	                if(msg.arg1 != 0)
+	                {
+	            		ErrorToast.show( ChukkarSignup.this, 
+	            						 getResources().getString(msg.arg1) );
+	                }
+                }
+            }
+        };
+		
 		queryWebAppResetDate();
 		
-	    setContentView(R.layout.signup_tabs);
+	    setContentView(R.layout.tab_content);
 
 	    Resources res = getResources(); // Resource object to get Drawables
-	    TabHost tabHost = getTabHost();  // The activity TabHost
-	    TabHost.TabSpec spec;  // Resusable TabSpec for each tab
+	    TheMissingTabHost tabHost = getTabHost();  // The activity TabHost
+	    TheMissingTabSpec spec;  // Resusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
 	    
 	    // Create an Intent to launch an Activity for the tab (to be reused)
-	    intent = new Intent().setClass(this, SaturdaySignupActivity.class);
+	    intent = new Intent().setClass(this, SignupActivity.class);
 	    intent.putExtra(TAB_INDEX_KEY, 0);
 
 	    // Initialize a TabSpec for each tab and add it to the TabHost
-	    spec = tabHost.newTabSpec("day0").setIndicator(
-	    	res.getString(R.string.day0_init_tab_title), res.getDrawable(R.drawable.ic_tab_sat) ).setContent(intent);
+	    View tabView = getTabIndicator(
+	    	res.getString(R.string.day0_init_tab_title), 
+	    	"", 
+	    	tabHost.getTabWidget() );
+	    spec = tabHost.newTabSpec("day0").setIndicator(tabView).setContent(intent);
 	    tabHost.addTab(spec);
 
 	    // Do the same for the other tabs
-	    intent = new Intent().setClass(this, SundaySignupActivity.class);
+	    intent = new Intent().setClass(this, SignupActivity.class);
 	    intent.putExtra(TAB_INDEX_KEY, 1);
 	    
-	    spec = tabHost.newTabSpec("day1").setIndicator(
-	    	res.getString(R.string.day1_init_tab_title), res.getDrawable(R.drawable.ic_tab_sun) ).setContent(intent);
+	    tabView = getTabIndicator(
+	    	res.getString(R.string.day1_init_tab_title), 
+	    	"", 
+	    	tabHost.getTabWidget() );
+	    spec = tabHost.newTabSpec("day1").setIndicator(tabView).setContent(intent);
 	    tabHost.addTab(spec);
 
 	    tabHost.setCurrentTab(0);
@@ -79,6 +114,7 @@ public class ChukkarSignup extends TabActivity
 			public void run()
 			{
 				InputStream is = null;
+				String result = "";
 				
 				try
 				{
@@ -100,7 +136,7 @@ public class ChukkarSignup extends TabActivity
 			    		strWrite.append(line + "\n");
 			    	}
 				            
-			    	String result = strWrite.toString().trim();
+			    	result = strWrite.toString().trim();
 			    	
 			    	//get rid of quotes
 			    	if( result.startsWith("\"") )
@@ -128,13 +164,19 @@ public class ChukkarSignup extends TabActivity
 			    }
 				catch(IOException e)
 				{
-					//TODO:
-		            throw new RuntimeException(e);
+					//this is if for some reason app can't connect to server.
+					//fail silently. We will show an error dialog when tab 
+					//attemps to load the lineup
 				}
 				catch(ParseException e)
 				{
-					//TODO:
-		            throw new RuntimeException(e);
+					//should never happen
+					//show error toast on GUI thread
+					Message msg = _handler.obtainMessage(R.id.message_what_error);
+			    	msg.arg1 = R.string.unexpected_json_error;
+					_handler.sendMessage(msg);
+					
+					Log.e(this.getClass().getName(), e.getMessage() + "\n\nHTTP response:\n" + result, e);
 				}
 			}
 		});
@@ -179,10 +221,22 @@ public class ChukkarSignup extends TabActivity
 		    	
 		    	return prevResetDate;
 	    	}
-	    	catch(Exception e)
+	    	catch(IOException e)
 	    	{
-	    		//TODO:
-	            throw new RuntimeException(e);
+	    		//can't open and read reset date file. Go ahead and return the
+	    		//current date then. This will have the effect of preserving
+	    		//the player id's that this user has previously created and
+	    		//modified. That way, any warninng messages on subsequent edits 
+	    		//will be based on the preserved state. 
+	            return new Date();
+	    	}
+	    	catch(ParseException e)
+	    	{
+	    		//this means date in the file is corrupted somehow. Go ahead and
+	    		//return null, so the file will overwritten with fresh data. 
+	    		Log.e(this.getClass().getName(),e.getMessage(), e);
+	    		
+	    		return null;
 	    	}
 	    	finally
 	    	{
@@ -214,8 +268,11 @@ public class ChukkarSignup extends TabActivity
 		}
 		catch(IOException e)
 		{
-			// TODO:
-			throw new RuntimeException(e);
+			//unable to write the specified date in the file. Close the file
+			//with empty or corrupted data. On next open, getPreviousWebAppResetDate() 
+			//will return a null on ParseException, which will then lead to this
+			//corrupted file being overwritten.
+			Log.e(this.getClass().getName(),e.getMessage(), e);
 		}
 	    finally
 	    {
@@ -229,4 +286,24 @@ public class ChukkarSignup extends TabActivity
 	    	catch(IOException e) {}
 	    }
 	}
+
+	/**
+     * How to create a tab indicator that has 2 labels.
+     */
+    private View getTabIndicator(String title1, String title2, TheMissingTabWidget tabWidget)
+    {
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View tabIndicator = inflater.inflate(
+        	R.layout.signup_2_line_tab,
+            tabWidget, // tab widget is the parent
+            false); // no inflate params
+
+        final TextView tv1 = (TextView)tabIndicator.findViewById(R.id.title1);
+        tv1.setText(title1);
+        
+        final TextView tv2 = (TextView)tabIndicator.findViewById(R.id.title2);
+        tv2.setText(title2);
+
+        return tabIndicator;
+    }
 }
