@@ -3,6 +3,7 @@ package com.defenestrate.chukkars.android;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import pl.polidea.customwidget.TheMissingTabHost;
+
 import yuku.iconcontextmenu.IconContextMenu;
 import yuku.iconcontextmenu.IconContextMenu.IconContextItemSelectedListener;
 
@@ -42,13 +45,14 @@ import com.defenestrate.chukkars.android.widget.NumberPicker;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.DialogInterface.OnShowListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -62,12 +66,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TabHost;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-abstract public class SignupActivity extends Activity 
+public class SignupActivity extends Activity 
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	static private final String SERVER_DATA_FILENAME = "all-players.json";
@@ -78,11 +81,9 @@ abstract public class SignupActivity extends Activity
 	
 	
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
-	private ProgressDialog _progressDlg;
-	private Handler _handler;
+	private Handler _errHandler;
 	private Day _selectedDay;
 	private long _fileLastModified = -1;
-	private SignupDbAdapter _dbHelper;
 	private Set<Integer> _dialogsCurrentlyShowing;
 
 
@@ -94,18 +95,12 @@ abstract public class SignupActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_table);
         
-        _handler = new Handler() 
+        _errHandler = new Handler() 
         {
             @Override
             public void handleMessage(Message msg) 
             {
-                _progressDlg.dismiss();
-                
-                if(msg.what != R.id.message_what_error)
-                {
-                	loadPlayersImpl(msg.arg1);
-                }
-                else if(msg.arg1 != 0)
+                if( (msg.what == R.id.message_what_error) && (msg.arg1 != 0) )
                 {
             		ErrorToast.show( SignupActivity.this, 
             						 getResources().getString(msg.arg1) );
@@ -158,17 +153,6 @@ abstract public class SignupActivity extends Activity
 		
 		deleteFile(SERVER_DATA_FILENAME);
 	}
-    
-    @Override
-    protected void onDestroy()
-    {
-    	super.onDestroy();
-    	
-    	if(_dbHelper != null)
-    	{
-	        _dbHelper.close();
-    	}
-    }
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) 
@@ -266,18 +250,15 @@ abstract public class SignupActivity extends Activity
         
         cm.show();
     }
-
+    
     
 	///////////////////////////////// METHODS //////////////////////////////////
     private SignupDbAdapter getDBHelper()
     {
-    	if(_dbHelper == null)
-    	{
-	    	_dbHelper = new SignupDbAdapter(this);
-	        _dbHelper.open();
-    	}
+    	SignupDbAdapter dbHelper = new SignupDbAdapter(this);
+	    dbHelper.open();
         
-        return _dbHelper;
+        return dbHelper;
     }
     
     private Dialog createAddNewDialog()
@@ -311,9 +292,9 @@ abstract public class SignupActivity extends Activity
     			{
     				//application in incorrect state; should never happen
     				//show error toast on GUI thread
-    				Message msg = _handler.obtainMessage(R.id.message_what_error);
+    				Message msg = _errHandler.obtainMessage(R.id.message_what_error);
     		    	msg.arg1 = R.string.incorrect_app_state_error;
-    				_handler.sendMessage(msg);
+    				_errHandler.sendMessage(msg);
     				
     				String errMsg = "_selectedDay cannot be null. It should have been set as a result of calls made in onResume()!";
     				Log.e( this.getClass().getName(), errMsg, new Throwable().fillInStackTrace() );
@@ -441,6 +422,8 @@ abstract public class SignupActivity extends Activity
     		}
     	}
     	
+    	db.close();
+    	
     	TextView msgWidget = (TextView)dialog.findViewById(R.id.message_value);
     	
     	if(warning == null)
@@ -478,94 +461,141 @@ abstract public class SignupActivity extends Activity
     	nameEdit.requestFocus();
     }
 	
-	private void editNumChukkars(final String playerId, final int numChukkars)
+	private void editNumChukkars(String playerId, int numChukkars)
 	{
-		_progressDlg = ProgressDialog.show(
-	    	this, "", getResources().getString(R.string.load_dialog_message), true);
-		
-		Thread thread = new Thread(new Runnable()
+		AsyncTask<String, Void, Integer> task = new AsyncTask<String, Void, Integer>() 
 		{
-			public void run()
+			@Override
+			protected void onPreExecute()
 			{
-				Resources res = getResources(); 
+				//show the "busy" dialog
+				Intent i = new Intent(SignupActivity.this, ProgressDialogActivity.class);
+				startActivityForResult(i, R.id.get_server_data_request);
+			}
+			
+		    @Override
+		    protected Integer doInBackground(String... params) 
+		    {
+		    	Resources res = getResources(); 
 
 				try
 				{
+					Integer tabIndexArg = new Integer( params[0] );
+					String playerIdArg = params[1];
+					String numChukkarsArg = params[2];
+					
 					//http post
 					HttpClient httpclient = new DefaultHttpClient();
 					HttpPost post = new HttpPost( res.getString(R.string.edit_chukkars_url) );
 					
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_id_field), playerId) );
-			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), Integer.toString(numChukkars)) );
+					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_id_field), playerIdArg) );
+			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), numChukkarsArg) );
 			        post.setEntity( new UrlEncodedFormEntity(nameValuePairs) );
 			        
 					HttpResponse response = httpclient.execute(post);
 					
-					int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
-					writeServerData(response, tabIndex);
+					writeServerData(response);
+					return tabIndexArg;
 			    }
 				catch(IOException e)
 				{
 					//unable to connect to server
 					//show error toast on GUI thread
-					Message msg = _handler.obtainMessage(R.id.message_what_error);
+					Message msg = _errHandler.obtainMessage(R.id.message_what_error);
 			    	msg.arg1 = R.string.server_connect_error;
-					_handler.sendMessage(msg);
+					_errHandler.sendMessage(msg);
 					
 					Log.e(this.getClass().getName(), e.getMessage(), e);
+					return null;
 				}
-			}
-		});
+		    }
+		    
+		    @Override
+		    protected void onPostExecute(Integer result) 
+		    {
+		    	if(result != null)
+		    	{
+		    		loadPlayersImpl(result);
+		    	}
+		    	
+		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
+		    }
+		};
 		
-        thread.start();
+		int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
+        task.execute( Integer.toString(tabIndex), playerId, Integer.toString(numChukkars) );
 	}
 	
-	private void addPlayer(final Day selectedDay, final String name, final int numChukkars)
+	private void addPlayer(Day selectedDay, String name, int numChukkars)
 	{
-		_progressDlg = ProgressDialog.show(
-	    	this, "", getResources().getString(R.string.load_dialog_message), true);
-		
-		Thread thread = new Thread(new Runnable()
+		AsyncTask<String, Void, Integer> task = new AsyncTask<String, Void, Integer>() 
 		{
-			public void run()
+			@Override
+			protected void onPreExecute()
 			{
-				Resources res = getResources(); 
+				//show the "busy" dialog
+				Intent i = new Intent(SignupActivity.this, ProgressDialogActivity.class);
+				startActivityForResult(i, R.id.get_server_data_request);
+			}
+			
+		    @Override
+		    protected Integer doInBackground(String... params) 
+		    {
+		    	Resources res = getResources(); 
 
 				try
 				{
+					Integer tabIndexArg = new Integer( params[0] );
+					String selectedDayArg = params[1];
+					String nameArg = params[2];
+					String numChukkarsArg = params[3];
+					
 					//http post
 					HttpClient httpclient = new DefaultHttpClient();
 					HttpPost post = new HttpPost( res.getString(R.string.add_player_url) );
 					
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_requestDay_field), selectedDay.toString()) );
-			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_name_field), name) );
-			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), Integer.toString(numChukkars)) );
+					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_requestDay_field), selectedDayArg) );
+			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_name_field), nameArg) );
+			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), numChukkarsArg) );
 			        post.setEntity( new UrlEncodedFormEntity(nameValuePairs) );
 			        
 					HttpResponse response = httpclient.execute(post);
 					
-					int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
-					writeServerData(response, tabIndex);
+					writeServerData(response);
+					return tabIndexArg;
 			    }
 				catch(IOException e)
 				{
 					//unable to connect to server
 					//show error toast on GUI thread
-					Message msg = _handler.obtainMessage(R.id.message_what_error);
+					Message msg = _errHandler.obtainMessage(R.id.message_what_error);
 			    	msg.arg1 = R.string.server_connect_error;
-					_handler.sendMessage(msg);
+					_errHandler.sendMessage(msg);
 					
 					Log.e(this.getClass().getName(), e.getMessage(), e);
+					return null;
 				}
-			}
-		});
+		    }
+		    
+		    @Override
+		    protected void onPostExecute(Integer result) 
+		    {
+		    	if(result != null)
+		    	{
+		    		loadPlayersImpl(result);
+		    	}
+		    	
+		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
+		    }
+		};
 		
-        thread.start();
+		int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
+        task.execute( Integer.toString(tabIndex), selectedDay.toString(), name, Integer.toString(numChukkars) );
 	}
     
-    protected void loadPlayers(int tabIndex)
+    private void loadPlayers(int tabIndex)
     {
     	String[] existingFiles = fileList();
     	boolean doesDataFileExist = false;
@@ -596,6 +626,14 @@ abstract public class SignupActivity extends Activity
     	
     	try
     	{
+    		File file = getFileStreamPath(SERVER_DATA_FILENAME);
+    		if(file.length() == 0)
+    		{
+    			//orientation changed in the middle of loading, or some other 
+        		//way the app was stopped in the middle of loading
+    			return;
+    		}
+    		
     		fis = openFileInput(SERVER_DATA_FILENAME);
     		BufferedReader reader = new BufferedReader( new InputStreamReader(fis, "utf-8") );
     		StringWriter strWrite = new StringWriter();
@@ -608,13 +646,19 @@ abstract public class SignupActivity extends Activity
 		            
 	    	result = strWrite.toString();
     	}
+    	catch(FileNotFoundException e)
+    	{
+    		//again orientation changed in the middle of loading, or some other 
+    		//way the app was stopped in the middle of loading
+    		return;
+    	}
     	catch(IOException e)
     	{
     		//unable to open data file on device.
     		//show error toast on GUI thread
-			Message msg = _handler.obtainMessage(R.id.message_what_error);
+			Message msg = _errHandler.obtainMessage(R.id.message_what_error);
 	    	msg.arg1 = R.string.open_data_file_error;
-			_handler.sendMessage(msg);
+			_errHandler.sendMessage(msg);
 			
 			Log.e(this.getClass().getName(), e.getMessage(), e);
             return;
@@ -643,19 +687,21 @@ abstract public class SignupActivity extends Activity
 	    	{
 	    		//incorrect app state
 	    		//show error toast on GUI thread
-				Message msg = _handler.obtainMessage(R.id.message_what_error);
+				Message msg = _errHandler.obtainMessage(R.id.message_what_error);
 		    	msg.arg1 = R.string.incorrect_app_state_error;
-				_handler.sendMessage(msg);
+				_errHandler.sendMessage(msg);
 				
 				String errMsg = "Unexpected length for _totalsList in JSON: " + jArray.toString(4);
 				Log.e( this.getClass().getName(), errMsg, new Throwable().fillInStackTrace() );
+				
+				return;
 	    	}
 	    	
 	    	String dayStr = jArray.getJSONObject(tabIndex).getString( res.getString(R.string.total_day_field) );
 	    	_selectedDay = Day.valueOf(dayStr);
 	    	
 	    	//format the titles in the tabs
-	    	TabHost tabHost = (TabHost)getParent().findViewById(android.R.id.tabhost);
+	    	TheMissingTabHost tabHost = (TheMissingTabHost)getParent().findViewById(android.R.id.tabhost);
 	    	TextView tabTitle2 = (TextView)tabHost.getTabWidget().getChildTabViewAt(tabIndex).findViewById(R.id.title2);
 	    	String title = MessageFormat.format(
 	    		res.getString(R.string.tab_title), 
@@ -746,30 +792,38 @@ abstract public class SignupActivity extends Activity
             		String name = persistedPlayer.getString( res.getString(R.string.player_name_field) );
             		db.createPlayer(id, name);
             	}
+            	
+            	db.close();
             }
 	    }
 	    catch(JSONException e)
 	    {
 	    	//JSON response string does not match what we are expecting
 	    	//show error toast on GUI thread
-			Message msg = _handler.obtainMessage(R.id.message_what_error);
+			Message msg = _errHandler.obtainMessage(R.id.message_what_error);
 	    	msg.arg1 = R.string.unexpected_json_error;
-			_handler.sendMessage(msg);
+			_errHandler.sendMessage(msg);
 			
 			Log.e(this.getClass().getName(), e.getMessage() + "\n\nHTTP response:\n" + result, e);
 	    }
     }
     
-	private void getServerData(final int tabIndex) 
+	private void getServerData(int tabIndex) 
 	{
-		_progressDlg = ProgressDialog.show(
-	    	this, "", getResources().getString(R.string.load_dialog_message), true);
-		
-		Thread thread = new Thread(new Runnable()
+		AsyncTask<Integer, Void, Integer> task = new AsyncTask<Integer, Void, Integer>() 
 		{
-			public void run()
+			@Override
+			protected void onPreExecute()
 			{
-				Resources res = getResources(); 
+				//show the "busy" dialog
+				Intent i = new Intent(SignupActivity.this, ProgressDialogActivity.class);
+				startActivityForResult(i, R.id.get_server_data_request);
+			}
+			
+		    @Override
+		    protected Integer doInBackground(Integer... params) 
+		    {
+		    	Resources res = getResources(); 
 
 				try
 				{
@@ -778,25 +832,40 @@ abstract public class SignupActivity extends Activity
 					HttpGet get = new HttpGet( res.getString(R.string.get_players_url) );
 					HttpResponse response = httpclient.execute(get);
 					
-					writeServerData(response, tabIndex);
+					writeServerData(response);
+					
+					Integer tabIndexArg = params[0];
+					return tabIndexArg;
 			    }
 				catch(IOException e)
 				{
 					//unable to connect to server
 					//show error toast on GUI thread
-					Message msg = _handler.obtainMessage(R.id.message_what_error);
+					Message msg = _errHandler.obtainMessage(R.id.message_what_error);
 			    	msg.arg1 = R.string.server_connect_error;
-					_handler.sendMessage(msg);
+					_errHandler.sendMessage(msg);
 					
 					Log.e(this.getClass().getName(), e.getMessage(), e);
+					return null;
 				}
-			}
-		});
+		    }
+		    
+		    @Override
+		    protected void onPostExecute(Integer result) 
+		    {
+		    	if(result != null)
+		    	{
+		    		loadPlayersImpl(result);
+		    	}
+		    	
+		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
+		    }
+		};
 		
-        thread.start();
+		task.execute(tabIndex);
 	}
 	
-	private void writeServerData(HttpResponse response, int tabIndex) throws IOException
+	private void writeServerData(HttpResponse response) throws IOException
 	{
 		InputStream is = null;
 		FileOutputStream fos = null;
@@ -822,10 +891,6 @@ abstract public class SignupActivity extends Activity
 	    	fos = openFileOutput(SERVER_DATA_FILENAME, Context.MODE_PRIVATE);
 	    	fos.write( result.getBytes() );
 	    	fos.flush();
-	    	
-	    	Message msg = _handler.obtainMessage(R.id.message_what_success);
-	    	msg.arg1 = tabIndex;
-	    	_handler.sendMessage(msg);
 		}
 	    finally
 	    {
