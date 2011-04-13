@@ -16,7 +16,10 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".SignupActivity"/>
+        <activity android:name=".SignupActivity" />
+        
+        <activity android:name=".ProgressDialogActivity"
+        	android:theme="@android:style/Theme.Dialog" />
 
     </application>
 </manifest>
