@@ -514,12 +514,12 @@ public class SignupActivity extends Activity
 		    @Override
 		    protected void onPostExecute(Integer result) 
 		    {
+		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
+		    	
 		    	if(result != null)
 		    	{
 		    		loadPlayersImpl(result);
 		    	}
-		    	
-		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
 		    }
 		};
 		
@@ -582,12 +582,12 @@ public class SignupActivity extends Activity
 		    @Override
 		    protected void onPostExecute(Integer result) 
 		    {
+		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
+		    	
 		    	if(result != null)
 		    	{
 		    		loadPlayersImpl(result);
 		    	}
-		    	
-		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
 		    }
 		};
 		
@@ -853,12 +853,12 @@ public class SignupActivity extends Activity
 		    @Override
 		    protected void onPostExecute(Integer result) 
 		    {
+		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
+		    	
 		    	if(result != null)
 		    	{
 		    		loadPlayersImpl(result);
 		    	}
-		    	
-		    	SignupActivity.this.finishActivity(R.id.get_server_data_request);
 		    }
 		};
 		
