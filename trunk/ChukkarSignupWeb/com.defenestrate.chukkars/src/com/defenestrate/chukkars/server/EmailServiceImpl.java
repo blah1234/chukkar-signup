@@ -15,6 +15,7 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
 
 import com.defenestrate.chukkars.client.EmailService;
+import com.defenestrate.chukkars.server.entity.MessageAdmin;
 import com.defenestrate.chukkars.shared.LoginInfo;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
