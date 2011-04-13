@@ -14,11 +14,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.defenestrate.chukkars.server.entity.CronTask;
+import com.defenestrate.chukkars.server.entity.DayOfWeek;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
 import com.google.gson.Gson;
@@ -197,6 +201,38 @@ public class JSONServiceImpl extends HttpServlet
 		}
 	}
 	
+	/**
+	 * Returns a list of all days marked active in the DB.
+	 * An array of active day names will be written into JSON in the HTTP response.
+	 * @param req
+	 * @param resp
+	 */
+	public void getActiveDays(HttpServletRequest req, HttpServletResponse resp) 
+	{
+		List<Day> activeDaysList = getActiveDaysImpl();
+		
+		Gson gson = new Gson();
+		String json = gson.toJson(activeDaysList);
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		
+		try
+		{
+			PrintWriter charWriter = resp.getWriter();
+			charWriter.write(json);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				e);
+		}
+	}
+	
 	private List<DayTotal> calculateGameChukkars(List<Player> playersList)
 	{
 		Map<Day, Total> dayToTotalsMap = new HashMap<Day, Total>();
@@ -221,6 +257,21 @@ public class JSONServiceImpl extends HttpServlet
 			}
 			
 			currTotal._numChukkars += currPlayer.getChukkarCount();
+		}
+		
+		
+		List<Day> enabledDaysList = getActiveDaysImpl();
+		
+		if( dayToTotalsMap.size() < enabledDaysList.size() )
+		{
+			//add in blank data for any days that don't have anybody signed up yet
+			for(Day currDay : enabledDaysList)
+			{
+				if( !dayToTotalsMap.containsKey(currDay) )
+				{
+					dayToTotalsMap.put( currDay, new Total() );
+				}
+			}
 		}
 		
 		
@@ -294,6 +345,37 @@ public class JSONServiceImpl extends HttpServlet
 				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
 				e);
 		}
+	}
+	
+	private List<Day> getActiveDaysImpl()
+	{
+		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
+		
+		List<Day> retList = new ArrayList<Day>(); 
+	    
+		try 
+		{
+			Query q = pm.newQuery(DayOfWeek.class);
+			q.setFilter("_isEnabled == true");
+			List<DayOfWeek> enabledDayList = (List<DayOfWeek>)q.execute();
+			
+			for(DayOfWeek currPersistDay : enabledDayList)
+			{
+				Day currDay = Day.valueOf( currPersistDay.getName() );
+				
+				int index = Collections.binarySearch(retList, currDay);
+				
+				//index = (-(insertion point) - 1);
+				int insertIndex = (index + 1) * -1;
+				retList.add(insertIndex, currDay);
+			}
+		}
+		finally 
+		{
+			pm.close();
+		}
+		
+		return retList;
 	}
 	
 
