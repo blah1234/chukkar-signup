@@ -7,4 +7,6 @@
 	<item type="id" name="signup_edit_dialog" />
 
     <item type="id" name="player_id_tag" />
+    
+    <item type="id" name="get_server_data_request" />
 </resources>
