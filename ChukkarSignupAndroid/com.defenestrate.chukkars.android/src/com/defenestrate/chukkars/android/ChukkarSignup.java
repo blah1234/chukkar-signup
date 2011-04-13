@@ -1,7 +1,9 @@
 package com.defenestrate.chukkars.android;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,24 +11,30 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import pl.polidea.customwidget.TheMissingTabActivity;
 import pl.polidea.customwidget.TheMissingTabHost;
 import pl.polidea.customwidget.TheMissingTabHost.TheMissingTabSpec;
 import pl.polidea.customwidget.TheMissingTabWidget;
 
+import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,6 +46,7 @@ import android.widget.TextView;
 public class ChukkarSignup extends TheMissingTabActivity
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
+	static private final String ACTIVE_DAYS_FILENAME = "active-days.json";
 	static private final String RESET_DATE_FILENAME = "last-reset-date.txt";
 	static final String TAB_INDEX_KEY = "TAB_INDEX_KEY";
 	
@@ -68,6 +77,7 @@ public class ChukkarSignup extends TheMissingTabActivity
             }
         };
 		
+        List<Day> activeDaysList = getActiveDays();
 		queryWebAppResetDate();
 		
 	    setContentView(R.layout.tab_content);
@@ -77,44 +87,230 @@ public class ChukkarSignup extends TheMissingTabActivity
 	    TheMissingTabSpec spec;  // Resusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
 	    
-	    // Create an Intent to launch an Activity for the tab (to be reused)
-	    intent = new Intent().setClass(this, SignupActivity.class);
-	    intent.putExtra(TAB_INDEX_KEY, 0);
-
-	    // Initialize a TabSpec for each tab and add it to the TabHost
-	    View tabView = getTabIndicator(
-	    	res.getString(R.string.day0_init_tab_title), 
-	    	"", 
-	    	tabHost.getTabWidget() );
-	    spec = tabHost.newTabSpec("day0").setIndicator(tabView).setContent(intent);
-	    tabHost.addTab(spec);
-
-	    // Do the same for the other tabs
-	    intent = new Intent().setClass(this, SignupActivity.class);
-	    intent.putExtra(TAB_INDEX_KEY, 1);
-	    
-	    tabView = getTabIndicator(
-	    	res.getString(R.string.day1_init_tab_title), 
-	    	"", 
-	    	tabHost.getTabWidget() );
-	    spec = tabHost.newTabSpec("day1").setIndicator(tabView).setContent(intent);
-	    tabHost.addTab(spec);
-
-	    tabHost.setCurrentTab(0);
+	    if(activeDaysList != null)
+	    {
+		    for(int i=0, n=activeDaysList.size(); i<n; i++)
+		    {
+		    	Day currDay = activeDaysList.get(i);
+		    	
+			    // Create an Intent to launch an Activity for the tab (to be reused)
+			    intent = new Intent().setClass(this, SignupActivity.class);
+			    intent.putExtra(TAB_INDEX_KEY, i);
+		
+			    // Initialize a TabSpec for each tab and add it to the TabHost
+			    View tabView = getTabIndicator(
+			    	currDay.toString(), 
+			    	"", 
+			    	tabHost.getTabWidget() );
+			    spec = tabHost.newTabSpec(currDay.toString()).setIndicator(tabView).setContent(intent);
+			    tabHost.addTab(spec);
+		    }
+		
+		    tabHost.setCurrentTab(0);
+	    }
+	}
+	
+	private List<Day> getActiveDays()
+	{
+		String[] existingFiles = fileList();
+    	boolean doesFileExist = false;
+    	
+    	for(String currFilename : existingFiles)
+    	{
+    		if( ACTIVE_DAYS_FILENAME.equals(currFilename) )
+    		{
+    			doesFileExist = true;
+    			break;
+    		}
+    	}
+    	
+    	if(!doesFileExist)
+    	{
+    		try
+    		{
+    			writeActiveDaysData();
+    		}
+    		catch(IOException e)
+    		{
+    			//unable to connect to server
+    			ErrorToast.show( 
+    				this, 
+    				getResources().getString(R.string.server_connect_error) );
+				
+				Log.e(this.getClass().getName(), e.getMessage(), e);
+    		}
+    	}
+    	
+    	
+    	List<Day> retList = null;
+    	
+    	try
+    	{
+    		retList = loadActiveDaysData();
+    	}
+    	catch(IOException e)
+    	{
+    		//unable to open data file on device.
+    		ErrorToast.show( 
+				this, 
+				getResources().getString(R.string.open_data_file_error) );
+			
+			Log.e(this.getClass().getName(), e.getMessage(), e);
+    	}
+    	catch(JSONException e)
+	    {
+	    	//JSON response string does not match what we are expecting
+    		ErrorToast.show( 
+				this, 
+				getResources().getString(R.string.unexpected_json_error) );
+			
+			//already logged in loadActiveDaysData();
+	    }
+    	
+		return retList;
+	}
+	
+	private void writeActiveDaysData() throws IOException
+	{
+		//get the latest data from the server
+		InputStream is = null;
+		FileOutputStream fos = null;
+		String result = "";
+		
+		try
+		{
+			//http get
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpGet get = new HttpGet( getResources().getString(R.string.get_active_days_url) );
+			HttpResponse response = httpclient.execute(get);
+			
+			HttpEntity entity = response.getEntity();
+			is = entity.getContent();
+	
+			//convert response to string
+	    	BufferedReader reader = new BufferedReader( new InputStreamReader(is,"utf-8") );
+	    	StringWriter strWrite = new StringWriter();
+	    	
+	    	String line = null;
+	    	while( (line = reader.readLine()) != null ) 
+	    	{
+	    		strWrite.append(line + "\n");
+	    	}
+		            
+	    	result = strWrite.toString().trim();
+	    	
+	    	//write json data to file
+	    	fos = openFileOutput(ACTIVE_DAYS_FILENAME, Context.MODE_PRIVATE);
+	    	fos.write( result.getBytes() );
+	    	fos.flush();
+	    }
+		finally
+		{
+			try
+	    	{
+	    		if(is != null)
+	    		{
+	    			is.close();
+	    		}
+	    	}
+	    	catch(IOException e) {}
+	    	
+	    	try
+	    	{
+	    		if(fos != null)
+	    		{
+	    			fos.close();
+	    		}
+	    	}
+	    	catch(IOException e) {}
+		}
+	}
+	
+	private List<Day> loadActiveDaysData() throws IOException, JSONException
+	{
+		FileInputStream fis = null;
+    	String result = "";
+    	
+    	try
+    	{
+    		File file = getFileStreamPath(ACTIVE_DAYS_FILENAME);
+    		if(file.length() == 0)
+    		{
+    			//orientation changed in the middle of loading, or some other 
+        		//way the app was stopped in the middle of loading
+    			return null;
+    		}
+    		
+    		fis = openFileInput(ACTIVE_DAYS_FILENAME);
+    		BufferedReader reader = new BufferedReader( new InputStreamReader(fis, "utf-8") );
+    		StringWriter strWrite = new StringWriter();
+	    	
+	    	String line = null;
+	    	while( (line = reader.readLine()) != null ) 
+	    	{
+	    		strWrite.append(line + "\n");
+	    	}
+		            
+	    	result = strWrite.toString();
+    	}
+    	catch(FileNotFoundException e)
+    	{
+    		//again orientation changed in the middle of loading, or some other 
+    		//way the app was stopped in the middle of loading
+    		return null;
+    	}
+    	finally
+    	{
+    		try
+	    	{
+	    		if(fis != null)
+	    		{
+	    			fis.close();
+	    		}
+	    	}
+	    	catch(IOException e) {}
+    	}
+    	
+    	
+    	//parse json data
+    	try
+    	{
+    		List<Day> retList = new ArrayList<Day>();
+	    	JSONArray jArray = new JSONArray(result);
+	    	
+	    	for(int i=0, n=jArray.length(); i<n; i++)
+	    	{
+	    		String currDayStr = jArray.getString(i);
+	    		retList.add( Day.valueOf(currDayStr) );
+	    	}
+	    	
+	    	return retList;
+    	}
+    	catch(JSONException e)
+	    {
+	    	//JSON response string does not match what we are expecting
+			Log.e(this.getClass().getName(), e.getMessage() + "\n\nHTTP response:\n" + result, e);
+			
+			throw e;
+	    }
 	}
 	
 	/**
 	 * See when the last time all signup data in the webapp was reset, and clear
-	 * out any saved player ids in local DB accordingly 
+	 * out any saved player ids in local DB accordingly. Will also clear out
+	 * the active days json file accordingly, too.
+	 * @see {@link #getActiveDays()}
 	 */
 	private void queryWebAppResetDate()
 	{
-		Thread thread = new Thread(new Runnable()
+		AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() 
 		{
-			public void run()
-			{
-				InputStream is = null;
+		    @Override
+		    protected Boolean doInBackground(Void... params) 
+		    {
+		    	InputStream is = null;
 				String result = "";
+				Boolean doReload = Boolean.FALSE;
 				
 				try
 				{
@@ -160,6 +356,10 @@ public class ChukkarSignup extends TheMissingTabActivity
 			    		db.open();
 			    		db.deleteAllPlayers();
 			    		db.close();
+			    		
+			    		//also erase the active days file
+			    		deleteFile(ACTIVE_DAYS_FILENAME);
+			    		doReload = Boolean.TRUE;
 			    	}
 			    }
 				catch(IOException e)
@@ -178,10 +378,32 @@ public class ChukkarSignup extends TheMissingTabActivity
 					
 					Log.e(this.getClass().getName(), e.getMessage() + "\n\nHTTP response:\n" + result, e);
 				}
-			}
-		});
+				finally
+				{
+					try
+			    	{
+			    		if(is != null)
+			    		{
+			    			is.close();
+			    		}
+			    	}
+			    	catch(IOException e) {}
+				}
+				
+				return doReload;
+		    }
+		    
+		    @Override
+		    protected void onPostExecute(Boolean result) 
+		    {
+		    	if(result)
+		    	{
+		    		reload();
+		    	}
+		    }
+		};
 		
-        thread.start();
+		task.execute();
     }
 	
 	private Date getPreviousWebAppResetDate()
@@ -285,6 +507,17 @@ public class ChukkarSignup extends TheMissingTabActivity
 	    	}
 	    	catch(IOException e) {}
 	    }
+	}
+	
+	private void reload() 
+	{
+	    Intent intent = getIntent();
+	    overridePendingTransition(0, 0);
+	    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+	    finish();
+
+	    overridePendingTransition(0, 0);
+	    startActivity(intent);
 	}
 
 	/**
