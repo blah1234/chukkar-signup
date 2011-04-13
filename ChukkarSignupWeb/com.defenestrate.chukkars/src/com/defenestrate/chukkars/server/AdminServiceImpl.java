@@ -16,6 +16,7 @@ import javax.jdo.Transaction;
 import org.apache.commons.lang.StringUtils;
 
 import com.defenestrate.chukkars.client.AdminService;
+import com.defenestrate.chukkars.server.entity.MessageAdmin;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.LoginInfo;
 import com.defenestrate.chukkars.shared.MessageAdminClientCopy;
