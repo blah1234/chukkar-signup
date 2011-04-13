@@ -7,14 +7,13 @@
     
     <string name="load_dialog_message">Loading. Please wait...</string>
     
-    <string name="day0_init_tab_title">SATURDAY</string>
-    <string name="day1_init_tab_title">SUNDAY</string>
     <string name="tab_title">({0} game chukkars)</string>
     
     <string name="get_players_url">http://defenestrate2.appspot.com/signup/json/getAllPlayers</string>
     <string name="add_player_url">http://defenestrate2.appspot.com/signup/json/addPlayer</string>
     <string name="edit_chukkars_url">http://defenestrate2.appspot.com/signup/json/editChukkars</string>
     <string name="query_reset_url">http://defenestrate2.appspot.com/signup/json/getResetDate</string>
+    <string name="get_active_days_url">http://defenestrate2.appspot.com/signup/json/getActiveDays</string>
     <string name="totals_list_field">_totalsList</string>
     <string name="players_list_field">_playersList</string>
     <string name="curr_player_persisted_field">_currPersisted</string>
