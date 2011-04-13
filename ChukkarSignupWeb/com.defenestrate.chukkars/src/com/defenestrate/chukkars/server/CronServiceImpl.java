@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.defenestrate.chukkars.server.entity.CronTask;
+import com.defenestrate.chukkars.server.entity.MessageAdmin;
 import com.defenestrate.chukkars.shared.Player;
 
 public class CronServiceImpl extends HttpServlet 
