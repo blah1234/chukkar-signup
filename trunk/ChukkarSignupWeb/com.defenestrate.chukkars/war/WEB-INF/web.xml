@@ -4,6 +4,13 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+
+  <listener>
+    <listener-class>
+      com.defenestrate.chukkars.server.listener.ServerStartupListener
+    </listener-class>
+  </listener>
+  
   
   <!-- Servlets -->
   <servlet>
