@@ -357,9 +357,12 @@ public class ChukkarSignup extends TheMissingTabActivity
 			    		db.deleteAllPlayers();
 			    		db.close();
 			    		
-			    		//also erase the active days file
-			    		deleteFile(ACTIVE_DAYS_FILENAME);
-			    		doReload = Boolean.TRUE;
+			    		if(prevResetDate != null)
+			    		{
+				    		//also erase the active days file
+				    		deleteFile(ACTIVE_DAYS_FILENAME);
+				    		doReload = Boolean.TRUE;
+			    		}
 			    	}
 			    }
 				catch(IOException e)
