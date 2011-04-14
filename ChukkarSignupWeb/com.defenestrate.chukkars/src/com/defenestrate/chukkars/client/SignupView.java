@@ -81,7 +81,6 @@ public class SignupView implements EntryPoint
 	private Label _sunGameChukkarsLbl;
 	private TabPanel _tabPanel;
 	private DockPanel _topLevelPanel;
-	InsertPanelExample _dndExample;
 	
 	private Button _satImportBtn;
 	private Button _sunImportBtn;
@@ -199,19 +198,7 @@ public class SignupView implements EntryPoint
 			_topLevelPanel.add(_accountsPanel, DockPanel.CENTER);
 			_linkPanel.showStack(1);
 		}
-/**@todo		
-		//Dnd components
-	    HTML eventTextArea = new HTML();
-	    //eventTextArea.setSize(boundaryPanel.getOffsetWidth() + "px", "10em");
-
-	    // instantiate shared drag handler to listen for events
-	    DemoDragHandler demoDragHandler = new DemoDragHandler(eventTextArea);
-	    _dndExample = new InsertPanelExample(demoDragHandler);
-	    
-	    //----------------------------------
-	    
-		_topLevelPanel.add(eventTextArea, DockPanel.EAST);
-*/		
+		
 		
 		_statusLbl = new Label();
 		_statusLbl.addStyleDependentName("status");
