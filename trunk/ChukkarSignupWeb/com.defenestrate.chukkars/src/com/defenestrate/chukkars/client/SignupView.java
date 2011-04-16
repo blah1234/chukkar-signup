@@ -1,7 +1,9 @@
 package com.defenestrate.chukkars.client;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.defenestrate.chukkars.client.controller.ChukkarSignupController;
 import com.defenestrate.chukkars.shared.Day;
@@ -66,21 +68,10 @@ public class SignupView implements EntryPoint
 
 
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
-	private FlexTable _satSignupTable;
-	private FlexTable _sunSignupTable;
-	private TextBox _satNameTxt;
-	private TextBox _sunNameTxt;
 	private TextBoxExtend _updateTxt;
-	private TextBox _satChukkarsTxt;
-	private TextBox _sunChukkarsTxt;
-	private Button _satAddRowBtn;
-	private Button _sunAddRowBtn;
-	private Label _satTotalChukkarsLbl;
-	private Label _sunTotalChukkarsLbl;
-	private Label _satGameChukkarsLbl;
-	private Label _sunGameChukkarsLbl;
 	private TabPanel _tabPanel;
 	private DockPanel _topLevelPanel;
+	private Map<Day, DayLayout> _dayToLayoutMap;
 	
 	private Button _satImportBtn;
 	private Button _sunImportBtn;
@@ -126,9 +117,6 @@ public class SignupView implements EntryPoint
 	public void onModuleLoad()
 	{
 		init();
-		
-		String initToken = History.getToken();
-		_ctrl.loginRequest(initToken);
 	}
 	
 	private void init()
@@ -136,6 +124,14 @@ public class SignupView implements EntryPoint
 		_loginInfo = null;
 		_ctrl = new ChukkarSignupController(this);
 		_busy = new BusyIndicator();
+		
+		_ctrl.configActiveDays();
+	}
+	
+	public void onPostInit()
+	{
+		String initToken = History.getToken();
+		_ctrl.loginRequest(initToken);
 	}
 	
 	public void setLoginInfo(LoginInfo loginInfo)
@@ -244,111 +240,82 @@ public class SignupView implements EntryPoint
 		_updateTxt = new TextBoxExtend();
 		_updateTxt.addStyleDependentName("numChukkars");
 		
-		//-------------
-		
-		// Create tables for chukkar signup.
-		_satSignupTable = new FlexTable();
-		
-		_satSignupTable.setText(0, TIME_COLUMN_INDEX, "Time");
-		_satSignupTable.setText(0, NAME_COLUMN_INDEX, "Name");
-		_satSignupTable.setText(0, CHUKKARS_COLUMN_INDEX, "Chukkars");
-		_satSignupTable.setText(0, ACTION_COLUMN_INDEX, "Action");
-		
-		_satNameTxt = new TextBox();
-		_satSignupTable.setWidget(1, NAME_COLUMN_INDEX, _satNameTxt); 
-		_satChukkarsTxt = new TextBox();
-		_satChukkarsTxt.addStyleDependentName("numChukkars");
-		_satSignupTable.setWidget(1, CHUKKARS_COLUMN_INDEX, _satChukkarsTxt);
-		_satAddRowBtn = new Button("Add");
-		_satAddRowBtn.addStyleDependentName("action");
-		_satSignupTable.setWidget(1, ACTION_COLUMN_INDEX, _satAddRowBtn);
-		
-		_satSignupTable.setCellPadding(3);
-		_satSignupTable.getRowFormatter().addStyleName(0, "signupHeader");
-		_satSignupTable.addStyleName("signupTable");
-		_satSignupTable.getCellFormatter().addStyleName(1, TIME_COLUMN_INDEX, "signupTimeColumn");
-		_satSignupTable.getCellFormatter().addStyleName(0, CHUKKARS_COLUMN_INDEX, "signupNumericColumn");
-		_satSignupTable.getCellFormatter().addStyleName(0, ACTION_COLUMN_INDEX, "signupActionColumn");
-		
-		
-		Label satTotalChukkarsTitleLbl = new Label("# Chukkars Total:");
-		satTotalChukkarsTitleLbl.addStyleDependentName("totalChukkarsLbl");
-		
-		_satTotalChukkarsLbl = new Label();
-		
-		Label satGameChukkarsTitleLbl = new Label("# Game Chukkars:");
-		satGameChukkarsTitleLbl.addStyleDependentName("gameChukkarsLbl");
-		
-		_satGameChukkarsLbl = new Label();
-		
-		VerticalPanel satGameChukkarsPanel = new VerticalPanel();
-		satGameChukkarsPanel.addStyleName("chukkarsPanel");
-		satGameChukkarsPanel.add(satGameChukkarsTitleLbl);
-		satGameChukkarsPanel.add(_satGameChukkarsLbl);
-		
-		
-		HorizontalPanel mainPanel = new HorizontalPanel();
-		mainPanel.add(_satSignupTable);
-		mainPanel.add(satGameChukkarsPanel);
-		
 		_tabPanel = new DecoratedTabPanel();
 		_tabPanel.setAnimationEnabled(true);
-		_tabPanel.add(mainPanel, "Saturday");
 		
-		//-----------------------------------
+		_dayToLayoutMap = new HashMap<Day, DayLayout>();
 		
-		_sunSignupTable = new FlexTable();
+		//-------------
 		
-		_sunSignupTable.setText(0, TIME_COLUMN_INDEX, "Time");
-		_sunSignupTable.setText(0, NAME_COLUMN_INDEX, "Name");
-		_sunSignupTable.setText(0, CHUKKARS_COLUMN_INDEX, "Chukkars");
-		_sunSignupTable.setText(0, ACTION_COLUMN_INDEX, "Action");
+		Day[] allDays = Day.getAll();
+		for(Day currDay : allDays)
+		{
+			if( currDay.isEnabled() )
+			{
+				DayLayout layout = new DayLayout();
+				_dayToLayoutMap.put(currDay, layout);
+				
+				// Create tables for chukkar signup.
+				layout._signupTable = new FlexTable();
 		
-		_sunNameTxt = new TextBox();
-		_sunSignupTable.setWidget(1, NAME_COLUMN_INDEX, _sunNameTxt); 
-		_sunChukkarsTxt = new TextBox();
-		_sunChukkarsTxt.addStyleDependentName("numChukkars");
-		_sunSignupTable.setWidget(1, CHUKKARS_COLUMN_INDEX, _sunChukkarsTxt);
-		_sunAddRowBtn = new Button("Add");
-		_sunAddRowBtn.addStyleDependentName("action");
-		_sunSignupTable.setWidget(1, ACTION_COLUMN_INDEX, _sunAddRowBtn);
+				layout._signupTable.setText(0, TIME_COLUMN_INDEX, "Time");
+				layout._signupTable.setText(0, NAME_COLUMN_INDEX, "Name");
+				layout._signupTable.setText(0, CHUKKARS_COLUMN_INDEX, "Chukkars");
+				layout._signupTable.setText(0, ACTION_COLUMN_INDEX, "Action");
 		
-		_sunSignupTable.setCellPadding(3);
-		_sunSignupTable.getRowFormatter().addStyleName(0, "signupHeader");
-		_sunSignupTable.addStyleName("signupTable");
-		_sunSignupTable.getCellFormatter().addStyleName(1, TIME_COLUMN_INDEX, "signupTimeColumn");
-		_sunSignupTable.getCellFormatter().addStyleName(0, CHUKKARS_COLUMN_INDEX, "signupNumericColumn");
-		_sunSignupTable.getCellFormatter().addStyleName(0, ACTION_COLUMN_INDEX, "signupActionColumn");
+				layout._nameTxt = new TextBox();
+				layout._signupTable.setWidget(1, NAME_COLUMN_INDEX, layout._nameTxt); 
+				layout._chukkarsTxt = new TextBox();
+				layout._chukkarsTxt.addStyleDependentName("numChukkars");
+				layout._signupTable.setWidget(1, CHUKKARS_COLUMN_INDEX, layout._chukkarsTxt);
+				layout._addRowBtn = new Button("Add");
+				layout._addRowBtn.addStyleDependentName("action");
+				layout._signupTable.setWidget(1, ACTION_COLUMN_INDEX, layout._addRowBtn);
 		
-		
-		Label sunTotalChukkarsTitleLbl = new Label("# Chukkars Total:");
-		sunTotalChukkarsTitleLbl.addStyleDependentName("totalChukkarsLbl");
-		
-		_sunTotalChukkarsLbl = new Label();
-		
-		Label sunGameChukkarsTitleLbl = new Label("# Game Chukkars:");
-		sunGameChukkarsTitleLbl.addStyleDependentName("gameChukkarsLbl");
-		
-		_sunGameChukkarsLbl = new Label();
-		
-		VerticalPanel sunGameChukkarsPanel = new VerticalPanel();
-		sunGameChukkarsPanel.addStyleName("chukkarsPanel");
-		sunGameChukkarsPanel.add(sunGameChukkarsTitleLbl);
-		sunGameChukkarsPanel.add(_sunGameChukkarsLbl);
+				layout._signupTable.setCellPadding(3);
+				layout._signupTable.getRowFormatter().addStyleName(0, "signupHeader");
+				layout._signupTable.addStyleName("signupTable");
+				layout._signupTable.getCellFormatter().addStyleName(1, TIME_COLUMN_INDEX, "signupTimeColumn");
+				layout._signupTable.getCellFormatter().addStyleName(0, CHUKKARS_COLUMN_INDEX, "signupNumericColumn");
+				layout._signupTable.getCellFormatter().addStyleName(0, ACTION_COLUMN_INDEX, "signupActionColumn");
 		
 		
-		mainPanel = new HorizontalPanel();
-		mainPanel.add(_sunSignupTable);
-		mainPanel.add(sunGameChukkarsPanel);
+				layout._totalChukkarsTitleLbl = new Label("# Chukkars Total:");
+				layout._totalChukkarsTitleLbl.addStyleDependentName("totalChukkarsLbl");
 		
-		_tabPanel.add(mainPanel, "Sunday");
+				layout._totalChukkarsLbl = new Label();
+		
+				Label gameChukkarsTitleLbl = new Label("# Game Chukkars:");
+				gameChukkarsTitleLbl.addStyleDependentName("gameChukkarsLbl");
+		
+				layout._gameChukkarsLbl = new Label();
+		
+				layout._gameChukkarsPanel = new VerticalPanel();
+				layout._gameChukkarsPanel.addStyleName("chukkarsPanel");
+				layout._gameChukkarsPanel.add(gameChukkarsTitleLbl);
+				layout._gameChukkarsPanel.add(layout._gameChukkarsLbl);
+		
+				
+				HorizontalPanel mainPanel = new HorizontalPanel();
+				mainPanel.add(layout._signupTable);
+				mainPanel.add(layout._gameChukkarsPanel);
+		
+				_tabPanel.add( mainPanel, currDay.name() );
+			}
+		}
 		
 		//--------------------------------
 		
-		// Show the 'Saturday' tab initially.
-		_tabPanel.selectTab(0);
+		if(_tabPanel.getTabBar().getTabCount() == 0)
+		{
+			Label errLbl = new Label("Unable to configure active signup days. Please try again later. Contact Shawn.");
+			errLbl.addStyleDependentName("status");
+			
+			_tabPanel.add(errLbl, "Error");
+		}
 		
-		//_tabPanel.addStyleName("mainPanel");
+		// Show the lexicographically smallest tab initially.
+		_tabPanel.selectTab(0);
 		
 		//----------------------------------
 		
@@ -380,21 +347,16 @@ public class SignupView implements EntryPoint
 			
 			if( _loginInfo.isAdmin() ) 
 		    {
-    			//only show the "delete" column if logged in user is an admin
-    			_satSignupTable.setText(0, DELETE_COLUMN_INDEX, "Delete");
-    			_satSignupTable.getCellFormatter().addStyleName(0, DELETE_COLUMN_INDEX, "signupActionColumn");
+				for( DayLayout currLayout : _dayToLayoutMap.values() )
+				{
+	    			//only show the "delete" column if logged in user is an admin
+	    			currLayout._signupTable.setText(0, DELETE_COLUMN_INDEX, "Delete");
+	    			currLayout._signupTable.getCellFormatter().addStyleName(0, DELETE_COLUMN_INDEX, "signupActionColumn");
     			
-    			//only show the "delete" column if logged in user is an admin
-    			_sunSignupTable.setText(0, DELETE_COLUMN_INDEX, "Delete");
-    			_sunSignupTable.getCellFormatter().addStyleName(0, DELETE_COLUMN_INDEX, "signupActionColumn");
-    			
-    			
-    			//only show these labels if logged in user is an admin
-    			satGameChukkarsPanel.insert(_satTotalChukkarsLbl, 0);
-    			satGameChukkarsPanel.insert(satTotalChukkarsTitleLbl, 0);
-    			
-    			sunGameChukkarsPanel.insert(_sunTotalChukkarsLbl, 0);
-    			sunGameChukkarsPanel.insert(sunTotalChukkarsTitleLbl, 0);
+	    			//only show these labels if logged in user is an admin
+	    			currLayout._gameChukkarsPanel.insert(currLayout._totalChukkarsLbl, 0);
+	    			currLayout._gameChukkarsPanel.insert(currLayout._totalChukkarsTitleLbl, 0);
+				}
 		    }
 		}
 		else
@@ -627,77 +589,55 @@ public class SignupView implements EntryPoint
     		}
 		});
 
-		_satAddRowBtn.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
-			{
-				_ctrl.addPlayer(Day.SATURDAY);
-			}
-		});
-		
-		_satChukkarsTxt.addKeyPressHandler(new KeyPressHandler()
+	    
+	    final Day[] dayParam = new Day[1];
+	    
+	    for( Day currDay : _dayToLayoutMap.keySet() )
 	    {
-	    	public void onKeyPress(KeyPressEvent event) 
-	    	{
-	    		if (event.getCharCode() == KeyCodes.KEY_ENTER) 
-	    		{
-	    			_ctrl.addPlayer(Day.SATURDAY);
-	    		}
-	    	}
-	    });
-		
-		_sunAddRowBtn.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
+	    	dayParam[0] = currDay;
+	    	DayLayout currLayout = _dayToLayoutMap.get(currDay);
+	    	
+	    	currLayout._addRowBtn.addClickHandler(new ClickHandler()
 			{
-				_ctrl.addPlayer(Day.SUNDAY);
-			}
-		});
-		
-		_sunChukkarsTxt.addKeyPressHandler(new KeyPressHandler()
-	    {
-	    	public void onKeyPress(KeyPressEvent event) 
-	    	{
-	    		if (event.getCharCode() == KeyCodes.KEY_ENTER) 
-	    		{
-	    			_ctrl.addPlayer(Day.SUNDAY);
-	    		}
-	    	}
-	    });
-		
-		_satSignupTable.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
+	    		Day dayOfWeek = dayParam[0];
+	    		
+				public void onClick(ClickEvent event)
+				{
+					_ctrl.addPlayer(dayOfWeek);
+				}
+			});
+	    	
+	    	currLayout._chukkarsTxt.addKeyPressHandler(new KeyPressHandler()
+		    {
+	    		Day dayOfWeek = dayParam[0];
+	    		
+		    	public void onKeyPress(KeyPressEvent event) 
+		    	{
+		    		if (event.getCharCode() == KeyCodes.KEY_ENTER) 
+		    		{
+		    			_ctrl.addPlayer(dayOfWeek);
+		    		}
+		    	}
+		    });
+	    	
+	    	currLayout._signupTable.addClickHandler(new ClickHandler()
 			{
-				startEditingChukkars(event);
-			}
-		});
+				public void onClick(ClickEvent event)
+				{
+					startEditingChukkars(event);
+				}
+			});
+	    }
 		
-		_sunSignupTable.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
-			{
-				startEditingChukkars(event);
-			}
-		});
 		
 		_updateTxt.addKeyUpHandler(new KeyUpHandler()
 		{
 			public void onKeyUp(KeyUpEvent event)
 			{
-				Day dayOfWeek;
-    			int tab = _tabPanel.getTabBar().getSelectedTab();
-				
-				if(tab == 0)
-				{
-					dayOfWeek = Day.SATURDAY;
-				}
-				else
-				{
-					dayOfWeek = Day.SUNDAY;
-				}
-				
-				
+				int tab = _tabPanel.getTabBar().getSelectedTab();
+    			String tabText = _tabPanel.getTabBar().getTabHTML(tab);
+    			Day dayOfWeek = Day.valueOf(tabText);
+    			
 				if(event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
 				{
 					_ctrl.editChukkars(dayOfWeek);
@@ -713,17 +653,9 @@ public class SignupView implements EntryPoint
 		{
 			public void onBeforeSelection(BeforeSelectionEvent<Integer> event)
 			{
-				Day dayOfWeek;
 				int prevTab = _tabPanel.getTabBar().getSelectedTab();
-				
-				if(prevTab == 0)
-				{
-					dayOfWeek = Day.SATURDAY;
-				}
-				else
-				{
-					dayOfWeek = Day.SUNDAY;
-				}
+				String tabText = _tabPanel.getTabBar().getTabHTML(prevTab);
+    			Day dayOfWeek = Day.valueOf(tabText);
 				
 				stopEditingChukkars(dayOfWeek, false);
 			}
@@ -947,16 +879,7 @@ public class SignupView implements EntryPoint
 	{
 		if( _updateTxt.isAttached() && (_updateTxt.getPreviousText() != null) )
 		{
-			FlexTable signupTable;
-			
-			if(dayOfWeek == Day.SATURDAY)
-			{
-				signupTable = _satSignupTable;
-			}
-			else
-			{
-				signupTable = _sunSignupTable;
-			}
+			FlexTable signupTable = _dayToLayoutMap.get(dayOfWeek)._signupTable;
 			
 			//reset previous table cell
 			signupTable.setText( 
@@ -993,7 +916,7 @@ public class SignupView implements EntryPoint
 		}
 	}
 	
-	public void showErrorDialog(String errMsgStr, final Day dayOfWeek, final Exception e)
+	public void showErrorDialog(String errMsgStr, final Day dayOfWeek, final Throwable e)
 	{
 		final DialogBox alert = new DialogBox(true, true);
 		Caption cap = alert.getCaption();
@@ -1005,47 +928,40 @@ public class SignupView implements EntryPoint
     	alert.setAnimationEnabled(true);
     	alert.setGlassEnabled(true);
     	alert.setText("Doh!");
-    	alert.addCloseHandler(new CloseHandler<PopupPanel>()
-		{
-			public void onClose(CloseEvent<PopupPanel> event)
+    	
+    	if(dayOfWeek != null)
+    	{
+	    	alert.addCloseHandler(new CloseHandler<PopupPanel>()
 			{
-				TextBox nameTxtBox;
-				TextBox numChukkarsTxtBox;
-				
-				if(dayOfWeek == Day.SATURDAY)
+				public void onClose(CloseEvent<PopupPanel> event)
 				{
-					nameTxtBox = _satNameTxt;
-					numChukkarsTxtBox = _satChukkarsTxt;
-				}
-				else
-				{
-					nameTxtBox = _sunNameTxt;
-					numChukkarsTxtBox = _sunChukkarsTxt;
-				}
-				
-				
-				TextBox selectTxtBox;
-				if(e instanceof NumberFormatException)
-				{
-					if( !_updateTxt.isAttached() )
+					DayLayout layout = _dayToLayoutMap.get(dayOfWeek);
+					TextBox nameTxtBox = layout._nameTxt;
+					TextBox numChukkarsTxtBox = layout._chukkarsTxt;
+					
+					TextBox selectTxtBox;
+					if(e instanceof NumberFormatException)
 					{
-						selectTxtBox = numChukkarsTxtBox;
+						if( !_updateTxt.isAttached() )
+						{
+							selectTxtBox = numChukkarsTxtBox;
+						}
+						else
+						{
+							selectTxtBox = _updateTxt;
+						}
 					}
 					else
 					{
-						selectTxtBox = _updateTxt;
+						selectTxtBox = nameTxtBox;
 					}
+					
+					
+					selectTxtBox.setSelectionRange( 0, selectTxtBox.getText().length() );
+					selectTxtBox.setFocus(true);
 				}
-				else
-				{
-					selectTxtBox = nameTxtBox;
-				}
-				
-				
-				selectTxtBox.setSelectionRange( 0, selectTxtBox.getText().length() );
-				selectTxtBox.setFocus(true);
-			}
-		});
+			});
+    	}
     	
     	HorizontalPanel horizPanel = new HorizontalPanel();
     	horizPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -1085,45 +1001,36 @@ public class SignupView implements EntryPoint
 		
 		for(Player currPlayer : playersList)
 		{
-			FlexTable signupTable;
-			if(currPlayer.getRequestDay() == Day.SATURDAY)
+			if( _dayToLayoutMap.containsKey(currPlayer.getRequestDay()) )
 			{
-				signupTable = _satSignupTable;
+				FlexTable signupTable = _dayToLayoutMap.get(currPlayer.getRequestDay())._signupTable;
+							
+				addRow( signupTable, 
+					    currPlayer.getRequestDay(), 
+					    currPlayer.getId(),
+					    currPlayer.getCreateDate(),
+					    currPlayer.getName(), 
+					    Integer.toString(currPlayer.getChukkarCount()) );
 			}
-			else
-			{
-				signupTable = _sunSignupTable;
-			}
-			
-			addRow( signupTable, 
-				    currPlayer.getRequestDay(), 
-				    currPlayer.getId(),
-				    currPlayer.getCreateDate(),
-				    currPlayer.getName(), 
-				    Integer.toString(currPlayer.getChukkarCount()) );
 		}
 	}
 	
 	private void clearSignupPage()
 	{
-		FlexTable[] tableArray = 
+		for( Day currDay : _dayToLayoutMap.keySet() )
 		{
-			_satSignupTable,
-			_sunSignupTable
-		};
+			DayLayout currLayout = _dayToLayoutMap.get(currDay);
+			FlexTable signupTable = currLayout._signupTable;
 			
-		for(FlexTable signupTable : tableArray)
-		{
 			//row 0 is the header row
 			//last row is the "add" row
 			for(int i=signupTable.getRowCount()-2; i>=1; i--)
 			{
 				signupTable.removeRow(i);
 			}
+			
+			calculateGameChukkars(currDay);
 		}
-		
-		calculateGameChukkars(Day.SATURDAY);
-		calculateGameChukkars(Day.SUNDAY);
 	}
 	
 	public void loadAdminData(MessageAdminClientCopy data)
@@ -1138,22 +1045,11 @@ public class SignupView implements EntryPoint
 	
 	public void addRow(Day dayOfWeek, Long playerId, Date createDate)
 	{
-		FlexTable signupTable;
-		TextBox nameTxtBox;
-		TextBox numChukkarsTxtBox;
+		DayLayout layout = _dayToLayoutMap.get(dayOfWeek);
 		
-		if(dayOfWeek == Day.SATURDAY)
-		{
-			signupTable = _satSignupTable;
-			nameTxtBox = _satNameTxt;
-			numChukkarsTxtBox = _satChukkarsTxt;
-		}
-		else
-		{
-			signupTable = _sunSignupTable;
-			nameTxtBox = _sunNameTxt;
-			numChukkarsTxtBox = _sunChukkarsTxt;
-		}
+		FlexTable signupTable = layout._signupTable;
+		TextBox nameTxtBox = layout._nameTxt;
+		TextBox numChukkarsTxtBox = layout._chukkarsTxt;
 		
 		String playerName = nameTxtBox.getText();
 		String numChukkars = numChukkarsTxtBox.getText();
@@ -1239,16 +1135,7 @@ public class SignupView implements EntryPoint
 	
 	public void removeRow(int rowInd, Day dayOfWeek)
 	{
-		FlexTable signupTable;
-		
-		if(dayOfWeek == Day.SATURDAY)
-		{
-			signupTable = _satSignupTable;
-		}
-		else
-		{
-			signupTable = _sunSignupTable;
-		}
+		FlexTable signupTable = _dayToLayoutMap.get(dayOfWeek)._signupTable;
 		
 		signupTable.removeRow(rowInd);
 		
@@ -1266,22 +1153,11 @@ public class SignupView implements EntryPoint
 	
 	private void calculateGameChukkars(Day dayOfWeek)
 	{
-		FlexTable signupTable;
-		Label totalChukkarsLbl;
-		Label gameChukkarsLbl;
+		DayLayout layout = _dayToLayoutMap.get(dayOfWeek);
 		
-		if(dayOfWeek == Day.SATURDAY)
-		{
-			signupTable = _satSignupTable;
-			totalChukkarsLbl = _satTotalChukkarsLbl;
-			gameChukkarsLbl = _satGameChukkarsLbl;
-		}
-		else
-		{
-			signupTable = _sunSignupTable;
-			totalChukkarsLbl = _sunTotalChukkarsLbl;
-			gameChukkarsLbl = _sunGameChukkarsLbl;
-		}
+		FlexTable signupTable = layout._signupTable;
+		Label totalChukkarsLbl = layout._totalChukkarsLbl;
+		Label gameChukkarsLbl = layout._gameChukkarsLbl;
 		
 		int totalChukkars = 0;
 		
@@ -1324,33 +1200,14 @@ public class SignupView implements EntryPoint
 
 	public String getPlayerNameToBeAdded(Day dayOfWeek)
 	{
-		TextBox nameTxtBox;
-		
-		if(dayOfWeek == Day.SATURDAY)
-		{
-			nameTxtBox = _satNameTxt;
-		}
-		else
-		{
-			nameTxtBox = _sunNameTxt;
-		}
+		TextBox nameTxtBox = _dayToLayoutMap.get(dayOfWeek)._nameTxt;
 		
 		return nameTxtBox.getText();
 	}
 	
 	public Long getEditingPlayerId(Day dayOfWeek)
 	{
-		FlexTable signupTable;
-		
-		if(dayOfWeek == Day.SATURDAY)
-		{
-			signupTable = _satSignupTable;
-		}
-		else
-		{
-			signupTable = _sunSignupTable;
-		}
-		
+		FlexTable signupTable = _dayToLayoutMap.get(dayOfWeek)._signupTable;
 		
 		if(_updateTxt.getRow() != -1)
 		{
@@ -1372,16 +1229,7 @@ public class SignupView implements EntryPoint
 	
 	public String getChukkarCountToBeAdded(Day dayOfWeek)
 	{
-		TextBox numChukkarsTxtBox;
-		
-		if(dayOfWeek == Day.SATURDAY)
-		{
-			numChukkarsTxtBox = _satChukkarsTxt;
-		}
-		else
-		{
-			numChukkarsTxtBox = _sunChukkarsTxt;
-		}
+		TextBox numChukkarsTxtBox = _dayToLayoutMap.get(dayOfWeek)._chukkarsTxt;
 		
 		return numChukkarsTxtBox.getText();
 	}
@@ -1401,5 +1249,19 @@ public class SignupView implements EntryPoint
 
 		// Schedule the timer to run once in 5 seconds.
 		t.schedule(5000);
+	}
+
+	
+	////////////////////////////// INNER CLASSES ///////////////////////////////
+	private class DayLayout
+	{
+		FlexTable _signupTable;
+		TextBox _nameTxt;
+		TextBox _chukkarsTxt;
+		Button _addRowBtn;
+		Label _totalChukkarsTitleLbl;
+		Label _totalChukkarsLbl;
+		Label _gameChukkarsLbl;
+		VerticalPanel _gameChukkarsPanel;
 	}
 }
