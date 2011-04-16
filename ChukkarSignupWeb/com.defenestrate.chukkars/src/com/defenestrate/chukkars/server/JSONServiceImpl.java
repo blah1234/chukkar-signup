@@ -14,15 +14,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.defenestrate.chukkars.server.entity.CronTask;
-import com.defenestrate.chukkars.server.entity.DayOfWeek;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
 import com.google.gson.Gson;
@@ -100,10 +97,11 @@ public class JSONServiceImpl extends HttpServlet
 		String json = gson.toJson(responseObj);
 		
 		resp.setContentType("text/plain;charset=UTF-8");
+		PrintWriter charWriter = null;
 		
 		try
 		{
-			PrintWriter charWriter = resp.getWriter();
+			charWriter = resp.getWriter();
 			charWriter.write(json);
 			
 			//commit the response
@@ -115,6 +113,13 @@ public class JSONServiceImpl extends HttpServlet
 				Level.SEVERE, 
 				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
 				e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
 		}
 	}
 	
@@ -142,10 +147,11 @@ public class JSONServiceImpl extends HttpServlet
 		String json = gson.toJson(responseObj);
 		
 		resp.setContentType("text/plain;charset=UTF-8");
+		PrintWriter charWriter = null;
 		
 		try
 		{
-			PrintWriter charWriter = resp.getWriter();
+			charWriter = resp.getWriter();
 			charWriter.write(json);
 			
 			//commit the response
@@ -157,6 +163,13 @@ public class JSONServiceImpl extends HttpServlet
 				Level.SEVERE, 
 				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
 				e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
 		}
 	}
 	
@@ -183,10 +196,11 @@ public class JSONServiceImpl extends HttpServlet
 		String json = gson.toJson(responseObj);
 		
 		resp.setContentType("text/plain;charset=UTF-8");
+		PrintWriter charWriter = null;
 		
 		try
 		{
-			PrintWriter charWriter = resp.getWriter();
+			charWriter = resp.getWriter();
 			charWriter.write(json);
 			
 			//commit the response
@@ -198,6 +212,13 @@ public class JSONServiceImpl extends HttpServlet
 				Level.SEVERE, 
 				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
 				e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
 		}
 	}
 	
@@ -215,10 +236,11 @@ public class JSONServiceImpl extends HttpServlet
 		String json = gson.toJson(activeDaysList);
 		
 		resp.setContentType("text/plain;charset=UTF-8");
+		PrintWriter charWriter = null;
 		
 		try
 		{
-			PrintWriter charWriter = resp.getWriter();
+			charWriter = resp.getWriter();
 			charWriter.write(json);
 			
 			//commit the response
@@ -230,6 +252,13 @@ public class JSONServiceImpl extends HttpServlet
 				Level.SEVERE, 
 				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
 				e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
 		}
 	}
 	
@@ -276,6 +305,13 @@ public class JSONServiceImpl extends HttpServlet
 		
 		
 		List<DayTotal> totalsList = new ArrayList<DayTotal>();
+		Comparator<DayTotal> naturalDayOrder = new Comparator<DayTotal>()
+		{
+			public int compare(DayTotal o1, DayTotal o2)
+			{
+				return o1._day.compareTo(o2._day);
+			}
+		};
 		
 		for( Day currDay : dayToTotalsMap.keySet() )
 		{
@@ -298,13 +334,7 @@ public class JSONServiceImpl extends HttpServlet
 			
 			DayTotal currDayTotal = new DayTotal(currDay, numGameChukkars);
 			
-			int index = Collections.binarySearch(totalsList, currDayTotal, new Comparator<DayTotal>()
-			{
-				public int compare(DayTotal o1, DayTotal o2)
-				{
-					return o1._day.compareTo(o2._day);
-				}
-			});
+			int index = Collections.binarySearch(totalsList, currDayTotal, naturalDayOrder);
 			
 			//index = (-(insertion point) - 1);
 			int insertIndex = (index + 1) * -1;
@@ -329,10 +359,11 @@ public class JSONServiceImpl extends HttpServlet
 		String json = gson.toJson(responseObj);
 		
 		resp.setContentType("text/plain;charset=UTF-8");
+		PrintWriter charWriter = null;
 		
 		try
 		{
-			PrintWriter charWriter = resp.getWriter();
+			charWriter = resp.getWriter();
 			charWriter.write(json);
 			
 			//commit the response
@@ -345,34 +376,26 @@ public class JSONServiceImpl extends HttpServlet
 				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
 				e);
 		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
+		}
 	}
 	
 	private List<Day> getActiveDaysImpl()
 	{
-		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
+		Day[] allDays = Day.getAll();
+		List<Day> retList = new ArrayList<Day>();
 		
-		List<Day> retList = new ArrayList<Day>(); 
-	    
-		try 
+		for(Day currDay : allDays)
 		{
-			Query q = pm.newQuery(DayOfWeek.class);
-			q.setFilter("_isEnabled == true");
-			List<DayOfWeek> enabledDayList = (List<DayOfWeek>)q.execute();
-			
-			for(DayOfWeek currPersistDay : enabledDayList)
+			if( currDay.isEnabled() )
 			{
-				Day currDay = Day.valueOf( currPersistDay.getName() );
-				
-				int index = Collections.binarySearch(retList, currDay);
-				
-				//index = (-(insertion point) - 1);
-				int insertIndex = (index + 1) * -1;
-				retList.add(insertIndex, currDay);
+				retList.add(currDay);
 			}
-		}
-		finally 
-		{
-			pm.close();
 		}
 		
 		return retList;
