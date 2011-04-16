@@ -170,12 +170,6 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 			Extent<Player> e = pm.getExtent(Player.class);
 			Iterator<Player> iter = e.iterator();
 			
-			while( iter.hasNext() )
-			{
-				retList.add( iter.next() );
-			}
-			
-			
 			//sort in ascending chronological order
 			Comparator<Player> dateComp = new Comparator<Player>()
 			{
@@ -185,7 +179,16 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 				}
 			};
 			
-			Collections.sort(retList, dateComp);
+			while( iter.hasNext() )
+			{
+				Player currPlayer = iter.next();
+				
+				int index = Collections.binarySearch(retList, currPlayer, dateComp);
+				
+				//index = (-(insertion point) - 1);
+				int insertIndex = (index + 1) * -1;
+				retList.add(insertIndex, currPlayer);
+			}
 		} 
 		finally 
 		{
