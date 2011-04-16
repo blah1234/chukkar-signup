@@ -11,8 +11,7 @@
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
   
   <!-- Other module inherits                                      -->
-  <!-- Inherit gwt-dnd support                   -->
-  <inherits name='com.allen_sauer.gwt.dnd.gwt-dnd'/>
+  
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='com.defenestrate.chukkars.client.SignupView'/>
