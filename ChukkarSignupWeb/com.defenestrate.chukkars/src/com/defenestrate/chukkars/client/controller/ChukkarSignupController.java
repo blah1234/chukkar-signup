@@ -312,7 +312,7 @@ public class ChukkarSignupController
 	    {
 	    	public void onFailure(Throwable caught) 
 	    	{
-	    		_view.showErrorDialog("Unable to export signups to Google Spreadsheets. See App Engine log for stack trace.", Day.SATURDAY, null);
+	    		_view.showErrorDialog("Unable to export signups to Google Spreadsheets. See App Engine log for stack trace.", null, null);
 	    		_view.setBusy(false, false);
 	    	}
 
@@ -334,7 +334,7 @@ public class ChukkarSignupController
 	    {
 	    	public void onFailure(Throwable caught) 
 	    	{
-	    		_view.showErrorDialog("Unable to import lineups from Google Spreadsheets. See App Engine log for stack trace.", Day.SATURDAY, null);
+	    		_view.showErrorDialog("Unable to import lineups from Google Spreadsheets. See App Engine log for stack trace.", null, null);
 	    		_view.setBusy(false, false);
 	    	}
 
@@ -356,7 +356,7 @@ public class ChukkarSignupController
 	    {
 	    	public void onFailure(Throwable caught) 
 	    	{
-	    		_view.showErrorDialog("Unable to publish lineups by email. See App Engine log for stack trace.", Day.SATURDAY, null);
+	    		_view.showErrorDialog("Unable to publish lineups by email. See App Engine log for stack trace.", null, null);
 	    		_view.setBusy(false, false);
 	    	}
 
@@ -378,7 +378,7 @@ public class ChukkarSignupController
 	    {
 	    	public void onFailure(Throwable caught) 
 	    	{
-	    		_view.showErrorDialog("Unable to create new admin user: (" + emailAddr + ", " + nickname + ")", Day.SATURDAY, null);
+	    		_view.showErrorDialog("Unable to create new admin user: (" + emailAddr + ", " + nickname + ")", null, null);
 	    		_view.setBusy(false, false);
 	    	}
 
