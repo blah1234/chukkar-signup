@@ -14,6 +14,17 @@
   
   <!-- Servlets -->
   <servlet>
+    <servlet-name>layoutConfigServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.LayoutConfigServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>layoutConfigServiceImpl</servlet-name>
+    <url-pattern>/signup/layoutConfig/*</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
     <servlet-name>adminService</servlet-name>
     <servlet-class>com.defenestrate.chukkars.server.AdminServiceImpl</servlet-class>
   </servlet>
@@ -79,9 +90,30 @@
   </servlet-mapping>
   
   
+  <servlet>
+    <servlet-name>configServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.ConfigurationServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>configServiceImpl</servlet-name>
+    <url-pattern>/signup/config/*</url-pattern>
+  </servlet-mapping>
+  
+  
   <security-constraint>
     <web-resource-collection>
   		<url-pattern>/signup/cron/*</url-pattern>
+	</web-resource-collection>
+    <auth-constraint>
+    	<role-name>admin</role-name>
+	</auth-constraint>
+  </security-constraint>
+  
+  
+  <security-constraint>
+    <web-resource-collection>
+  		<url-pattern>/signup/config/*</url-pattern>
 	</web-resource-collection>
     <auth-constraint>
     	<role-name>admin</role-name>
