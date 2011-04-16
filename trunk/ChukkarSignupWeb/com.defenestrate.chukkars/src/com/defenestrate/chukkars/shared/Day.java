@@ -19,18 +19,25 @@ public enum Day
 	
 	
 	/////////////////////////////// CONSTRUCTORS ///////////////////////////////
-	Day(int numRepresentation)
+	private Day(int numRepresentation)
 	{
 		_numRepresentation = numRepresentation;
 		_isEnabled = false;
 	}
 	
+	private Day(int numRepresentation, boolean isEnabled)
+	{
+		_numRepresentation = numRepresentation;
+		_isEnabled = isEnabled;
+	}
+	
 	
 	///////////////////////////////// METHODS //////////////////////////////////
-	static public Day[] getAll()
+	static final public Day[] getAll()
 	{
 		return new Day[] 
 		{ 
+			//must be returned in lexicographically ascending order!
 			MONDAY, 
 			TUESDAY, 
 			WEDNESDAY, 
