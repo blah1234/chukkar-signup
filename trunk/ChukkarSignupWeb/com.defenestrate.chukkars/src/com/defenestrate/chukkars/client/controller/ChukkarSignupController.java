@@ -6,6 +6,8 @@ import com.defenestrate.chukkars.client.AdminService;
 import com.defenestrate.chukkars.client.AdminServiceAsync;
 import com.defenestrate.chukkars.client.EmailService;
 import com.defenestrate.chukkars.client.EmailServiceAsync;
+import com.defenestrate.chukkars.client.LayoutConfigService;
+import com.defenestrate.chukkars.client.LayoutConfigServiceAsync;
 import com.defenestrate.chukkars.client.LoginService;
 import com.defenestrate.chukkars.client.LoginServiceAsync;
 import com.defenestrate.chukkars.client.PlayerService;
@@ -26,6 +28,7 @@ public class ChukkarSignupController
 	private LoginServiceAsync _loginSvc;
 	private AdminServiceAsync _adminSvc;
 	private EmailServiceAsync _emailSvc;
+	private LayoutConfigServiceAsync _configSvc;
 	
 
 	/////////////////////////////// CONSTRUCTORS ///////////////////////////////
@@ -36,10 +39,49 @@ public class ChukkarSignupController
 		_loginSvc = GWT.create(LoginService.class);
 		_adminSvc = GWT.create(AdminService.class);
 		_emailSvc = GWT.create(EmailService.class);
+		_configSvc = GWT.create(LayoutConfigService.class);
 	}
 	
 
 	///////////////////////////////// METHODS //////////////////////////////////
+	public void configActiveDays()
+	{
+		_view.setBusy(true, true);
+		
+	    AsyncCallback<List<String>> async = new AsyncCallback<List<String>>() 
+	    {
+	    	public void onFailure(Throwable error) 
+	    	{
+    			StackTraceElement[] elems = error.getStackTrace();
+    			StringBuffer buf = new StringBuffer();
+    			buf.append( error.getMessage() );
+    			buf.append("\n");
+    			
+    			for(StackTraceElement currElem : elems)
+    			{
+	    			buf.append( currElem.toString() );
+	    			buf.append("\n");
+	    		}
+    			
+    			_view.onPostInit();
+    			_view.showErrorDialog(buf.toString(), null, error);
+	    	}
+
+	    	public void onSuccess(List<String> result) 
+	    	{
+	    		for(String currStr : result)
+	    		{
+	    			Day currDay = Day.valueOf(currStr);
+	    			currDay.setEnabled(true);
+	    		}
+	    		
+	    		_view.onPostInit();
+	    	}
+	    };
+	    
+	    _configSvc.getActiveDays(async);
+	}
+	
 	public void loginRequest(final String initToken)
 	{
 		// Check login status using login service.
@@ -138,6 +180,10 @@ public class ChukkarSignupController
 		    try
 		    {
 		    	numChukkars = Integer.parseInt(numChukkarsStr);
+		    	if(numChukkars < 0)
+		    	{
+		    		throw new NumberFormatException("Negative numbers are not allowed.");
+		    	}
 		    	
 		    	AsyncCallback<Void> callback = new AsyncCallback<Void>() 
 			    {
