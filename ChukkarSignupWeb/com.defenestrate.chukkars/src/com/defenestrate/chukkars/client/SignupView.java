@@ -73,14 +73,6 @@ public class SignupView implements EntryPoint
 	private DockPanel _topLevelPanel;
 	private Map<Day, DayLayout> _dayToLayoutMap;
 	
-	private Button _satImportBtn;
-	private Button _sunImportBtn;
-	private Button _satPublishBtn;
-	private Button _sunPublishBtn; 
-	private TextBox _satLineupRecipientEmailTxt;
-	private TextBox _sunLineupRecipientEmailTxt;
-	private TextArea _satLineupMsgBodyTxt;
-	private TextArea _sunLineupMsgBodyTxt;
 	private Button _copyBtn;
 	private FlexTable _copyLineupTable;
 	private DockPanel _lineupPanel;
@@ -392,79 +384,62 @@ public class SignupView implements EntryPoint
 		
 		//--------------------
 		
-		_satLineupRecipientEmailTxt = new TextBox();
-		_satLineupRecipientEmailTxt.addStyleDependentName("recipientEmail");
-		_satLineupRecipientEmailTxt.setText("horseparkpolo@yahoogroups.com");
-				
-		String satMsgBodyPrefix = "Here it is for Sat.  Start time at 11am.  _ chukkars total.  Printable lineup available at: ";
-		_satLineupMsgBodyTxt = new TextArea();
-		_satLineupMsgBodyTxt.addStyleDependentName("signupTxt");
-		_satLineupMsgBodyTxt.setText(satMsgBodyPrefix);
-		
-		_satImportBtn = new Button("Import");
-		_satImportBtn.addStyleDependentName("copy");
-		
-		_satPublishBtn = new Button("Publish");
-		_satPublishBtn.addStyleDependentName("saveAdminSettings");
-				
-		FlexTable satLineupTable = new FlexTable();
-		satLineupTable.addStyleName("adminTable");
-		
-		satLineupTable.setText(0, 0, "Spreadsheet lineup:");
-		satLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
-		
-		satLineupTable.setText(1, 0, "To:");
-		satLineupTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
-		
-		satLineupTable.setText(2, 0, "Lineup message body:");
-		satLineupTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
-		
-		satLineupTable.setWidget(0, 1, _satImportBtn);
-		satLineupTable.setWidget(1, 1, _satLineupRecipientEmailTxt);
-		satLineupTable.setWidget(2, 1, _satLineupMsgBodyTxt);
-		satLineupTable.setWidget(3, 1, _satPublishBtn);
-		
-		//---------------------
-		
-		_sunLineupRecipientEmailTxt = new TextBox();
-		_sunLineupRecipientEmailTxt.addStyleDependentName("recipientEmail");
-		_sunLineupRecipientEmailTxt.setText("horseparkpolo@yahoogroups.com");
-				
-		String sunMsgBodyPrefix = "Here it is for Sun.  Start time at 11am.  _ chukkars total.  Printable lineup available at: ";
-		_sunLineupMsgBodyTxt = new TextArea();
-		_sunLineupMsgBodyTxt.addStyleDependentName("signupTxt");
-		_sunLineupMsgBodyTxt.setText(sunMsgBodyPrefix);
-		
-		_sunImportBtn = new Button("Import");
-		_sunImportBtn.addStyleDependentName("copy");
-		
-		_sunPublishBtn = new Button("Publish");
-		_sunPublishBtn.addStyleDependentName("saveAdminSettings");
-		
-		FlexTable sunLineupTable = new FlexTable();
-		sunLineupTable.addStyleName("adminTable");
-		
-		sunLineupTable.setText(0, 0, "Spreadsheet lineup:");
-		sunLineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
-		
-		sunLineupTable.setText(1, 0, "To:");
-		sunLineupTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
-		
-		sunLineupTable.setText(2, 0, "Lineup message body:");
-		sunLineupTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
-		
-		sunLineupTable.setWidget(0, 1, _sunImportBtn);
-		sunLineupTable.setWidget(1, 1, _sunLineupRecipientEmailTxt);
-		sunLineupTable.setWidget(2, 1, _sunLineupMsgBodyTxt);
-		sunLineupTable.setWidget(3, 1, _sunPublishBtn);
-		
-		//---------------------
-		
 		TabPanel tabPanel = new DecoratedTabPanel();
 		tabPanel.setAnimationEnabled(true);
 		
-		tabPanel.add(satLineupTable, "Saturday");
-		tabPanel.add(sunLineupTable, "Sunday");
+		Day[] allDays = Day.getAll();
+		for(Day currDay : allDays)
+		{
+			if( currDay.isEnabled() )
+			{
+				DayLayout layout = _dayToLayoutMap.get(currDay);
+				
+				layout._lineupRecipientEmailTxt = new TextBox();
+				layout._lineupRecipientEmailTxt.addStyleDependentName("recipientEmail");
+				layout._lineupRecipientEmailTxt.setText("horseparkpolo@yahoogroups.com");
+				
+				String satMsgBodyPrefix = "Here it is for " + currDay + ".  Start time at 11am.  _ chukkars total.  Printable lineup available at: ";
+				layout._lineupMsgBodyTxt = new TextArea();
+				layout._lineupMsgBodyTxt.addStyleDependentName("signupTxt");
+				layout._lineupMsgBodyTxt.setText(satMsgBodyPrefix);
+		
+				layout._importBtn = new Button("Import");
+				layout._importBtn.addStyleDependentName("copy");
+		
+				layout._publishBtn = new Button("Publish");
+				layout._publishBtn.addStyleDependentName("saveAdminSettings");
+				
+				FlexTable lineupTable = new FlexTable();
+				lineupTable.addStyleName("adminTable");
+				
+				lineupTable.setText(0, 0, "Spreadsheet lineup:");
+				lineupTable.getCellFormatter().addStyleName(0, 0, "rightCenterAlignLbl");
+				
+				lineupTable.setText(1, 0, "To:");
+				lineupTable.getCellFormatter().addStyleName(1, 0, "rightCenterAlignLbl");
+				
+				lineupTable.setText(2, 0, "Lineup message body:");
+				lineupTable.getCellFormatter().addStyleName(2, 0, "rightTopAlignLbl");
+				
+				lineupTable.setWidget(0, 1, layout._importBtn);
+				lineupTable.setWidget(1, 1, layout._lineupRecipientEmailTxt);
+				lineupTable.setWidget(2, 1, layout._lineupMsgBodyTxt);
+				lineupTable.setWidget(3, 1, layout._publishBtn);
+		
+		
+				tabPanel.add( lineupTable, currDay.toString() );
+			}
+		}
+		
+		if(tabPanel.getTabBar().getTabCount() == 0)
+		{
+			Label errLbl = new Label("Unable to configure active signup days. Please try again later. Contact Shawn.");
+			errLbl.addStyleDependentName("status");
+			
+			tabPanel.add(errLbl, "Error");
+		}
+		
+		// Show the lexicographically smallest tab initially.
 		tabPanel.selectTab(0);
 		
 		//----------------------
@@ -486,16 +461,7 @@ public class SignupView implements EntryPoint
 	
 	public void setImportedLineup(Day dayOfWeek, String msgBody)
 	{
-		TextArea msgTxt;
-		
-		if(dayOfWeek == Day.SATURDAY)
-		{
-			msgTxt = _satLineupMsgBodyTxt;
-		}
-		else
-		{
-			msgTxt = _sunLineupMsgBodyTxt;
-		}
+		TextArea msgTxt = _dayToLayoutMap.get(dayOfWeek)._lineupMsgBodyTxt;
 		
 		msgTxt.setText(msgBody);
 	}
@@ -627,6 +593,34 @@ public class SignupView implements EntryPoint
 					startEditingChukkars(event);
 				}
 			});
+	    	
+	    	//--------------------
+	    	
+	    	currLayout._importBtn.addClickHandler(new ClickHandler()
+			{
+	    		Day dayOfWeek = dayParam[0];
+	    		
+				public void onClick(ClickEvent event)
+				{
+					_ctrl.importLineup( 
+						dayOfWeek, 
+						_dayToLayoutMap.get(dayOfWeek)._lineupMsgBodyTxt.getValue().trim() );
+				}
+			});
+			
+	    	currLayout._publishBtn.addClickHandler(new ClickHandler()
+			{
+	    		Day dayOfWeek = dayParam[0];
+	    		
+				public void onClick(ClickEvent event)
+				{
+					_ctrl.publishLineup( 
+						dayOfWeek,
+						_loginInfo,
+						_dayToLayoutMap.get(dayOfWeek)._lineupRecipientEmailTxt.getValue().trim(),
+						_dayToLayoutMap.get(dayOfWeek)._lineupMsgBodyTxt.getValue().trim() );
+				}
+			});
 	    }
 		
 		
@@ -679,46 +673,6 @@ public class SignupView implements EntryPoint
 			public void onClick(ClickEvent event)
 			{
 				_ctrl.exportSignups();
-			}
-		});
-		
-		_satImportBtn.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
-			{
-				_ctrl.importLineup( Day.SATURDAY, 
-								    _satLineupMsgBodyTxt.getValue().trim() );
-			}
-		});
-		
-		_satPublishBtn.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
-			{
-				_ctrl.publishLineup( Day.SATURDAY,
-									 _loginInfo,
-									 _satLineupRecipientEmailTxt.getValue().trim(),
-								     _satLineupMsgBodyTxt.getValue().trim() );
-			}
-		}); 
-		
-		_sunImportBtn.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
-			{
-				_ctrl.importLineup( Day.SUNDAY, 
-									_sunLineupMsgBodyTxt.getValue().trim() );
-			}
-		});
-		
-		_sunPublishBtn.addClickHandler(new ClickHandler()
-		{
-			public void onClick(ClickEvent event)
-			{
-				_ctrl.publishLineup( Day.SUNDAY,
-									 _loginInfo,
-									 _sunLineupRecipientEmailTxt.getValue().trim(),
-								     _sunLineupMsgBodyTxt.getValue().trim() );
 			}
 		});
 		
@@ -1263,5 +1217,10 @@ public class SignupView implements EntryPoint
 		Label _totalChukkarsLbl;
 		Label _gameChukkarsLbl;
 		VerticalPanel _gameChukkarsPanel;
+		
+		Button _importBtn;
+		Button _publishBtn;
+		TextBox _lineupRecipientEmailTxt;
+		TextArea _lineupMsgBodyTxt;
 	}
 }
