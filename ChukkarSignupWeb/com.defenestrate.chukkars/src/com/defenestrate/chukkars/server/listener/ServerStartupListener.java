@@ -23,6 +23,11 @@ public class ServerStartupListener implements ServletContextListener
 	 */
 	public void contextInitialized(ServletContextEvent event)
 	{
+		loadDaysConfiguration();
+	}
+	
+	static public void loadDaysConfiguration()
+	{
 		//initialize persisted state of Day enums
 		Day[] allDays = Day.getAll();
 		
@@ -60,7 +65,7 @@ public class ServerStartupListener implements ServletContextListener
 			{
 				pm.close();
 			}
-		}
+		}		
 	}
 	
 	public void contextDestroyed(ServletContextEvent event)
