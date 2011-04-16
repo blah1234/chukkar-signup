@@ -1,5 +1,7 @@
 package com.defenestrate.chukkars.server;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -38,8 +40,11 @@ public class CronServiceImpl extends HttpServlet
 		
 		try
 		{
-			Method invokeMethod = this.getClass().getMethod(path, null);
-			invokeMethod.invoke(this, null);
+			Method invokeMethod = this.getClass().getMethod(
+				path, 
+				HttpServletResponse.class);
+			
+			invokeMethod.invoke(this, resp);
 		}
 		catch(NoSuchMethodException e)
 		{
@@ -55,7 +60,7 @@ public class CronServiceImpl extends HttpServlet
 		}
 	}
 	
-	public void removeAllPlayers() 
+	public void removeAllPlayers(HttpServletResponse resp) throws ServletException
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
@@ -76,6 +81,9 @@ public class CronServiceImpl extends HttpServlet
 				Level.SEVERE, 
 				"Error encountered trying to remove all players:\n" + e.getMessage(), 
 				e);
+			
+			//display stack trace to browser
+			throw new ServletException(e);
 		}
 		finally 
 		{
@@ -83,6 +91,40 @@ public class CronServiceImpl extends HttpServlet
 		}
 		
 		logTask(CronTask.RESET);
+		
+		//------------------
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		String msg =  null;
+		PrintWriter charWriter = null;
+		
+		try
+		{
+			charWriter = resp.getWriter();
+			
+			msg = "All players successfully removed.";
+			charWriter.write(msg);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				e);
+			
+			//display stack trace to browser
+			throw new ServletException(e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
+		}
 	}
 	
 	private void logTask(String taskName)
@@ -192,7 +234,7 @@ public class CronServiceImpl extends HttpServlet
 		return ret;
 	}
 	
-	public void sendSignupNoticeEmail() throws ServletException
+	public void sendSignupNoticeEmail(HttpServletResponse resp) throws ServletException
 	{
 		MessageAdmin data = getEnabledMessageAdmin();
 		
@@ -201,9 +243,51 @@ public class CronServiceImpl extends HttpServlet
 			String msgBody = data.getSignupNoticeMessage();
 			EmailServiceImpl.sendEmail("signup for weekend", msgBody, data);
 		}
+		
+		//------------------
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		String msg =  null;
+		PrintWriter charWriter = null;
+		
+		try
+		{
+			charWriter = resp.getWriter();
+			
+			if(data != null)
+			{
+				msg = "Signup notice email successfully sent.";
+			}
+			else
+			{
+				msg = "Weekly emails are not enabled. No email sent.";
+			}
+			
+			charWriter.write(msg);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				e);
+			
+			//display stack trace to browser
+			throw new ServletException(e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
+		}
 	}
 	
-	public void sendSignupReminderEmail() throws ServletException
+	public void sendSignupReminderEmail(HttpServletResponse resp) throws ServletException
 	{
 		MessageAdmin data = getEnabledMessageAdmin();
 		
@@ -211,6 +295,48 @@ public class CronServiceImpl extends HttpServlet
 		{
 			String msgBody = data.getSignupReminderMessage();
 			EmailServiceImpl.sendEmail("signup by 12 noon", msgBody, data);
+		}
+		
+		//------------------
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		String msg =  null;
+		PrintWriter charWriter = null;
+		
+		try
+		{
+			charWriter = resp.getWriter();
+			
+			if(data != null)
+			{
+				msg = "Signup reminder email successfully sent.";
+			}
+			else
+			{
+				msg = "Weekly emails are not enabled. No email sent.";
+			}
+			
+			charWriter.write(msg);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				e);
+			
+			//display stack trace to browser
+			throw new ServletException(e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
 		}
 	}
 }
