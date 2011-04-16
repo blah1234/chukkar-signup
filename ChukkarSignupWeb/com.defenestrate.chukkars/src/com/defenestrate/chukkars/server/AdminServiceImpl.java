@@ -3,6 +3,7 @@ package com.defenestrate.chukkars.server;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -190,11 +191,7 @@ public class AdminServiceImpl extends RemoteServiceServlet
 			
 			//------------------
 			
-			Day[] worksheetTitles = 
-			{
-				Day.SATURDAY,
-				Day.SUNDAY
-			};
+			List<Day> worksheetTitles = getActiveDays(); 
 			
 			for(Day currTitle : worksheetTitles)
 			{
@@ -411,6 +408,22 @@ public class AdminServiceImpl extends RemoteServiceServlet
 			
 			throw new RuntimeException(e);
 		}
+	}
+	
+	private List<Day> getActiveDays()
+	{
+		Day[] allDays = Day.getAll();
+		List<Day> retList = new ArrayList<Day>();
+		
+		for(Day currDay : allDays)
+		{
+			if( currDay.isEnabled() )
+			{
+				retList.add(currDay);
+			}
+		}
+		
+		return retList;
 	}
 	
 	private void padRemainingColumns(RecordEntry entry, int colStart, int colEnd)
