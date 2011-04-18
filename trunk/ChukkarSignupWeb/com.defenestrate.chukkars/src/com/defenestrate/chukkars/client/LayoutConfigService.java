@@ -1,5 +1,6 @@
 package com.defenestrate.chukkars.client;
 
+import java.util.Date;
 import java.util.List;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -15,4 +16,10 @@ public interface LayoutConfigService extends RemoteService
 	 * @return a list of all days marked active in the DB.
 	 */
 	List<String> getActiveDays();
+	
+	/**
+	 * Returns the date and time past which signup is closed  
+	 * @return the date and time past which signup is closed
+	 */
+	Date getSignupClosed();
 }

@@ -95,6 +95,7 @@ public class SignupView implements EntryPoint
 	private Anchor _logOutLink;
 	private BusyIndicator _busy;
 	private Label _statusLbl;
+	private boolean _isSignupClosed;
 	
 	private LoginInfo _loginInfo;
 	private MessageAdminClientCopy _adminData;
@@ -133,6 +134,14 @@ public class SignupView implements EntryPoint
 	
 	public void renderModule(String initToken)
 	{
+		_ctrl.getSignupCloseDate(initToken);
+	}
+	
+	public void renderModule(String initToken, Date signupClosed)
+	{
+		Date now = new Date();
+		_isSignupClosed = ( !_loginInfo.isAdmin() && now.after(signupClosed) );
+
 		layoutComponents(initToken);
 		setupListeners();
 	}
@@ -201,6 +210,24 @@ public class SignupView implements EntryPoint
 		}
 		
 		RootPanel.get("signupPanel").add(_topLevelPanel);
+		
+		
+		if(_isSignupClosed)
+		{
+			handleSignupClosed();
+		}
+	}
+	
+	private void handleSignupClosed()
+	{
+		for( DayLayout currLayout : _dayToLayoutMap.values() )
+		{
+			currLayout._addRowBtn.setEnabled(false);
+			currLayout._chukkarsTxt.setEnabled(false);
+			currLayout._nameTxt.setEnabled(false);
+		}
+		
+		showSignupClosedDialog();
 	}
 	
 	private void layoutNavigationComponents()
@@ -586,13 +613,16 @@ public class SignupView implements EntryPoint
 		    	}
 		    });
 	    	
-	    	currLayout._signupTable.addClickHandler(new ClickHandler()
-			{
-				public void onClick(ClickEvent event)
+	    	if(!_isSignupClosed)
+	    	{
+		    	currLayout._signupTable.addClickHandler(new ClickHandler()
 				{
-					startEditingChukkars(event);
-				}
-			});
+					public void onClick(ClickEvent event)
+					{
+						startEditingChukkars(event);
+					}
+				});
+	    	}
 	    	
 	    	//--------------------
 	    	
@@ -949,6 +979,51 @@ public class SignupView implements EntryPoint
     	ok.setFocus(true);
 	}
 	
+	public void showSignupClosedDialog()
+	{
+		final DialogBox alert = new DialogBox(true, true);
+		Caption cap = alert.getCaption();
+		if(cap instanceof UIObject)
+		{
+			( (UIObject)cap ).addStyleDependentName("status");
+		}
+		
+    	alert.setAnimationEnabled(true);
+    	alert.setGlassEnabled(true);
+    	alert.setText("Too late!");
+    	
+    	
+    	HorizontalPanel horizPanel = new HorizontalPanel();
+    	horizPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+    	
+    	DisplayPageClientBundle myImageBundle = GWT.create(DisplayPageClientBundle.class);
+		ImageResource busyImgResource = myImageBundle.errorIcon();
+		horizPanel.add( new Image(busyImgResource) );
+		
+		Label errMsg = new Label("Signup is closed.", true);
+		errMsg.addStyleDependentName("status");
+		horizPanel.add(errMsg);
+    	
+		Button ok = new Button("OK");
+    	ok.addStyleDependentName("errorDialog");
+        ok.addClickHandler(new ClickHandler()
+        {
+        	public void onClick(ClickEvent event) 
+        	{
+        		alert.hide();
+        	}
+        });
+        
+        VerticalPanel vertPanel = new VerticalPanel();
+        vertPanel.addStyleName("errorDialogPanel-main");
+        vertPanel.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+        vertPanel.add(horizPanel);
+        vertPanel.add(ok);
+        
+        alert.setWidget(vertPanel);
+    	alert.center();
+	}
+	
 	public void loadPlayers(List<Player> playersList)
 	{
 		clearSignupPage();
@@ -1058,6 +1133,10 @@ public class SignupView implements EntryPoint
 	    
 	    signupTable.setWidget(rowInd, ACTION_COLUMN_INDEX, updateButton);
 	    
+	    //-------------------------
+	    
+		updateButton.setEnabled(!_isSignupClosed);
+		
 	    //-------------------------
 	    
 	    if( (_loginInfo != null) && _loginInfo.isLoggedIn() && _loginInfo.isAdmin() )
