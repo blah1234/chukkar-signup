@@ -206,6 +206,15 @@ h1 {
   text-align:center;
 }
 
+.gwt-DialogBox .Caption-status {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  font-style: italic;
+  font-size: 15px;
+  color: graytext;
+  text-align:center;
+}
+
 .gwt-Button-errorDialog {
   width: 75px;
 }
