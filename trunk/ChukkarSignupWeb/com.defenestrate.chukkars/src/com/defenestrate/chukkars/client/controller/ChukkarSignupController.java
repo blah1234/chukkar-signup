@@ -1,5 +1,6 @@
 package com.defenestrate.chukkars.client.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import com.defenestrate.chukkars.client.AdminService;
@@ -111,6 +112,25 @@ public class ChukkarSignupController
 	    };
 	    
 	    _loginSvc.login(GWT.getHostPageBaseURL(), initToken, async);
+	}
+	
+	public void getSignupCloseDate(final String initToken)
+	{
+	    AsyncCallback<Date> async = new AsyncCallback<Date>() 
+	    {
+	    	public void onFailure(Throwable error) 
+	    	{
+	    		//render by default with no close date
+    			_view.renderModule( initToken, new Date(Long.MAX_VALUE) );
+	    	}
+
+	    	public void onSuccess(Date result) 
+	    	{
+	    		_view.renderModule(initToken, result);
+	    	}
+	    };
+	    
+	    _configSvc.getSignupClosed(async);
 	}
 	
 	public void addPlayer(final Day dayOfWeek)
