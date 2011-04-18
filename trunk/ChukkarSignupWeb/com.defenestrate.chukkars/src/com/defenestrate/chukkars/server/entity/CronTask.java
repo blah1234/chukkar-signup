@@ -19,6 +19,7 @@ public class CronTask implements Serializable
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	static public final String RESET = "RESET";
+	static public final String CLOSE_SIGNUP = "CLOSE_SIGNUP";
 	
 
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
@@ -64,5 +65,10 @@ public class CronTask implements Serializable
 	public void setRunDateToNow()
 	{
 		_runDate = new Date();
+	}
+	
+	public void setRunDate(Date runDate)
+	{
+		_runDate = runDate;
 	}
 }
