@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,6 +94,19 @@ public class CronServiceImpl extends HttpServlet
 		
 		logTask(CronTask.RESET);
 		
+		//log the time when signup should be closed
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+		cal.setTime( new Date() );
+		while(cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY)
+		{
+			cal.add(Calendar.DAY_OF_WEEK, 1);
+		}
+		cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
+		cal.set(Calendar.MINUTE, 30);
+		
+		logTask( CronTask.CLOSE_SIGNUP, cal.getTime() );
+		
 		//------------------
 		
 		resp.setContentType("text/plain;charset=UTF-8");
@@ -129,6 +144,11 @@ public class CronServiceImpl extends HttpServlet
 	
 	private void logTask(String taskName)
 	{
+		logTask(taskName, null);
+	}
+	
+	private void logTask(String taskName, Date runDate)
+	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
 		Transaction tx = pm.currentTransaction();
@@ -145,12 +165,25 @@ public class CronServiceImpl extends HttpServlet
 
 			if(currTask != null) 
 			{
-				currTask.setRunDateToNow();
+				if(runDate == null)
+				{
+					currTask.setRunDateToNow();
+				}
+				else
+				{
+					currTask.setRunDate(runDate);
+				}
 			}
 			else
 			{
 				//create the task entry
 				CronTask newTask = new CronTask(taskName);
+				
+				if(runDate != null)
+				{
+					newTask.setRunDate(runDate);
+				}
+				
 				pm.makePersistent(newTask);
 			}
 
