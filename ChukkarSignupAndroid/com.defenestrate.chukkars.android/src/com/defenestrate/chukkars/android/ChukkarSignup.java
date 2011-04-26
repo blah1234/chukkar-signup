@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -49,6 +50,7 @@ public class ChukkarSignup extends TheMissingTabActivity
 	
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
 	private Handler _handler;
+	private CountDownLatch _createDoneSignal;
 
 
 	//////////////////////////// Activity METHODS //////////////////////////////
@@ -72,36 +74,66 @@ public class ChukkarSignup extends TheMissingTabActivity
                 }
             }
         };
+        
+        _createDoneSignal = new CountDownLatch(1);
 	
 		
 	    setContentView(R.layout.tab_content);
-
-	    TheMissingTabHost tabHost = getTabHost();  // The activity TabHost
-	    TheMissingTabSpec spec;  // Resusable TabSpec for each tab
-	    Intent intent;  // Reusable Intent for each tab
-	    List<Day> activeDaysList = getActiveDays();
 	    
-	    if(activeDaysList != null)
-	    {
-		    for(int i=0, n=activeDaysList.size(); i<n; i++)
+	    AsyncTask<Void, Void, List<Day>> task = new AsyncTask<Void, Void, List<Day>>() 
+		{
+			@Override
+			protected void onPreExecute()
+			{
+				//show the "busy" dialog
+				Intent i = new Intent(ChukkarSignup.this, ProgressDialogActivity.class);
+				startActivityForResult(i, R.id.get_server_data_request);
+			}
+			
+		    @Override
+		    protected List<Day> doInBackground(Void... params) 
 		    {
-		    	Day currDay = activeDaysList.get(i);
-		    	
-			    // Create an Intent to launch an Activity for the tab (to be reused)
-			    intent = new Intent().setClass(this, SignupActivity.class);
-			    intent.putExtra(TAB_INDEX_KEY, i);
-		
-			    // Initialize a TabSpec for each tab and add it to the TabHost
-			    View tabView = getTabIndicator(
-			    	currDay.toString(), 
-			    	"", 
-			    	tabHost.getTabWidget() );
-			    spec = tabHost.newTabSpec(currDay.toString()).setIndicator(tabView).setContent(intent);
-			    tabHost.addTab(spec);
+		    	List<Day> activeDaysList = getActiveDays();
+		    	_createDoneSignal.countDown();
+
+		    	return activeDaysList;
 		    }
+		    
+		    @Override
+		    protected void onPostExecute(List<Day> activeDaysList) 
+		    {
+		    	ChukkarSignup.this.finishActivity(R.id.get_server_data_request);
+		    	
+		    	
+		    	TheMissingTabHost tabHost = getTabHost();  // The activity TabHost
+			    TheMissingTabSpec spec;  // Resusable TabSpec for each tab
+			    Intent intent;  // Reusable Intent for each tab
+			    
+			    if(activeDaysList != null)
+			    {
+				    for(int i=0, n=activeDaysList.size(); i<n; i++)
+				    {
+				    	Day currDay = activeDaysList.get(i);
+				    	
+					    // Create an Intent to launch an Activity for the tab (to be reused)
+					    intent = new Intent().setClass(ChukkarSignup.this, SignupActivity.class);
+					    intent.putExtra(TAB_INDEX_KEY, i);
+				
+					    // Initialize a TabSpec for each tab and add it to the TabHost
+					    View tabView = getTabIndicator(
+					    	currDay.toString(), 
+					    	"", 
+					    	tabHost.getTabWidget() );
+					    spec = tabHost.newTabSpec(currDay.toString()).setIndicator(tabView).setContent(intent);
+					    tabHost.addTab(spec);
+				    }
+				
+				    tabHost.setCurrentTab(0);
+			    }
+		    }
+		};
 		
-		    tabHost.setCurrentTab(0);
-	    }
+		task.execute();
 	}
 	
 	@Override
@@ -319,13 +351,26 @@ public class ChukkarSignup extends TheMissingTabActivity
 			    		if(prevResetDate != null)
 			    		{
 				    		//also erase the active days data
-			    			Resources res = getResources();
-			    			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
-			    		    SharedPreferences.Editor editor = settings.edit();
-			    		    editor.remove( res.getString(R.string.active_days_key) );
-			    		    editor.commit();
-			    		    
-				    		doReload = Boolean.TRUE;
+			    			try
+			    			{
+				    			_createDoneSignal.await();
+				    			
+				    			Resources res = getResources();
+				    			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
+				    		    SharedPreferences.Editor editor = settings.edit();
+				    		    editor.remove( res.getString(R.string.active_days_key) );
+				    		    editor.commit();
+				    		    
+					    		doReload = Boolean.TRUE;
+			    			}
+			    			catch(InterruptedException e)
+			    			{
+			    				//Preserve evidence that the interruption occurred 
+			    				//so that code higher up on the call stack can learn 
+			    				//of the interruption and respond to it if it wants to.
+			    				//This will cause the interrupt flag to be set.
+			    		        Thread.currentThread().interrupt();
+			    			}
 			    		}
 			    	}
 			    }
