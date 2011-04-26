@@ -2,6 +2,7 @@
 <resources>
 	<item type="id" name="message_what_error" />
 	<item type="id" name="message_what_success" />
+	<item type="id" name="message_what_info" />
 	
 	<item type="id" name="signup_add_dialog" />
 	<item type="id" name="signup_edit_dialog" />
