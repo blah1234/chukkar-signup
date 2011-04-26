@@ -1,10 +1,6 @@
 package com.defenestrate.chukkars.android;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,6 +29,7 @@ import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -46,8 +43,7 @@ import android.widget.TextView;
 public class ChukkarSignup extends TheMissingTabActivity
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
-	static private final String ACTIVE_DAYS_FILENAME = "active-days.json";
-	static private final String RESET_DATE_FILENAME = "last-reset-date.txt";
+	static private final String STARTUP_CONFIG_PREFS_NAME = "startup-config";
 	static final String TAB_INDEX_KEY = "TAB_INDEX_KEY";
 	
 	
@@ -76,16 +72,14 @@ public class ChukkarSignup extends TheMissingTabActivity
                 }
             }
         };
-		
-        List<Day> activeDaysList = getActiveDays();
-		queryWebAppResetDate();
+	
 		
 	    setContentView(R.layout.tab_content);
 
-	    Resources res = getResources(); // Resource object to get Drawables
 	    TheMissingTabHost tabHost = getTabHost();  // The activity TabHost
 	    TheMissingTabSpec spec;  // Resusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
+	    List<Day> activeDaysList = getActiveDays();
 	    
 	    if(activeDaysList != null)
 	    {
@@ -110,21 +104,24 @@ public class ChukkarSignup extends TheMissingTabActivity
 	    }
 	}
 	
+	@Override
+	public void onStart()
+	{
+		super.onStart();
+		
+		//see if we need to re-config UI and restart 
+		queryWebAppResetDate();
+	}
+	
 	private List<Day> getActiveDays()
 	{
-		String[] existingFiles = fileList();
-    	boolean doesFileExist = false;
+    	Resources res = getResources();
+    	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
+        String activeDaysData = settings.getString(res.getString(R.string.active_days_key), null);
+        
+    	boolean doesDataExist = (activeDaysData != null);
     	
-    	for(String currFilename : existingFiles)
-    	{
-    		if( ACTIVE_DAYS_FILENAME.equals(currFilename) )
-    		{
-    			doesFileExist = true;
-    			break;
-    		}
-    	}
-    	
-    	if(!doesFileExist)
+    	if(!doesDataExist)
     	{
     		try
     		{
@@ -146,16 +143,7 @@ public class ChukkarSignup extends TheMissingTabActivity
     	
     	try
     	{
-    		retList = loadActiveDaysData();
-    	}
-    	catch(IOException e)
-    	{
-    		//unable to open data file on device.
-    		ErrorToast.show( 
-				this, 
-				getResources().getString(R.string.open_data_file_error) );
-			
-			Log.e(this.getClass().getName(), e.getMessage(), e);
+    		retList = loadActiveDaysData(activeDaysData);
     	}
     	catch(JSONException e)
 	    {
@@ -174,7 +162,6 @@ public class ChukkarSignup extends TheMissingTabActivity
 	{
 		//get the latest data from the server
 		InputStream is = null;
-		FileOutputStream fos = null;
 		String result = "";
 		
 		try
@@ -200,9 +187,13 @@ public class ChukkarSignup extends TheMissingTabActivity
 	    	result = strWrite.toString().trim();
 	    	
 	    	//write json data to file
-	    	fos = openFileOutput(ACTIVE_DAYS_FILENAME, Context.MODE_PRIVATE);
-	    	fos.write( result.getBytes() );
-	    	fos.flush();
+	    	Resources res = getResources();
+			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
+		    SharedPreferences.Editor editor = settings.edit();
+		    editor.putString(res.getString(R.string.active_days_key), result);
+		    
+		    // Commit the edits!
+		    editor.commit();
 	    }
 		finally
 		{
@@ -214,63 +205,31 @@ public class ChukkarSignup extends TheMissingTabActivity
 	    		}
 	    	}
 	    	catch(IOException e) {}
-	    	
-	    	try
-	    	{
-	    		if(fos != null)
-	    		{
-	    			fos.close();
-	    		}
-	    	}
-	    	catch(IOException e) {}
 		}
 	}
 	
-	private List<Day> loadActiveDaysData() throws IOException, JSONException
+	private List<Day> loadActiveDaysData(String data) throws JSONException
 	{
-		FileInputStream fis = null;
-    	String result = "";
-    	
-    	try
-    	{
-    		File file = getFileStreamPath(ACTIVE_DAYS_FILENAME);
-    		if(file.length() == 0)
-    		{
-    			//orientation changed in the middle of loading, or some other 
-        		//way the app was stopped in the middle of loading
-    			return null;
-    		}
+		String result;
+		
+		if(data == null)
+		{
+	    	Resources res = getResources();
+	    	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
+	        result = settings.getString(res.getString(R.string.active_days_key), null);
+	        
+	        if(result == null)
+	    	{
+				//orientation changed in the middle of loading, or some other 
+	    		//way the app was stopped in the middle of loading
+	    		return null;
+	    	}
+		}
+		else
+		{
+			result = data;
+		}
     		
-    		fis = openFileInput(ACTIVE_DAYS_FILENAME);
-    		BufferedReader reader = new BufferedReader( new InputStreamReader(fis, "utf-8") );
-    		StringWriter strWrite = new StringWriter();
-	    	
-	    	String line = null;
-	    	while( (line = reader.readLine()) != null ) 
-	    	{
-	    		strWrite.append(line + "\n");
-	    	}
-		            
-	    	result = strWrite.toString();
-    	}
-    	catch(FileNotFoundException e)
-    	{
-    		//again orientation changed in the middle of loading, or some other 
-    		//way the app was stopped in the middle of loading
-    		return null;
-    	}
-    	finally
-    	{
-    		try
-	    	{
-	    		if(fis != null)
-	    		{
-	    			fis.close();
-	    		}
-	    	}
-	    	catch(IOException e) {}
-    	}
-    	
     	
     	//parse json data
     	try
@@ -359,8 +318,13 @@ public class ChukkarSignup extends TheMissingTabActivity
 			    		
 			    		if(prevResetDate != null)
 			    		{
-				    		//also erase the active days file
-				    		deleteFile(ACTIVE_DAYS_FILENAME);
+				    		//also erase the active days data
+			    			Resources res = getResources();
+			    			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
+			    		    SharedPreferences.Editor editor = settings.edit();
+			    		    editor.remove( res.getString(R.string.active_days_key) );
+			    		    editor.commit();
+			    		    
 				    		doReload = Boolean.TRUE;
 			    		}
 			    	}
@@ -411,49 +375,20 @@ public class ChukkarSignup extends TheMissingTabActivity
 	
 	private Date getPreviousWebAppResetDate()
 	{
-		String[] existingFiles = fileList();
-		boolean doesFileExist = false;
+		Resources res = getResources();
+    	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
+        String resetDate = settings.getString(res.getString(R.string.reset_date_key), null);
+        
+    	boolean doesDataExist = (resetDate != null);
     	
-    	for(String currFilename : existingFiles)
+    	if(doesDataExist)
     	{
-    		if( RESET_DATE_FILENAME.equals(currFilename) )
+    		try
     		{
-    			doesFileExist = true;
-    			break;
-    		}
-    	}
-    	
-    	if(doesFileExist)
-    	{
-			FileInputStream fis = null;
-			
-			try
-			{
-				fis = openFileInput(RESET_DATE_FILENAME);
-				BufferedReader reader = new BufferedReader( new InputStreamReader(fis, "utf-8") );
-				StringWriter strWrite = new StringWriter();
-		    	
-		    	String line = null;
-		    	while( (line = reader.readLine()) != null ) 
-		    	{
-		    		strWrite.append(line + "\n");
-		    	}
-			            
-		    	String result = strWrite.toString();
-		    	
-		    	DateFormat inParser = DateFormat.getDateTimeInstance();
-		    	Date prevResetDate = inParser.parse(result);
-		    	
+				DateFormat inParser = DateFormat.getDateTimeInstance();
+			    Date prevResetDate = inParser.parse(resetDate);
+			    	
 		    	return prevResetDate;
-	    	}
-	    	catch(IOException e)
-	    	{
-	    		//can't open and read reset date file. Go ahead and return the
-	    		//current date then. This will have the effect of preserving
-	    		//the player id's that this user has previously created and
-	    		//modified. That way, any warninng messages on subsequent edits 
-	    		//will be based on the preserved state. 
-	            return new Date();
 	    	}
 	    	catch(ParseException e)
 	    	{
@@ -463,17 +398,6 @@ public class ChukkarSignup extends TheMissingTabActivity
 	    		
 	    		return null;
 	    	}
-	    	finally
-	    	{
-	    		try
-		    	{
-		    		if(fis != null)
-		    		{
-		    			fis.close();
-		    		}
-		    	}
-		    	catch(IOException e) {}
-	    	}
     	}
 
     	
@@ -482,34 +406,13 @@ public class ChukkarSignup extends TheMissingTabActivity
 	
 	private void writeResetDate(String resetDate)
 	{
-		FileOutputStream fos = null;
-		
-		try
-		{
-	    	//write json data to file
-	    	fos = openFileOutput(RESET_DATE_FILENAME, Context.MODE_PRIVATE);
-	    	fos.write( resetDate.getBytes() );
-	    	fos.flush();
-		}
-		catch(IOException e)
-		{
-			//unable to write the specified date in the file. Close the file
-			//with empty or corrupted data. On next open, getPreviousWebAppResetDate() 
-			//will return a null on ParseException, which will then lead to this
-			//corrupted file being overwritten.
-			Log.e(this.getClass().getName(),e.getMessage(), e);
-		}
-	    finally
-	    {
-	    	try
-	    	{
-	    		if(fos != null)
-	    		{
-	    			fos.close();
-	    		}
-	    	}
-	    	catch(IOException e) {}
-	    }
+		Resources res = getResources();
+		SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
+	    SharedPreferences.Editor editor = settings.edit();
+	    editor.putString(res.getString(R.string.reset_date_key), resetDate);
+	    
+	    // Commit the edits!
+	    editor.commit();
 	}
 	
 	private void reload() 

@@ -1,10 +1,6 @@
 package com.defenestrate.chukkars.android;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,6 +46,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnShowListener;
 import android.content.DialogInterface.OnDismissListener;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -73,7 +70,7 @@ import android.widget.TextView;
 public class SignupActivity extends Activity 
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
-	static private final String SERVER_DATA_FILENAME = "all-players.json";
+	static private final String SERVER_DATA_PREFS_NAME = "all-players.json";
 	
 	static private final String PLAYER_ID_KEY = "PLAYER_ID_KEY"; 
 	static private final String PLAYER_NAME_KEY = "PLAYER_NAME_KEY";
@@ -83,7 +80,7 @@ public class SignupActivity extends Activity
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
 	private Handler _errHandler;
 	private Day _selectedDay;
-	private long _fileLastModified = -1;
+	private long _dataLastModified = -1;
 	private Set<Integer> _dialogsCurrentlyShowing;
 
 
@@ -116,27 +113,19 @@ public class SignupActivity extends Activity
     {
     	super.onResume();
     	
-    	String[] existingFiles = fileList();
-    	boolean doesDataFileExist = false;
-    	
-    	for(String currFilename : existingFiles)
-    	{
-    		if( SERVER_DATA_FILENAME.equals(currFilename) )
-    		{
-    			doesDataFileExist = true;
-    			break;
-    		}
-    	}
-    	
-    	File file = getFileStreamPath(SERVER_DATA_FILENAME);
-		long lastModified = file.lastModified();
+    	Resources res = getResources();
+    	SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
+        String data = settings.getString(res.getString(R.string.content_key), null);
+        long lastModified = settings.getLong(res.getString(R.string.last_modified_key), 0);
+        
+    	boolean doesDataExist = (data != null);
     
-		if( !doesDataFileExist || (lastModified != _fileLastModified) )
+		if( !doesDataExist || (lastModified != _dataLastModified) )
 		{
-			_fileLastModified = lastModified;
+			_dataLastModified = lastModified;
         
             int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
-    		loadPlayers(tabIndex);
+    		loadPlayers(data, tabIndex);
 		}
     }
     
@@ -151,7 +140,14 @@ public class SignupActivity extends Activity
 			dismissDialog(currId);
 		}
 		
-		deleteFile(SERVER_DATA_FILENAME);
+		Resources res = getResources();
+		SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
+	    SharedPreferences.Editor editor = settings.edit();
+	    editor.remove( res.getString(R.string.content_key) );
+	    editor.remove( res.getString(R.string.last_modified_key) );
+
+	    // Commit the edits!
+	    editor.commit();
 	}
     
     @Override
@@ -595,87 +591,37 @@ public class SignupActivity extends Activity
         task.execute( Integer.toString(tabIndex), selectedDay.toString(), name, Integer.toString(numChukkars) );
 	}
     
-    private void loadPlayers(int tabIndex)
+    private void loadPlayers(String data, int tabIndex)
     {
-    	String[] existingFiles = fileList();
-    	boolean doesDataFileExist = false;
+    	boolean doesDataExist = (data != null);
     	
-    	for(String currFilename : existingFiles)
-    	{
-    		if( SERVER_DATA_FILENAME.equals(currFilename) )
-    		{
-    			doesDataFileExist = true;
-    			break;
-    		}
-    	}
-    	
-    	if(!doesDataFileExist)
+    	if(!doesDataExist)
     	{
     		getServerData(tabIndex);
     	}
     	else
     	{
-    		loadPlayersImpl(tabIndex);
+    		loadPlayersImpl(data, tabIndex);
     	}
     }
     
     private void loadPlayersImpl(int tabIndex)
     {
-    	FileInputStream fis = null;
-    	String result = "";
-    	
-    	try
-    	{
-    		File file = getFileStreamPath(SERVER_DATA_FILENAME);
-    		if(file.length() == 0)
-    		{
-    			//orientation changed in the middle of loading, or some other 
-        		//way the app was stopped in the middle of loading
-    			return;
-    		}
-    		
-    		fis = openFileInput(SERVER_DATA_FILENAME);
-    		BufferedReader reader = new BufferedReader( new InputStreamReader(fis, "utf-8") );
-    		StringWriter strWrite = new StringWriter();
-	    	
-	    	String line = null;
-	    	while( (line = reader.readLine()) != null ) 
-	    	{
-	    		strWrite.append(line + "\n");
-	    	}
-		            
-	    	result = strWrite.toString();
-    	}
-    	catch(FileNotFoundException e)
-    	{
-    		//again orientation changed in the middle of loading, or some other 
-    		//way the app was stopped in the middle of loading
-    		return;
-    	}
-    	catch(IOException e)
-    	{
-    		//unable to open data file on device.
-    		//show error toast on GUI thread
-			Message msg = _errHandler.obtainMessage(R.id.message_what_error);
-	    	msg.arg1 = R.string.open_data_file_error;
-			_errHandler.sendMessage(msg);
-			
-			Log.e(this.getClass().getName(), e.getMessage(), e);
-            return;
-    	}
-    	finally
-    	{
-    		try
-	    	{
-	    		if(fis != null)
-	    		{
-	    			fis.close();
-	    		}
-	    	}
-	    	catch(IOException e) {}
-    	}
-    	
-    	
+    	Resources res = getResources();
+    	SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
+        String data = settings.getString(res.getString(R.string.content_key), null);
+        
+        if(data != null)
+        {
+        	//if orientation changed in the middle of loading, or some other 
+    		//way the app was stopped in the middle of loading, just ignore
+        	//current load request. The activity will load once again.
+        	loadPlayersImpl(data, tabIndex);
+        }
+    }
+    
+    private void loadPlayersImpl(String result, int tabIndex)
+    {
     	//parse json data
 	    try
 	    {
@@ -868,7 +814,6 @@ public class SignupActivity extends Activity
 	private void writeServerData(HttpResponse response) throws IOException
 	{
 		InputStream is = null;
-		FileOutputStream fos = null;
 		
 		try
 		{
@@ -887,10 +832,17 @@ public class SignupActivity extends Activity
 		            
 	    	String result = strWrite.toString();
 	    	
-	    	//write json data to file
-	    	fos = openFileOutput(SERVER_DATA_FILENAME, Context.MODE_PRIVATE);
-	    	fos.write( result.getBytes() );
-	    	fos.flush();
+	    	//write json data to preferences
+	    	Resources res = getResources();
+			SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
+		    SharedPreferences.Editor editor = settings.edit();
+		    editor.putString(res.getString(R.string.content_key), result);
+		    
+		    _dataLastModified = new Date().getTime();
+		    editor.putLong(res.getString(R.string.last_modified_key), _dataLastModified);
+
+		    // Commit the edits!
+		    editor.commit();
 		}
 	    finally
 	    {
@@ -902,19 +854,6 @@ public class SignupActivity extends Activity
 	    		}
 	    	}
 	    	catch(IOException e) {}
-	    	
-	    	try
-	    	{
-	    		if(fos != null)
-	    		{
-	    			fos.close();
-	    		}
-	    	}
-	    	catch(IOException e) {}
 	    }
-	    
-	    
-	    File file = getFileStreamPath(SERVER_DATA_FILENAME);
-	    _fileLastModified = file.lastModified();
 	}
 }
