@@ -79,7 +79,7 @@ public class ConfigurationServiceImpl extends HttpServlet
 		{
 			charWriter = resp.getWriter();
 			
-			msg = "Day enums successfully reconfigured.";
+			msg = "Day enums successfully reconfigured.\nDid you remember to advance the RunDate of the RESET CronTask, so mobile apps can pick up this change?";
 			charWriter.write(msg);
 			
 			//commit the response
