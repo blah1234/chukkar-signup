@@ -35,6 +35,7 @@ import yuku.iconcontextmenu.IconContextMenu;
 import yuku.iconcontextmenu.IconContextMenu.IconContextItemSelectedListener;
 
 import com.defenestrate.chukkars.android.entity.Day;
+import com.defenestrate.chukkars.android.exception.SignupClosedException;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 import com.defenestrate.chukkars.android.widget.NumberPicker;
 
@@ -66,6 +67,7 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class SignupActivity extends Activity 
 {
@@ -75,6 +77,8 @@ public class SignupActivity extends Activity
 	static private final String PLAYER_ID_KEY = "PLAYER_ID_KEY"; 
 	static private final String PLAYER_NAME_KEY = "PLAYER_NAME_KEY";
 	static private final String PLAYER_NUM_CHUKKARS_KEY = "PLAYER_NUM_CHUKKARS_KEY";
+	
+	static private final String SIGNUP_CLOSED = "!!!SIGNUP_CLOSED!!!";
 	
 	
 	//////////////////////////// MEMBER VARIABLES //////////////////////////////
@@ -101,6 +105,15 @@ public class SignupActivity extends Activity
                 {
             		ErrorToast.show( SignupActivity.this, 
             						 getResources().getString(msg.arg1) );
+                }
+                else if( (msg.what == R.id.message_what_info) && (msg.arg1 != 0) )
+                {
+                	Context context = getApplicationContext();
+                	CharSequence text = getResources().getString(msg.arg1);
+                	int duration = Toast.LENGTH_LONG;
+
+                	Toast toast = Toast.makeText(context, text, duration);
+                	toast.show();
                 }
             }
         };
@@ -494,6 +507,15 @@ public class SignupActivity extends Activity
 					writeServerData(response);
 					return tabIndexArg;
 			    }
+				catch(SignupClosedException e)
+				{
+					//show error toast on GUI thread
+					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+			    	msg.arg1 = R.string.signup_closed;
+					_errHandler.sendMessage(msg);
+					
+					return null;
+				}
 				catch(IOException e)
 				{
 					//unable to connect to server
@@ -562,6 +584,15 @@ public class SignupActivity extends Activity
 					writeServerData(response);
 					return tabIndexArg;
 			    }
+				catch(SignupClosedException e)
+				{
+					//show error toast on GUI thread
+					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+			    	msg.arg1 = R.string.signup_closed;
+					_errHandler.sendMessage(msg);
+					
+					return null;
+				}
 				catch(IOException e)
 				{
 					//unable to connect to server
@@ -587,8 +618,19 @@ public class SignupActivity extends Activity
 		    }
 		};
 		
-		int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
-        task.execute( Integer.toString(tabIndex), selectedDay.toString(), name, Integer.toString(numChukkars) );
+		
+		if( (name == null) || (name.trim().length() == 0) )
+		{
+			//show error toast
+			Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+	    	msg.arg1 = R.string.blank_name;
+			_errHandler.sendMessage(msg);
+		}
+		else
+		{
+			int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
+	        task.execute( Integer.toString(tabIndex), selectedDay.toString(), name, Integer.toString(numChukkars) );
+		}
 	}
     
     private void loadPlayers(String data, int tabIndex)
@@ -783,6 +825,16 @@ public class SignupActivity extends Activity
 					Integer tabIndexArg = params[0];
 					return tabIndexArg;
 			    }
+				catch(SignupClosedException e)
+				{
+					//will never happen, but show error toast on GUI thread just
+					//in case
+					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+			    	msg.arg1 = R.string.signup_closed;
+					_errHandler.sendMessage(msg);
+					
+					return null;
+				}
 				catch(IOException e)
 				{
 					//unable to connect to server
@@ -811,7 +863,7 @@ public class SignupActivity extends Activity
 		task.execute(tabIndex);
 	}
 	
-	private void writeServerData(HttpResponse response) throws IOException
+	private void writeServerData(HttpResponse response) throws SignupClosedException, IOException
 	{
 		InputStream is = null;
 		
@@ -831,6 +883,11 @@ public class SignupActivity extends Activity
 	    	}
 		            
 	    	String result = strWrite.toString();
+	    	
+	    	if( SIGNUP_CLOSED.equals(result.trim()) )
+	    	{
+	    		throw new SignupClosedException();
+	    	}
 	    	
 	    	//write json data to preferences
 	    	Resources res = getResources();
