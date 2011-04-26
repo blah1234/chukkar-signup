@@ -29,6 +29,7 @@ public class JSONServiceImpl extends HttpServlet
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	private static final Logger LOG = Logger.getLogger( JSONServiceImpl.class.getName() );
+	private static final String SIGNUP_CLOSED = "!!!SIGNUP_CLOSED!!!";
 
 	
 	/////////////////////////// HttpServlet METHODS ////////////////////////////
@@ -133,18 +134,31 @@ public class JSONServiceImpl extends HttpServlet
 	 */
 	public void addPlayer(HttpServletRequest req, HttpServletResponse resp) 
 	{
-		Day requestDay = Day.valueOf( req.getParameter("_requestDay") );
-		String name = req.getParameter("_name");
-		Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
+		Date closeDate = LayoutConfigServiceImpl.getSignupClosedImpl();
+		Date now = new Date();
+		boolean isSignupClosed = now.after(closeDate);
+		String respStr;
 		
-		Player addedPlayer = PlayerServiceImpl.addPlayerImpl(name, numChukkars, requestDay);
-		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
-		List<DayTotal> totalsList = calculateGameChukkars(playersList);
-		
-		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, addedPlayer);
-		
-		Gson gson = new Gson();
-		String json = gson.toJson(responseObj);
+		if(!isSignupClosed)
+		{
+			Day requestDay = Day.valueOf( req.getParameter("_requestDay") );
+			String name = req.getParameter("_name");
+			Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
+			
+			Player addedPlayer = PlayerServiceImpl.addPlayerImpl(name, numChukkars, requestDay);
+			List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
+			List<DayTotal> totalsList = calculateGameChukkars(playersList);
+			
+			TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, addedPlayer);
+			
+			Gson gson = new Gson();
+			String json = gson.toJson(responseObj);
+			respStr = json;
+		}
+		else
+		{
+			respStr = SIGNUP_CLOSED;
+		}
 		
 		resp.setContentType("text/plain;charset=UTF-8");
 		PrintWriter charWriter = null;
@@ -152,7 +166,7 @@ public class JSONServiceImpl extends HttpServlet
 		try
 		{
 			charWriter = resp.getWriter();
-			charWriter.write(json);
+			charWriter.write(respStr);
 			
 			//commit the response
 			charWriter.flush();
@@ -161,7 +175,7 @@ public class JSONServiceImpl extends HttpServlet
 		{
 			LOG.log(
 				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				"Error encountered trying to write to the ServletResponse:\n" + respStr + "\n\n" + e.getMessage(), 
 				e);
 		}
 		finally
@@ -183,17 +197,30 @@ public class JSONServiceImpl extends HttpServlet
 	 */
 	public void editChukkars(HttpServletRequest req, HttpServletResponse resp) 
 	{
-		Long playerId = new Long( req.getParameter("_id") );
-		Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
+		Date closeDate = LayoutConfigServiceImpl.getSignupClosedImpl();
+		Date now = new Date();
+		boolean isSignupClosed = now.after(closeDate);
+		String respStr;
 		
-		Player editedPlayer = PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
-		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
-		List<DayTotal> totalsList = calculateGameChukkars(playersList);
-
-		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, editedPlayer);
-		
-		Gson gson = new Gson();
-		String json = gson.toJson(responseObj);
+		if(!isSignupClosed)
+		{
+			Long playerId = new Long( req.getParameter("_id") );
+			Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
+			
+			Player editedPlayer = PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
+			List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
+			List<DayTotal> totalsList = calculateGameChukkars(playersList);
+	
+			TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, editedPlayer);
+			
+			Gson gson = new Gson();
+			String json = gson.toJson(responseObj);
+			respStr = json;
+		}
+		else
+		{
+			respStr = SIGNUP_CLOSED;
+		}
 		
 		resp.setContentType("text/plain;charset=UTF-8");
 		PrintWriter charWriter = null;
@@ -201,7 +228,7 @@ public class JSONServiceImpl extends HttpServlet
 		try
 		{
 			charWriter = resp.getWriter();
-			charWriter.write(json);
+			charWriter.write(respStr);
 			
 			//commit the response
 			charWriter.flush();
@@ -210,7 +237,7 @@ public class JSONServiceImpl extends HttpServlet
 		{
 			LOG.log(
 				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				"Error encountered trying to write to the ServletResponse:\n" + respStr + "\n\n" + e.getMessage(), 
 				e);
 		}
 		finally

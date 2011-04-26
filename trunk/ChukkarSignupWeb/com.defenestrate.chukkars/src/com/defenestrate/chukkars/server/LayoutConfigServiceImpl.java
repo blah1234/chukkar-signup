@@ -49,6 +49,11 @@ public class LayoutConfigServiceImpl extends RemoteServiceServlet
 	
 	public Date getSignupClosed()
 	{
+		return getSignupClosedImpl();
+	}
+	
+	static public Date getSignupClosedImpl()
+	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 		
 		//default is "never"
