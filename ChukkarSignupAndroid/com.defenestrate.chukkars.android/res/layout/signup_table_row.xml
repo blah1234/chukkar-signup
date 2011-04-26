@@ -8,14 +8,18 @@
 	<TextView
 		android:id="@+id/player_time_col"
     	android:text=""
+    	android:textColor="@android:color/darker_gray"
+    	android:textStyle="italic"
         android:padding="3dip" />
 	<TextView
 		android:id="@+id/player_name_col"
     	android:text=""
+    	android:textColor="@android:color/white"
         android:padding="3dip" />
 	<TextView
 		android:id="@+id/player_chukkars_col"
     	android:text=""
+    	android:textColor="@android:color/white"
         android:gravity="right"
         android:padding="3dip" />
 </TableRow>
