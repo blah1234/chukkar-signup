@@ -32,12 +32,15 @@
     
     <string name="menu_add">Add Player</string>
     <string name="menu_edit">Update Chukkars</string>
-    <string name="button_save">"Save"</string>
-    <string name="button_cancel">"Cancel"</string>
+    <string name="button_save">Save</string>
+    <string name="button_cancel">Cancel</string>
     <string name="edit_chukkars_warning">"You''ve previously only created or edited:\n{0}\nDon''t be evil..."</string>
     
     <string name="server_connect_error">Unable to connect to server. Please try again later when network or wifi reception is better.</string>
     <string name="unexpected_json_error">Unexpected response format from server. Most likely a careless bug. Contact Shawn.</string>
     <string name="open_data_file_error">Unable to open data file. Try uninstalling, then re-installing this app.</string>
     <string name="incorrect_app_state_error">Application got itself in an incorrect state. Most likely a careless bug. Contact Shawn.</string>
+    
+    <string name="signup_closed">Too late! Signup is closed.</string>
+    <string name="blank_name">Name can\'t be blank.</string>
 </resources>
