@@ -2,12 +2,18 @@ package com.defenestrate.chukkars.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,8 +26,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
+
 import com.defenestrate.chukkars.server.entity.CronTask;
 import com.defenestrate.chukkars.server.entity.MessageAdmin;
+import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
 
 public class CronServiceImpl extends HttpServlet 
@@ -343,6 +352,136 @@ public class CronServiceImpl extends HttpServlet
 			if(data != null)
 			{
 				msg = "Signup reminder email successfully sent.";
+			}
+			else
+			{
+				msg = "Weekly emails are not enabled. No email sent.";
+			}
+			
+			charWriter.write(msg);
+			
+			//commit the response
+			charWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LOG.log(
+				Level.SEVERE, 
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				e);
+			
+			//display stack trace to browser
+			throw new ServletException(e);
+		}
+		finally
+		{
+			if(charWriter != null)
+			{
+				charWriter.close();
+			}
+		}
+	}
+	
+	public void sendExportSignupEmail(HttpServletResponse resp) throws ServletException
+	{
+		MessageAdmin data = getEnabledMessageAdmin();
+		
+		if(data != null)
+		{
+			List<Player> allPlayersList = null;
+			
+			try
+			{
+				allPlayersList = PlayerServiceImpl.getPlayersImpl();
+			}
+			catch(Exception e)
+			{
+				LOG.log(Level.SEVERE,
+						"Error getting all signed up players",
+						e);
+				
+				PrintWriter pWrite = null;
+				
+				try
+				{
+					StringWriter strWrite = new StringWriter();
+					pWrite = new PrintWriter(strWrite);
+					e.printStackTrace(pWrite);
+				
+					EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "Export signup error", strWrite.toString(), data);
+				}
+				finally
+				{
+					IOUtils.closeQuietly(pWrite);
+				}
+			}
+			
+			
+			Comparator<Day> dayComp = new Comparator<Day>()
+			{
+				public int compare(Day o1, Day o2)
+				{
+					int ret = o1.getNumber() - o2.getNumber();
+					return ret;
+				}
+			};
+			Map<Day, List<Player>> dayToPlayers = new TreeMap<Day, List<Player>>(dayComp);
+			
+			for(Player currPlayer : allPlayersList)
+			{
+				Day currDay = currPlayer.getRequestDay();
+				List<Player> valList;
+				
+				if( dayToPlayers.containsKey(currDay) )
+				{
+					valList = dayToPlayers.get(currDay);
+				}
+				else
+				{
+					valList = new ArrayList<Player>();
+					dayToPlayers.put(currDay, valList);
+				}
+				
+				valList.add(currPlayer);
+			}
+			
+			
+			StringBuffer buf = new StringBuffer();
+			
+			for( Day currDay : dayToPlayers.keySet() )
+			{
+				buf.append(currDay);
+				buf.append(":\n");
+				
+				List<Player> valList = dayToPlayers.get(currDay);
+				for(Player currPlayer : valList)
+				{
+					buf.append( currPlayer.getName() );
+					buf.append("\t");
+					buf.append( currPlayer.getChukkarCount() );
+					buf.append("\n");
+				}
+				
+				buf.append("\n\n\n");
+			}
+			
+			EmailServiceImpl.sendEmail("erikwrghtw@aol.com", "HPPC chukkar signups", buf.toString(), data);
+			EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "HPPC chukkar signups", buf.toString(), data);
+		}
+		
+		//------------------------------
+		
+		resp.setContentType("text/plain;charset=UTF-8");
+		String msg = null;
+		PrintWriter charWriter = null;
+		
+		try
+		{
+			charWriter = resp.getWriter();
+			
+			if(data != null)
+			{
+				msg = "Signup export email successfully sent to Erik.";
 			}
 			else
 			{
