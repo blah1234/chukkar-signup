@@ -29,6 +29,11 @@ public class EmailServiceImpl extends RemoteServiceServlet
 	///////////////////////////////// METHODS //////////////////////////////////
 	static public void sendEmail(String subject, String msgBody, MessageAdmin data) throws ServletException
 	{
+		sendEmail(data.getRecipientEmailAddress(), subject, msgBody, data);
+	}
+	
+	static public void sendEmail(String recipientAddress, String subject, String msgBody, MessageAdmin data) throws ServletException
+	{
 		Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
 
@@ -36,7 +41,7 @@ public class EmailServiceImpl extends RemoteServiceServlet
         {
             Message msg = new MimeMessage(session);
             msg.setFrom( new InternetAddress(data.getAdmin().getEmailAddress(), data.getAdmin().getNickname()) );
-            msg.addRecipient( Message.RecipientType.TO, new InternetAddress(data.getRecipientEmailAddress()) );
+            msg.addRecipient( Message.RecipientType.TO, new InternetAddress(recipientAddress) );
             msg.setSubject(subject);
             msg.setText(msgBody);
             Transport.send(msg);
