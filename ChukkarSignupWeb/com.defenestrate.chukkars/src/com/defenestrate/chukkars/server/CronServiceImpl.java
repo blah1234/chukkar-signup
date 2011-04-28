@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -465,8 +467,11 @@ public class CronServiceImpl extends HttpServlet
 				buf.append("\n\n\n");
 			}
 			
-			EmailServiceImpl.sendEmail("erikwrghtw@aol.com", "HPPC chukkar signups", buf.toString(), data);
-			EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "HPPC chukkar signups", buf.toString(), data);
+			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
+            outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+            String subject = "HPPC chukkar signups: " + outFormatter.format( new Date() );
+            
+			EmailServiceImpl.sendEmail("erikwrghtw@aol.com", subject, buf.toString(), data);
 		}
 		
 		//------------------------------
