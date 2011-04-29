@@ -285,7 +285,7 @@ public class CronServiceImpl extends HttpServlet
 		if(data != null)
 		{
 			String msgBody = data.getSignupNoticeMessage();
-			EmailServiceImpl.sendEmail("signup for weekend", msgBody, data);
+			EmailServiceImpl.sendEmail("HPPC signup for the upcoming week", msgBody, data);
 		}
 		
 		//------------------
