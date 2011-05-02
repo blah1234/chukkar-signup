@@ -456,6 +456,15 @@ public class CronServiceImpl extends HttpServlet
 				buf.append(":\n");
 				
 				List<Player> valList = dayToPlayers.get(currDay);
+				ChukkarCount counts = calculateGameChukkars(valList);
+				
+				buf.append("# Chukkars Total: ");
+				buf.append(counts._numTotalChukkars);
+				buf.append("\n");
+				buf.append("# Game Chukkars: ");
+				buf.append(counts._numGameChukkars);
+				buf.append("\n\n");
+
 				for(Player currPlayer : valList)
 				{
 					buf.append( currPlayer.getName() );
@@ -514,6 +523,59 @@ public class CronServiceImpl extends HttpServlet
 			{
 				charWriter.close();
 			}
+		}
+	}
+	
+	private ChukkarCount calculateGameChukkars(List<Player> allDayPlayers)
+	{
+		int totalChukkars = 0;
+		int totalPlayers = allDayPlayers.size();
+		
+		for(Player currPlayer : allDayPlayers)
+		{
+			int currChukkarCount = currPlayer.getChukkarCount();
+			
+			if(currChukkarCount == 0)
+			{
+				totalPlayers--;
+			}
+			
+			totalChukkars += currChukkarCount;
+		}
+		
+		//------------------------
+
+		int numGameChukkars;
+		if(totalPlayers < 4)
+		{
+			numGameChukkars = 0;
+		}
+		else if(totalPlayers >= 6)
+		{
+			numGameChukkars = totalChukkars / 6;
+		}
+		else
+		{
+			numGameChukkars = totalChukkars / 4;
+		}
+		
+		
+		ChukkarCount ret = new ChukkarCount(totalChukkars, numGameChukkars);
+		return ret;
+	}
+	
+
+	////////////////////////////// INNER CLASSES ///////////////////////////////
+	private class ChukkarCount
+	{
+		int _numTotalChukkars;
+		int _numGameChukkars;
+		
+		
+		ChukkarCount(int numTotalChukkars, int numGameChukkars)
+		{
+			_numTotalChukkars = numTotalChukkars;
+			_numGameChukkars = numGameChukkars;
 		}
 	}
 }
