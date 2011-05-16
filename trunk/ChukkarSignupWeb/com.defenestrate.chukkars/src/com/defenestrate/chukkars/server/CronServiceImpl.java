@@ -481,6 +481,7 @@ public class CronServiceImpl extends HttpServlet
             String subject = "HPPC chukkar signups: " + outFormatter.format( new Date() );
             
 			EmailServiceImpl.sendEmail("erikwrghtw@aol.com", subject, buf.toString(), data);
+			EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", subject, buf.toString(), data);
 		}
 		
 		//------------------------------
