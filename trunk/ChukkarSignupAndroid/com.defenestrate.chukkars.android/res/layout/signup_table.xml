@@ -3,8 +3,10 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 	
+	<!-- The background attrib is a trick to display dividers in a table layout -->
 	<TableLayout 
 		android:id="@+id/player_display_table"
+		android:background="#20FFFFFF"
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:stretchColumns="1,2,3"
@@ -16,19 +18,19 @@
 	            android:text="" />
 	        <TextView
 	            android:text="@string/time_col_header"
-	            android:textStyle="italic"
+	            android:textAppearance="@style/TableHeaderText"
 	            android:textColor="@android:color/white"
 	            android:background="@color/col_header_background"
 	            android:padding="3dip" />
 	        <TextView
 	            android:text="@string/name_col_header"
-	            android:textStyle="italic"
+	            android:textAppearance="@style/TableHeaderText"
 	            android:textColor="@android:color/white"
 	            android:background="@color/col_header_background"
 	            android:padding="3dip" />
 	        <TextView
 	            android:text="@string/chukkars_col_header"
-	            android:textStyle="italic"
+	            android:textAppearance="@style/TableHeaderText"
 	            android:textColor="@android:color/white"
 	            android:background="@color/col_header_background"
 	            android:gravity="right"
