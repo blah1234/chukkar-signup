@@ -93,7 +93,33 @@ public class ChukkarSignup extends TheMissingTabActivity
 		    @Override
 		    protected List<Day> doInBackground(Void... params) 
 		    {
-		    	List<Day> activeDaysList = getActiveDays();
+		    	List<Day> activeDaysList = null;
+		    	
+		    	try
+		    	{
+		    		activeDaysList = getActiveDays();
+		    	}
+		    	catch(IOException e)
+	    		{
+	    			//unable to connect to server
+		    		//show error toast on GUI thread
+					Message msg = _handler.obtainMessage(R.id.message_what_error);
+			    	msg.arg1 = R.string.server_connect_error;
+					_handler.sendMessage(msg);
+					
+					Log.e(this.getClass().getName(), e.getMessage(), e);
+	    		}
+		    	catch(JSONException e)
+			    {
+			    	//JSON response string does not match what we are expecting
+		    		//show error toast on GUI thread
+					Message msg = _handler.obtainMessage(R.id.message_what_error);
+			    	msg.arg1 = R.string.unexpected_json_error;
+					_handler.sendMessage(msg);
+					
+					//already logged in loadActiveDaysData();
+			    }
+		    	
 		    	_createDoneSignal.countDown();
 
 		    	return activeDaysList;
@@ -145,7 +171,7 @@ public class ChukkarSignup extends TheMissingTabActivity
 		queryWebAppResetDate();
 	}
 	
-	private List<Day> getActiveDays()
+	private List<Day> getActiveDays() throws IOException, JSONException
 	{
     	Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
@@ -155,37 +181,10 @@ public class ChukkarSignup extends TheMissingTabActivity
     	
     	if(!doesDataExist)
     	{
-    		try
-    		{
-    			writeActiveDaysData();
-    		}
-    		catch(IOException e)
-    		{
-    			//unable to connect to server
-    			ErrorToast.show( 
-    				this, 
-    				getResources().getString(R.string.server_connect_error) );
-				
-				Log.e(this.getClass().getName(), e.getMessage(), e);
-    		}
+			writeActiveDaysData();
     	}
     	
-    	
-    	List<Day> retList = null;
-    	
-    	try
-    	{
-    		retList = loadActiveDaysData(activeDaysData);
-    	}
-    	catch(JSONException e)
-	    {
-	    	//JSON response string does not match what we are expecting
-    		ErrorToast.show( 
-				this, 
-				getResources().getString(R.string.unexpected_json_error) );
-			
-			//already logged in loadActiveDaysData();
-	    }
+    	List<Day> retList = loadActiveDaysData(activeDaysData);
     	
 		return retList;
 	}
