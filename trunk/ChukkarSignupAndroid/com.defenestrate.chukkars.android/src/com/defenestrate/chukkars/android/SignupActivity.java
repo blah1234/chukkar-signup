@@ -85,6 +85,7 @@ public class SignupActivity extends Activity
 	private Handler _errHandler;
 	private Day _selectedDay;
 	private long _dataLastModified = -1;
+	private boolean _hasCalledGetServerData = false;
 	private Set<Integer> _dialogsCurrentlyShowing;
 
 
@@ -126,23 +127,43 @@ public class SignupActivity extends Activity
     {
     	super.onResume();
     	
-    	Resources res = getResources();
-    	SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
-        String data = settings.getString(res.getString(R.string.content_key), null);
-        long lastModified = settings.getLong(res.getString(R.string.last_modified_key), 0);
-        
-    	boolean doesDataExist = (data != null);
-    
-		if( !doesDataExist || (lastModified != _dataLastModified) )
-		{
-			_dataLastModified = lastModified;
-        
-            int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
-    		loadPlayers(data, tabIndex);
-		}
+    	if(!_hasCalledGetServerData)
+    	{
+	    	Resources res = getResources();
+	    	SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
+	        String data = settings.getString(res.getString(R.string.content_key), null);
+	        long lastModified = settings.getLong(res.getString(R.string.last_modified_key), 0);
+	        
+	    	boolean doesDataExist = (data != null);
+	    
+			if( !doesDataExist || (lastModified != _dataLastModified) )
+			{
+				_dataLastModified = lastModified;
+	        
+	            int tabIndex = getIntent().getExtras().getInt(ChukkarSignup.TAB_INDEX_KEY);
+	    		loadPlayers(data, tabIndex);
+			}
+    	}
+    	else
+    	{
+    		_hasCalledGetServerData = false;
+    	}
     }
     
     @Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) 
+    {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		if(requestCode == R.id.get_server_data_request)
+		{
+			//This is so the "Back" button will work if we decide to prematurely
+			//"cancel" the server data fetch
+			_hasCalledGetServerData = true;
+		}
+	}
+
+	@Override
     public void onStop()
 	{
     	// The activity is no longer visible (it is now "stopped")
@@ -161,6 +182,8 @@ public class SignupActivity extends Activity
 
 	    // Commit the edits!
 	    editor.commit();
+	    
+	    _hasCalledGetServerData = false;
 	}
     
     @Override
