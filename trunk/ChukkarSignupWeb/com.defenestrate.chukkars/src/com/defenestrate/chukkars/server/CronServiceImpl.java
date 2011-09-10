@@ -35,14 +35,14 @@ import com.defenestrate.chukkars.server.entity.MessageAdmin;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
 
-public class CronServiceImpl extends HttpServlet 
+public class CronServiceImpl extends HttpServlet
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	private static final Logger LOG = Logger.getLogger( CronServiceImpl.class.getName() );
 
-	
+
 	///////////////////////////////// METHODS //////////////////////////////////
-	public void doGet(HttpServletRequest req, HttpServletResponse resp) 
+	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, java.io.IOException
 	{
 		String path = req.getPathInfo();
@@ -50,13 +50,13 @@ public class CronServiceImpl extends HttpServlet
 		{
 			path = path.substring(1);
 		}
-		
+
 		try
 		{
 			Method invokeMethod = this.getClass().getMethod(
-				path, 
+				path,
 				HttpServletResponse.class);
-			
+
 			invokeMethod.invoke(this, resp);
 		}
 		catch(NoSuchMethodException e)
@@ -72,39 +72,39 @@ public class CronServiceImpl extends HttpServlet
 			throw new ServletException(e);
 		}
 	}
-	
+
 	public void removeAllPlayers(HttpServletResponse resp) throws ServletException
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
-		
-		try 
+
+		try
 		{
 			Extent<Player> e = pm.getExtent(Player.class);
 			Iterator<Player> iter = e.iterator();
-			
+
 			while( iter.hasNext() )
 			{
 				Player delPlayer = iter.next();
 				pm.deletePersistent(delPlayer);
 			}
-		} 
+		}
 		catch(Exception e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to remove all players:\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to remove all players:\n" + e.getMessage(),
 				e);
-			
+
 			//display stack trace to browser
 			throw new ServletException(e);
 		}
-		finally 
+		finally
 		{
 			pm.close();
 		}
-		
+
 		logTask(CronTask.RESET);
-		
+
 		//log the time when signup should be closed
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
@@ -115,32 +115,32 @@ public class CronServiceImpl extends HttpServlet
 		}
 		cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
 		cal.set(Calendar.MINUTE, 30);
-		
+
 		logTask( CronTask.CLOSE_SIGNUP, cal.getTime() );
-		
+
 		//------------------
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		String msg =  null;
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
-			
+
 			msg = "All players successfully removed.";
 			charWriter.write(msg);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(),
 				e);
-			
+
 			//display stack trace to browser
 			throw new ServletException(e);
 		}
@@ -152,16 +152,16 @@ public class CronServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	private void logTask(String taskName)
 	{
 		logTask(taskName, null);
 	}
-	
+
 	private void logTask(String taskName, Date runDate)
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
-		
+
 		Transaction tx = pm.currentTransaction();
 
 		try
@@ -174,7 +174,7 @@ public class CronServiceImpl extends HttpServlet
 			q.setUnique(true);
 			CronTask currTask = (CronTask)q.execute(taskName);
 
-			if(currTask != null) 
+			if(currTask != null)
 			{
 				if(runDate == null)
 				{
@@ -189,12 +189,12 @@ public class CronServiceImpl extends HttpServlet
 			{
 				//create the task entry
 				CronTask newTask = new CronTask(taskName);
-				
+
 				if(runDate != null)
 				{
 					newTask.setRunDate(runDate);
 				}
-				
+
 				pm.makePersistent(newTask);
 			}
 
@@ -203,28 +203,28 @@ public class CronServiceImpl extends HttpServlet
 		catch(Exception e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to log task " + taskName + ":\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to log task " + taskName + ":\n" + e.getMessage(),
 				e);
-			
+
 		    if( tx.isActive() )
 		    {
 		        tx.rollback();
 		    }
 		}
-		finally 
+		finally
 		{
 			pm.close();
 		}
 	}
-	
+
 	static protected Date getTaskRunDate(String taskName)
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
-		
+
 		//default is "now"
 		Date ret = new Date();
-		
+
 		try
 		{
 		    Query q = pm.newQuery(CronTask.class);
@@ -233,7 +233,7 @@ public class CronServiceImpl extends HttpServlet
 			q.setUnique(true);
 			CronTask currTask = (CronTask)q.execute(taskName);
 
-			if(currTask != null) 
+			if(currTask != null)
 			{
 				ret = currTask.getRunDate();
 			}
@@ -241,63 +241,63 @@ public class CronServiceImpl extends HttpServlet
 		catch(Exception e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to find task " + taskName + ":\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to find task " + taskName + ":\n" + e.getMessage(),
 				e);
 		}
-		finally 
+		finally
 		{
 			pm.close();
 		}
-		
+
 		return ret;
 	}
-	
+
 	private MessageAdmin getEnabledMessageAdmin()
 	{
 		MessageAdmin ret = null;
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
-	    
-		try 
+
+		try
 		{
 			Query q = pm.newQuery(MessageAdmin.class);
 			q.setFilter("_weeklyEmailsEnabled == true");
 			q.setUnique(true);
 			ret = (MessageAdmin)q.execute();
-			
-			if(ret == null) 
+
+			if(ret == null)
 			{
 				LOG.info("found no enabled MessageAdmin entries (_weeklyEmailsEnabled = true)");
 			}
-		} 
-		finally 
+		}
+		finally
 		{
 			pm.close();
 		}
-		
+
 		return ret;
 	}
-	
+
 	public void sendSignupNoticeEmail(HttpServletResponse resp) throws ServletException
 	{
 		MessageAdmin data = getEnabledMessageAdmin();
-		
+
 		if(data != null)
 		{
 			String msgBody = data.getSignupNoticeMessage();
 			EmailServiceImpl.sendEmail("HPPC signup for the upcoming week", msgBody, data);
 		}
-		
+
 		//------------------
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		String msg =  null;
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
-			
+
 			if(data != null)
 			{
 				msg = "Signup notice email successfully sent.";
@@ -306,19 +306,19 @@ public class CronServiceImpl extends HttpServlet
 			{
 				msg = "Weekly emails are not enabled. No email sent.";
 			}
-			
+
 			charWriter.write(msg);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(),
 				e);
-			
+
 			//display stack trace to browser
 			throw new ServletException(e);
 		}
@@ -330,27 +330,27 @@ public class CronServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	public void sendSignupReminderEmail(HttpServletResponse resp) throws ServletException
 	{
 		MessageAdmin data = getEnabledMessageAdmin();
-		
+
 		if(data != null)
 		{
 			String msgBody = data.getSignupReminderMessage();
 			EmailServiceImpl.sendEmail("signup by 12 noon", msgBody, data);
 		}
-		
+
 		//------------------
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		String msg =  null;
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
-			
+
 			if(data != null)
 			{
 				msg = "Signup reminder email successfully sent.";
@@ -359,19 +359,19 @@ public class CronServiceImpl extends HttpServlet
 			{
 				msg = "Weekly emails are not enabled. No email sent.";
 			}
-			
+
 			charWriter.write(msg);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(),
 				e);
-			
+
 			//display stack trace to browser
 			throw new ServletException(e);
 		}
@@ -383,15 +383,15 @@ public class CronServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	public void sendExportSignupEmail(HttpServletResponse resp) throws ServletException
 	{
 		MessageAdmin data = getEnabledMessageAdmin();
-		
+
 		if(data != null)
 		{
 			List<Player> allPlayersList = null;
-			
+
 			try
 			{
 				allPlayersList = PlayerServiceImpl.getPlayersImpl();
@@ -401,15 +401,15 @@ public class CronServiceImpl extends HttpServlet
 				LOG.log(Level.SEVERE,
 						"Error getting all signed up players",
 						e);
-				
+
 				PrintWriter pWrite = null;
-				
+
 				try
 				{
 					StringWriter strWrite = new StringWriter();
 					pWrite = new PrintWriter(strWrite);
 					e.printStackTrace(pWrite);
-				
+
 					EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "Export signup error", strWrite.toString(), data);
 				}
 				finally
@@ -417,8 +417,8 @@ public class CronServiceImpl extends HttpServlet
 					IOUtils.closeQuietly(pWrite);
 				}
 			}
-			
-			
+
+
 			Comparator<Day> dayComp = new Comparator<Day>()
 			{
 				public int compare(Day o1, Day o2)
@@ -428,12 +428,18 @@ public class CronServiceImpl extends HttpServlet
 				}
 			};
 			Map<Day, List<Player>> dayToPlayers = new TreeMap<Day, List<Player>>(dayComp);
-			
+
 			for(Player currPlayer : allPlayersList)
 			{
+				if(currPlayer.getChukkarCount() == 0)
+				{
+					//ignore players with a 0-count
+					continue;
+				}
+
 				Day currDay = currPlayer.getRequestDay();
 				List<Player> valList;
-				
+
 				if( dayToPlayers.containsKey(currDay) )
 				{
 					valList = dayToPlayers.get(currDay);
@@ -443,21 +449,21 @@ public class CronServiceImpl extends HttpServlet
 					valList = new ArrayList<Player>();
 					dayToPlayers.put(currDay, valList);
 				}
-				
+
 				valList.add(currPlayer);
 			}
-			
-			
+
+
 			StringBuffer buf = new StringBuffer();
-			
+
 			for( Day currDay : dayToPlayers.keySet() )
 			{
 				buf.append(currDay);
 				buf.append(":\n");
-				
+
 				List<Player> valList = dayToPlayers.get(currDay);
 				ChukkarCount counts = calculateGameChukkars(valList);
-				
+
 				buf.append("# Chukkars Total: ");
 				buf.append(counts._numTotalChukkars);
 				buf.append("\n");
@@ -472,28 +478,28 @@ public class CronServiceImpl extends HttpServlet
 					buf.append( currPlayer.getChukkarCount() );
 					buf.append("\n");
 				}
-				
+
 				buf.append("\n\n\n");
 			}
-			
+
 			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
             outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
             String subject = "HPPC chukkar signups: " + outFormatter.format( new Date() );
-            
+
 			EmailServiceImpl.sendEmail("erikwrghtw@aol.com", subject, buf.toString(), data);
 			EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", subject, buf.toString(), data);
 		}
-		
+
 		//------------------------------
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		String msg = null;
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
-			
+
 			if(data != null)
 			{
 				msg = "Signup export email successfully sent to Erik.";
@@ -502,19 +508,19 @@ public class CronServiceImpl extends HttpServlet
 			{
 				msg = "Weekly emails are not enabled. No email sent.";
 			}
-			
+
 			charWriter.write(msg);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(),
 				e);
-			
+
 			//display stack trace to browser
 			throw new ServletException(e);
 		}
@@ -526,24 +532,24 @@ public class CronServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	private ChukkarCount calculateGameChukkars(List<Player> allDayPlayers)
 	{
 		int totalChukkars = 0;
 		int totalPlayers = allDayPlayers.size();
-		
+
 		for(Player currPlayer : allDayPlayers)
 		{
 			int currChukkarCount = currPlayer.getChukkarCount();
-			
+
 			if(currChukkarCount == 0)
 			{
 				totalPlayers--;
 			}
-			
+
 			totalChukkars += currChukkarCount;
 		}
-		
+
 		//------------------------
 
 		int numGameChukkars;
@@ -559,20 +565,20 @@ public class CronServiceImpl extends HttpServlet
 		{
 			numGameChukkars = totalChukkars / 4;
 		}
-		
-		
+
+
 		ChukkarCount ret = new ChukkarCount(totalChukkars, numGameChukkars);
 		return ret;
 	}
-	
+
 
 	////////////////////////////// INNER CLASSES ///////////////////////////////
 	private class ChukkarCount
 	{
 		int _numTotalChukkars;
 		int _numGameChukkars;
-		
-		
+
+
 		ChukkarCount(int numTotalChukkars, int numGameChukkars)
 		{
 			_numTotalChukkars = numTotalChukkars;
