@@ -11,6 +11,7 @@
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
   
   <!-- Other module inherits                                      -->
+  <inherits name="com.google.gwt.i18n.I18N"/>
   
 
   <!-- Specify the app entry point class.                         -->
