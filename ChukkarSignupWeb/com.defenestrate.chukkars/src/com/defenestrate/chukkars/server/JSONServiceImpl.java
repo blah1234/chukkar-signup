@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,28 +26,28 @@ import com.defenestrate.chukkars.shared.Player;
 import com.google.gson.Gson;
 
 
-public class JSONServiceImpl extends HttpServlet 
+public class JSONServiceImpl extends HttpServlet
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	private static final Logger LOG = Logger.getLogger( JSONServiceImpl.class.getName() );
 	private static final String SIGNUP_CLOSED = "!!!SIGNUP_CLOSED!!!";
 
-	
+
 	/////////////////////////// HttpServlet METHODS ////////////////////////////
 	@Override
-	public void doGet(HttpServletRequest req, HttpServletResponse resp) 
+	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, java.io.IOException
 	{
 		handleRequest(req, resp);
 	}
-	
+
 	@Override
-	public void doPost(HttpServletRequest req, HttpServletResponse resp) 
+	public void doPost(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, java.io.IOException
 	{
 		handleRequest(req, resp);
 	}
-	
+
 
 	///////////////////////////////// METHODS //////////////////////////////////
 	private void handleRequest(HttpServletRequest req, HttpServletResponse resp)
@@ -57,14 +58,14 @@ public class JSONServiceImpl extends HttpServlet
 		{
 			path = path.substring(1);
 		}
-		
+
 		try
 		{
 			Method invokeMethod = this.getClass().getMethod(
-				path, 
-				HttpServletRequest.class, 
+				path,
+				HttpServletRequest.class,
 				HttpServletResponse.class);
-			
+
 			invokeMethod.invoke(this, req, resp);
 		}
 		catch(NoSuchMethodException e)
@@ -80,7 +81,7 @@ public class JSONServiceImpl extends HttpServlet
 			throw new ServletException(e);
 		}
 	}
-	
+
 	/**
 	 * Returns a list of all players and a list of total game chukkars by day.
 	 * A <code>TotalsAndPlayers</code> object will be written into JSON in the
@@ -88,31 +89,31 @@ public class JSONServiceImpl extends HttpServlet
 	 * @param req
 	 * @param resp
 	 */
-	public void getAllPlayers(HttpServletRequest req, HttpServletResponse resp) 
+	public void getAllPlayers(HttpServletRequest req, HttpServletResponse resp)
 	{
 		List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
 		List<DayTotal> totalsList = calculateGameChukkars(playersList);
 		TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList);
-		
+
 		Gson gson = new Gson();
 		String json = gson.toJson(responseObj);
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
 			charWriter.write(json);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(),
 				e);
 		}
 		finally
@@ -123,34 +124,34 @@ public class JSONServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	/**
-	 * Add a new player's name, requested play day, and requested number of 
-	 * chukkars to the signup. Returns a list of all players and a list of total 
-	 * game chukkars by day. A <code>TotalsAndPlayers</code> object will be 
+	 * Add a new player's name, requested play day, and requested number of
+	 * chukkars to the signup. Returns a list of all players and a list of total
+	 * game chukkars by day. A <code>TotalsAndPlayers</code> object will be
 	 * written into JSON in the HTTP response.
 	 * @param req
 	 * @param resp
 	 */
-	public void addPlayer(HttpServletRequest req, HttpServletResponse resp) 
+	public void addPlayer(HttpServletRequest req, HttpServletResponse resp)
 	{
 		Date closeDate = LayoutConfigServiceImpl.getSignupClosedImpl();
 		Date now = new Date();
 		boolean isSignupClosed = now.after(closeDate);
 		String respStr;
-		
+
 		if(!isSignupClosed)
 		{
 			Day requestDay = Day.valueOf( req.getParameter("_requestDay") );
 			String name = req.getParameter("_name");
 			Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
-			
+
 			Player addedPlayer = PlayerServiceImpl.addPlayerImpl(name, numChukkars, requestDay);
 			List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
 			List<DayTotal> totalsList = calculateGameChukkars(playersList);
-			
+
 			TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, addedPlayer);
-			
+
 			Gson gson = new Gson();
 			String json = gson.toJson(responseObj);
 			respStr = json;
@@ -159,23 +160,23 @@ public class JSONServiceImpl extends HttpServlet
 		{
 			respStr = SIGNUP_CLOSED;
 		}
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
 			charWriter.write(respStr);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + respStr + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + respStr + "\n\n" + e.getMessage(),
 				e);
 		}
 		finally
@@ -186,7 +187,7 @@ public class JSONServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	/**
 	 * Looks up an existing player and edits the number of chukkars signed up.
 	 * Returns a list of all players and a list of total game chukkars by day.
@@ -195,24 +196,24 @@ public class JSONServiceImpl extends HttpServlet
 	 * @param req
 	 * @param resp
 	 */
-	public void editChukkars(HttpServletRequest req, HttpServletResponse resp) 
+	public void editChukkars(HttpServletRequest req, HttpServletResponse resp)
 	{
 		Date closeDate = LayoutConfigServiceImpl.getSignupClosedImpl();
 		Date now = new Date();
 		boolean isSignupClosed = now.after(closeDate);
 		String respStr;
-		
+
 		if(!isSignupClosed)
 		{
 			Long playerId = new Long( req.getParameter("_id") );
 			Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
-			
+
 			Player editedPlayer = PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
 			List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
 			List<DayTotal> totalsList = calculateGameChukkars(playersList);
-	
+
 			TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, editedPlayer);
-			
+
 			Gson gson = new Gson();
 			String json = gson.toJson(responseObj);
 			respStr = json;
@@ -221,23 +222,23 @@ public class JSONServiceImpl extends HttpServlet
 		{
 			respStr = SIGNUP_CLOSED;
 		}
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
 			charWriter.write(respStr);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + respStr + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + respStr + "\n\n" + e.getMessage(),
 				e);
 		}
 		finally
@@ -248,36 +249,36 @@ public class JSONServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns a list of all days marked active in the DB.
 	 * An array of active day names will be written into JSON in the HTTP response.
 	 * @param req
 	 * @param resp
 	 */
-	public void getActiveDays(HttpServletRequest req, HttpServletResponse resp) 
+	public void getActiveDays(HttpServletRequest req, HttpServletResponse resp)
 	{
 		List<Day> activeDaysList = getActiveDaysImpl();
-		
+
 		Gson gson = new Gson();
 		String json = gson.toJson(activeDaysList);
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
 			charWriter.write(json);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(),
 				e);
 		}
 		finally
@@ -288,15 +289,15 @@ public class JSONServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	private List<DayTotal> calculateGameChukkars(List<Player> playersList)
 	{
 		Map<Day, Total> dayToTotalsMap = new HashMap<Day, Total>();
-		
+
 		for(Player currPlayer : playersList)
 		{
 			Total currTotal;
-			
+
 			if( dayToTotalsMap.containsKey(currPlayer.getRequestDay()) )
 			{
 				currTotal = dayToTotalsMap.get( currPlayer.getRequestDay() );
@@ -306,18 +307,18 @@ public class JSONServiceImpl extends HttpServlet
 				currTotal = new Total();
 				dayToTotalsMap.put(currPlayer.getRequestDay(), currTotal);
 			}
-			
+
 			if(currPlayer.getChukkarCount() > 0)
 			{
 				currTotal._numPlayers++;
 			}
-			
+
 			currTotal._numChukkars += currPlayer.getChukkarCount();
 		}
-		
-		
+
+
 		List<Day> enabledDaysList = getActiveDaysImpl();
-		
+
 		if( dayToTotalsMap.size() < enabledDaysList.size() )
 		{
 			//add in blank data for any days that don't have anybody signed up yet
@@ -329,48 +330,54 @@ public class JSONServiceImpl extends HttpServlet
 				}
 			}
 		}
-		
-		
+
+
 		List<DayTotal> totalsList = new ArrayList<DayTotal>();
 		Comparator<DayTotal> naturalDayOrder = new Comparator<DayTotal>()
 		{
+			@Override
 			public int compare(DayTotal o1, DayTotal o2)
 			{
 				return o1._day.compareTo(o2._day);
 			}
 		};
-		
+
+
+		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+		int playersPerChukkar = Integer.parseInt( strings.getString("playersPerChukkar") );
+		int minPlayersPerChukkar = Integer.parseInt( strings.getString("minPlayersPerChukkar") );
+
 		for( Day currDay : dayToTotalsMap.keySet() )
 		{
 			Total currTotal = dayToTotalsMap.get(currDay);
 			int numGameChukkars;
-				
-			if(currTotal._numPlayers < 4)
+
+			if(currTotal._numPlayers < minPlayersPerChukkar)
 			{
 				numGameChukkars = 0;
 			}
-			else if(currTotal._numPlayers >= 6)
+			else if(currTotal._numPlayers >= playersPerChukkar)
 			{
-				numGameChukkars = currTotal._numChukkars / 6;
+				numGameChukkars = currTotal._numChukkars / playersPerChukkar;
 			}
 			else
 			{
-				numGameChukkars = currTotal._numChukkars / 4;
+				numGameChukkars = currTotal._numChukkars / minPlayersPerChukkar;
 			}
-			
-			
+
+
 			DayTotal currDayTotal = new DayTotal(currDay, numGameChukkars);
-			
+
 			int index = Collections.binarySearch(totalsList, currDayTotal, naturalDayOrder);
-			
+
 			//index = (-(insertion point) - 1);
 			int insertIndex = (index + 1) * -1;
 			totalsList.add(insertIndex, currDayTotal);
 		}
-		
+
 		return totalsList;
 	}
-	
+
 	/**
 	 * Looks up from the CronTask table the last time all player signup data
 	 * was reset. A <code>Date</code> object will be written into JSON in the
@@ -384,23 +391,23 @@ public class JSONServiceImpl extends HttpServlet
 		Date responseObj = CronServiceImpl.getTaskRunDate(CronTask.RESET);
 		Gson gson = new Gson();
 		String json = gson.toJson(responseObj);
-		
+
 		resp.setContentType("text/plain;charset=UTF-8");
 		PrintWriter charWriter = null;
-		
+
 		try
 		{
 			charWriter = resp.getWriter();
 			charWriter.write(json);
-			
+
 			//commit the response
 			charWriter.flush();
 		}
 		catch (IOException e)
 		{
 			LOG.log(
-				Level.SEVERE, 
-				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(), 
+				Level.SEVERE,
+				"Error encountered trying to write to the ServletResponse:\n" + json + "\n\n" + e.getMessage(),
 				e);
 		}
 		finally
@@ -411,12 +418,12 @@ public class JSONServiceImpl extends HttpServlet
 			}
 		}
 	}
-	
+
 	private List<Day> getActiveDaysImpl()
 	{
 		Day[] allDays = Day.getAll();
 		List<Day> retList = new ArrayList<Day>();
-		
+
 		for(Day currDay : allDays)
 		{
 			if( currDay.isEnabled() )
@@ -424,10 +431,10 @@ public class JSONServiceImpl extends HttpServlet
 				retList.add(currDay);
 			}
 		}
-		
+
 		return retList;
 	}
-	
+
 
 	////////////////////////////// INNER CLASSES ///////////////////////////////
 	private class Total
@@ -435,32 +442,32 @@ public class JSONServiceImpl extends HttpServlet
 		int _numPlayers = 0;
 		int _numChukkars = 0;
 	}
-	
+
 	private class DayTotal
 	{
 		Day _day;
 		int _numGameChukkars;
-		
-		
+
+
 		DayTotal(Day day, int numGameChukkars)
 		{
 			_day = day;
 			_numGameChukkars = numGameChukkars;
 		}
 	}
-	
+
 	private class TotalsAndPlayers
 	{
 		List<DayTotal> _totalsList;
 		List<Player> _playersList;
 		Player _currPersisted;
-		
-		
+
+
 		TotalsAndPlayers(List<DayTotal> totalsList, List<Player> playersList)
 		{
 			this(totalsList, playersList, null);
 		}
-		
+
 		TotalsAndPlayers(List<DayTotal> totalsList, List<Player> playersList, Player currPersisted)
 		{
 			_totalsList = totalsList;
