@@ -1,5 +1,6 @@
 package com.defenestrate.chukkars.client;
 
+import com.defenestrate.chukkars.client.resources.DisplayPageClientBundle;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Image;

@@ -1,4 +1,4 @@
-package com.defenestrate.chukkars.client;
+package com.defenestrate.chukkars.client.resources;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
