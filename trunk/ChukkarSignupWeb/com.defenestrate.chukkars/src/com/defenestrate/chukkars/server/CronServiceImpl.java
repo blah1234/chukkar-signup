@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -42,6 +43,7 @@ public class CronServiceImpl extends HttpServlet
 
 
 	///////////////////////////////// METHODS //////////////////////////////////
+	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, java.io.IOException
 	{
@@ -109,7 +111,10 @@ public class CronServiceImpl extends HttpServlet
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
 		cal.setTime( new Date() );
-		while(cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY)
+
+		int lastDay = getLastSignupDayOfWeek();
+
+		while(cal.get(Calendar.DAY_OF_WEEK) != lastDay)
 		{
 			cal.add(Calendar.DAY_OF_WEEK, 1);
 		}
@@ -153,12 +158,12 @@ public class CronServiceImpl extends HttpServlet
 		}
 	}
 
-	private void logTask(String taskName)
+	private void logTask(String taskName) throws ServletException
 	{
 		logTask(taskName, null);
 	}
 
-	private void logTask(String taskName, Date runDate)
+	private void logTask(String taskName, Date runDate) throws ServletException
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 
@@ -211,10 +216,68 @@ public class CronServiceImpl extends HttpServlet
 		    {
 		        tx.rollback();
 		    }
+
+		    throw new ServletException(e);
 		}
 		finally
 		{
 			pm.close();
+		}
+	}
+
+	private int getLastSignupDayOfWeek()
+	{
+		//Get the first day in the week that a game will be played
+		Day[] allDays = Day.getAll();
+		for(Day currDay : allDays)
+		{
+			if( currDay.isEnabled() )
+			{
+				return getLastSignupDayOfWeek(currDay);
+			}
+		}
+
+		//default: return Sunday, if no days of the week are being played
+		return Calendar.SUNDAY;
+	}
+
+	/**
+	 * Returns the day immediately before the specified first game day
+	 * of the week.
+	 */
+	private int getLastSignupDayOfWeek(Day firstGameDayOfWeek)
+	{
+		if(firstGameDayOfWeek == Day.MONDAY)
+		{
+			return Calendar.SUNDAY;
+		}
+		else if(firstGameDayOfWeek == Day.TUESDAY)
+		{
+			return Calendar.MONDAY;
+		}
+		else if(firstGameDayOfWeek == Day.WEDNESDAY)
+		{
+			return Calendar.TUESDAY;
+		}
+		else if(firstGameDayOfWeek == Day.THURSDAY)
+		{
+			return Calendar.WEDNESDAY;
+		}
+		else if(firstGameDayOfWeek == Day.FRIDAY)
+		{
+			return Calendar.THURSDAY;
+		}
+		else if(firstGameDayOfWeek == Day.SATURDAY)
+		{
+			return Calendar.FRIDAY;
+		}
+		else if(firstGameDayOfWeek == Day.SUNDAY)
+		{
+			return Calendar.SATURDAY;
+		}
+		else
+		{
+			throw new IllegalArgumentException("firstGameDayOfWeek not recognized: " + firstGameDayOfWeek);
 		}
 	}
 
@@ -285,7 +348,8 @@ public class CronServiceImpl extends HttpServlet
 		if(data != null)
 		{
 			String msgBody = data.getSignupNoticeMessage();
-			EmailServiceImpl.sendEmail("HPPC signup for the upcoming week", msgBody, data);
+			ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup for the upcoming week", msgBody, data);
 		}
 
 		//------------------
@@ -338,7 +402,8 @@ public class CronServiceImpl extends HttpServlet
 		if(data != null)
 		{
 			String msgBody = data.getSignupReminderMessage();
-			EmailServiceImpl.sendEmail("signup by 12 noon", msgBody, data);
+			ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 12 noon", msgBody, data);
 		}
 
 		//------------------
@@ -421,6 +486,7 @@ public class CronServiceImpl extends HttpServlet
 
 			Comparator<Day> dayComp = new Comparator<Day>()
 			{
+				@Override
 				public int compare(Day o1, Day o2)
 				{
 					int ret = o1.getNumber() - o2.getNumber();
@@ -484,7 +550,8 @@ public class CronServiceImpl extends HttpServlet
 
 			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
             outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
-            String subject = "HPPC chukkar signups: " + outFormatter.format( new Date() );
+            ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+            String subject = strings.getString("clubAbbreviation") + " chukkar signups: " + outFormatter.format( new Date() );
 
 			EmailServiceImpl.sendEmail("erikwrghtw@aol.com", subject, buf.toString(), data);
 			EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", subject, buf.toString(), data);
@@ -552,18 +619,22 @@ public class CronServiceImpl extends HttpServlet
 
 		//------------------------
 
+		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+		int playersPerChukkar = Integer.parseInt( strings.getString("playersPerChukkar") );
+		int minPlayersPerChukkar = Integer.parseInt( strings.getString("minPlayersPerChukkar") );
 		int numGameChukkars;
-		if(totalPlayers < 4)
+
+		if(totalPlayers < minPlayersPerChukkar)
 		{
 			numGameChukkars = 0;
 		}
-		else if(totalPlayers >= 6)
+		else if(totalPlayers >= playersPerChukkar)
 		{
-			numGameChukkars = totalChukkars / 6;
+			numGameChukkars = totalChukkars / playersPerChukkar;
 		}
 		else
 		{
-			numGameChukkars = totalChukkars / 4;
+			numGameChukkars = totalChukkars / minPlayersPerChukkar;
 		}
 
 
