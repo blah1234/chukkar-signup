@@ -34,6 +34,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DecoratedStackPanel;
 import com.google.gwt.user.client.ui.DecoratedTabPanel;
@@ -103,6 +104,7 @@ public class SignupView implements EntryPoint
 	private MessageAdminClientCopy _adminData;
 
 	private ChukkarSignupController _ctrl;
+	private boolean _isMobile;
 
 
 	///////////////////////////////// METHODS //////////////////////////////////
@@ -162,9 +164,15 @@ public class SignupView implements EntryPoint
 
 	private void layoutComponents(String initToken, boolean isBootstrapping)
 	{
+		_isMobile = initToken.equals("m");
+
 		//top level panel
 		_topLevelPanel = new DockPanel();
-		_topLevelPanel.addStyleName("mainPanel");
+
+		if(!_isMobile)
+		{
+			_topLevelPanel.addStyleName("mainPanel");
+		}
 
 		layoutNavigationComponents();
 		layoutSignupComponents();
@@ -182,6 +190,7 @@ public class SignupView implements EntryPoint
 
 		if( (initToken.isEmpty() && !isBootstrapping) ||
 			initToken.equals("signup") ||
+			initToken.equals("m") ||
 			initToken.equals("login") ||
 			(!_loginInfo.isAdmin() && !isBootstrapping) )
 		{
@@ -302,17 +311,33 @@ public class SignupView implements EntryPoint
 
 				layout._nameTxt = new TextBox();
 				layout._signupTable.setWidget(1, NAME_COLUMN_INDEX, layout._nameTxt);
+
 				layout._chukkarsTxt = new TextBox();
 				layout._chukkarsTxt.addStyleDependentName("numChukkars");
 				layout._signupTable.setWidget(1, CHUKKARS_COLUMN_INDEX, layout._chukkarsTxt);
+
 				layout._addRowBtn = new Button("Add");
-				layout._addRowBtn.addStyleDependentName("action");
 				layout._signupTable.setWidget(1, ACTION_COLUMN_INDEX, layout._addRowBtn);
 
 				layout._signupTable.setCellPadding(3);
 				layout._signupTable.getRowFormatter().addStyleName(0, "signupHeader");
 				layout._signupTable.addStyleName("signupTable");
-				layout._signupTable.getCellFormatter().addStyleName(1, TIME_COLUMN_INDEX, "signupTimeColumn");
+
+				if(!_isMobile)
+				{
+					layout._addRowBtn.addStyleDependentName("action");
+
+					layout._signupTable.getCellFormatter().addStyleName(1, TIME_COLUMN_INDEX, "signupTimeColumn");
+				}
+				else
+				{
+					layout._nameTxt.addStyleDependentName("mobileNameEntry");
+					layout._addRowBtn.addStyleDependentName("mobileAction");
+
+					layout._signupTable.getCellFormatter().addStyleName(1, TIME_COLUMN_INDEX, "mobileSignupTimeColumn");
+					layout._signupTable.getCellFormatter().addStyleName(0, NAME_COLUMN_INDEX, "mobileSignupNameColumn");
+				}
+
 				layout._signupTable.getCellFormatter().addStyleName(0, CHUKKARS_COLUMN_INDEX, "signupNumericColumn");
 				layout._signupTable.getCellFormatter().addStyleName(0, ACTION_COLUMN_INDEX, "signupActionColumn");
 
@@ -333,9 +358,19 @@ public class SignupView implements EntryPoint
 				layout._gameChukkarsPanel.add(layout._gameChukkarsLbl);
 
 
-				HorizontalPanel mainPanel = new HorizontalPanel();
-				mainPanel.add(layout._signupTable);
-				mainPanel.add(layout._gameChukkarsPanel);
+				CellPanel mainPanel;
+				if(!_isMobile)
+				{
+					mainPanel = new HorizontalPanel();
+					mainPanel.add(layout._signupTable);
+					mainPanel.add(layout._gameChukkarsPanel);
+				}
+				else
+				{
+					mainPanel = new VerticalPanel();
+					mainPanel.add(layout._gameChukkarsPanel);
+					mainPanel.add(layout._signupTable);
+				}
 
 				_tabPanel.add( mainPanel, currDay.name() );
 			}
@@ -358,56 +393,61 @@ public class SignupView implements EntryPoint
 
 		if( (_loginInfo != null) && _loginInfo.isLoggedIn() )
 		{
-			// Set up log out hyperlink.
-			_logOutLink = new Anchor("Logout");
-			_logOutLink.setHref( _loginInfo.getLogoutUrl() );
-			_logOutLink.addStyleDependentName("loginLogoutLink");
+			if(!_isMobile)
+			{
+				// Set up log out hyperlink.
+				_logOutLink = new Anchor("Logout");
+				_logOutLink.setHref( _loginInfo.getLogoutUrl() );
+				_logOutLink.addStyleDependentName("loginLogoutLink");
 
-			Label nicknameLbl = new Label( _loginInfo.getNickname() + ":" );
-			nicknameLbl.addStyleDependentName("userNicknameLbl");
+				Label nicknameLbl = new Label( _loginInfo.getNickname() + ":" );
+				nicknameLbl.addStyleDependentName("userNicknameLbl");
 
-			Label emailLbl = new Label( _loginInfo.getEmailAddress() );
-			emailLbl.addStyleDependentName("userEmailLbl");
+				Label emailLbl = new Label( _loginInfo.getEmailAddress() );
+				emailLbl.addStyleDependentName("userEmailLbl");
 
-			Label pipeLbl = new Label("|");
-			pipeLbl.addStyleDependentName("pipeLbl");
+				Label pipeLbl = new Label("|");
+				pipeLbl.addStyleDependentName("pipeLbl");
 
-			HorizontalPanel loginPanel = new HorizontalPanel();
-			loginPanel.addStyleName("loginPanel");
-			loginPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-			loginPanel.add(nicknameLbl);
-			loginPanel.add(emailLbl);
-			loginPanel.add(pipeLbl);
-			loginPanel.add(_logOutLink);
-			_topLevelPanel.add(loginPanel, DockPanel.NORTH);
-
+				HorizontalPanel loginPanel = new HorizontalPanel();
+				loginPanel.addStyleName("loginPanel");
+				loginPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+				loginPanel.add(nicknameLbl);
+				loginPanel.add(emailLbl);
+				loginPanel.add(pipeLbl);
+				loginPanel.add(_logOutLink);
+				_topLevelPanel.add(loginPanel, DockPanel.NORTH);
+			}
 
 			if( _loginInfo.isAdmin() )
 		    {
 				for( DayLayout currLayout : _dayToLayoutMap.values() )
 				{
-	    			//only show the "delete" column if logged in user is an admin
-	    			currLayout._signupTable.setText(0, DELETE_COLUMN_INDEX, "Delete");
-	    			currLayout._signupTable.getCellFormatter().addStyleName(0, DELETE_COLUMN_INDEX, "signupActionColumn");
+		    			//only show the "delete" column if logged in user is an admin
+		    			currLayout._signupTable.setText(0, DELETE_COLUMN_INDEX, "Delete");
+		    			currLayout._signupTable.getCellFormatter().addStyleName(0, DELETE_COLUMN_INDEX, "signupActionColumn");
 
-	    			//only show these labels if logged in user is an admin
-	    			currLayout._gameChukkarsPanel.insert(currLayout._totalChukkarsLbl, 0);
-	    			currLayout._gameChukkarsPanel.insert(currLayout._totalChukkarsTitleLbl, 0);
+		    			//only show these labels if logged in user is an admin
+		    			currLayout._gameChukkarsPanel.insert(currLayout._totalChukkarsLbl, 0);
+		    			currLayout._gameChukkarsPanel.insert(currLayout._totalChukkarsTitleLbl, 0);
 				}
 		    }
 		}
 		else
 		{
-			// Set up log in hyperlink.
-			_logInLink = new Anchor("Login");
-			_logInLink.setHref( _loginInfo.getLoginUrl() );
-			_logInLink.addStyleDependentName("loginLogoutLink");
+			if(!_isMobile)
+			{
+				// Set up log in hyperlink.
+				_logInLink = new Anchor("Login");
+				_logInLink.setHref( _loginInfo.getLoginUrl() );
+				_logInLink.addStyleDependentName("loginLogoutLink");
 
-			HorizontalPanel loginPanel = new HorizontalPanel();
-			loginPanel.addStyleName("loginPanel");
-			loginPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-			loginPanel.add(_logInLink);
-			_topLevelPanel.add(loginPanel, DockPanel.NORTH);
+				HorizontalPanel loginPanel = new HorizontalPanel();
+				loginPanel.addStyleName("loginPanel");
+				loginPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+				loginPanel.add(_logInLink);
+				_topLevelPanel.add(loginPanel, DockPanel.NORTH);
+			}
 		}
 	}
 
@@ -594,12 +634,12 @@ public class SignupView implements EntryPoint
 		// Add history listener
 	    History.addValueChangeHandler(new ValueChangeHandler<String>()
 		{
-    		@Override
+    			@Override
 			public void onValueChange(ValueChangeEvent<String> event)
-    		{
-    			String navToken = event.getValue();
-    			handleNavigation(navToken);
-    		}
+	    		{
+	    			String navToken = event.getValue();
+	    			handleNavigation(navToken);
+	    		}
 		});
 
 
@@ -607,12 +647,12 @@ public class SignupView implements EntryPoint
 
 	    for( Day currDay : _dayToLayoutMap.keySet() )
 	    {
-	    	dayParam[0] = currDay;
-	    	DayLayout currLayout = _dayToLayoutMap.get(currDay);
+		    	dayParam[0] = currDay;
+		    	DayLayout currLayout = _dayToLayoutMap.get(currDay);
 
-	    	currLayout._addRowBtn.addClickHandler(new ClickHandler()
+		    	currLayout._addRowBtn.addClickHandler(new ClickHandler()
 			{
-	    		Day dayOfWeek = dayParam[0];
+		    		Day dayOfWeek = dayParam[0];
 
 				@Override
 				public void onClick(ClickEvent event)
@@ -621,23 +661,23 @@ public class SignupView implements EntryPoint
 				}
 			});
 
-	    	currLayout._chukkarsTxt.addKeyPressHandler(new KeyPressHandler()
+		    	currLayout._chukkarsTxt.addKeyPressHandler(new KeyPressHandler()
 		    {
-	    		Day dayOfWeek = dayParam[0];
+		    		Day dayOfWeek = dayParam[0];
 
-		    	@Override
+			    	@Override
 				public void onKeyPress(KeyPressEvent event)
-		    	{
-		    		if (event.getCharCode() == KeyCodes.KEY_ENTER)
-		    		{
-		    			_ctrl.addPlayer(dayOfWeek);
-		    		}
-		    	}
+			    	{
+			    		if (event.getCharCode() == KeyCodes.KEY_ENTER)
+			    		{
+			    			_ctrl.addPlayer(dayOfWeek);
+			    		}
+			    	}
 		    });
 
-	    	if(!_isSignupClosed)
-	    	{
-		    	currLayout._signupTable.addClickHandler(new ClickHandler()
+		    	if(!_isSignupClosed)
+		    	{
+			    	currLayout._signupTable.addClickHandler(new ClickHandler()
 				{
 					@Override
 					public void onClick(ClickEvent event)
@@ -645,13 +685,13 @@ public class SignupView implements EntryPoint
 						startEditingChukkars(event);
 					}
 				});
-	    	}
+		    	}
 
-	    	//--------------------
+	   	 	//--------------------
 
-	    	currLayout._importBtn.addClickHandler(new ClickHandler()
+	  	  	currLayout._importBtn.addClickHandler(new ClickHandler()
 			{
-	    		Day dayOfWeek = dayParam[0];
+	  	  		Day dayOfWeek = dayParam[0];
 
 				@Override
 				public void onClick(ClickEvent event)
@@ -662,9 +702,9 @@ public class SignupView implements EntryPoint
 				}
 			});
 
-	    	currLayout._publishBtn.addClickHandler(new ClickHandler()
+	  	  	currLayout._publishBtn.addClickHandler(new ClickHandler()
 			{
-	    		Day dayOfWeek = dayParam[0];
+	  	  		Day dayOfWeek = dayParam[0];
 
 				@Override
 				public void onClick(ClickEvent event)
@@ -685,17 +725,17 @@ public class SignupView implements EntryPoint
 			public void onKeyUp(KeyUpEvent event)
 			{
 				int tab = _tabPanel.getTabBar().getSelectedTab();
-    			String tabText = _tabPanel.getTabBar().getTabHTML(tab);
-    			Day dayOfWeek = Day.valueOf(tabText);
+	    			String tabText = _tabPanel.getTabBar().getTabHTML(tab);
+	    			Day dayOfWeek = Day.valueOf(tabText);
 
 				if(event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
 				{
 					_ctrl.editChukkars(dayOfWeek);
 				}
 				else if(event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE)
-	    		{
+	    			{
 					stopEditingChukkars(dayOfWeek, false);
-	    		}
+	    			}
 			}
 		});
 
@@ -706,7 +746,7 @@ public class SignupView implements EntryPoint
 			{
 				int prevTab = _tabPanel.getTabBar().getSelectedTab();
 				String tabText = _tabPanel.getTabBar().getTabHTML(prevTab);
-    			Day dayOfWeek = Day.valueOf(tabText);
+    				Day dayOfWeek = Day.valueOf(tabText);
 
 				stopEditingChukkars(dayOfWeek, false);
 			}
@@ -753,85 +793,86 @@ public class SignupView implements EntryPoint
 	{
 		if( "lineup".equalsIgnoreCase(navToken) )
         {
-        	if( _loginInfo.isLoggedIn() )
-        	{
-        		if( _loginInfo.isAdmin() )
-        		{
-		        	_topLevelPanel.remove(_tabPanel);
-		        	_topLevelPanel.remove(_emailSettingsTable);
-		        	_topLevelPanel.remove(_accountsPanel);
+	        	if( _loginInfo.isLoggedIn() )
+	        	{
+	        		if( _loginInfo.isAdmin() )
+	        		{
+			        	_topLevelPanel.remove(_tabPanel);
+			        	_topLevelPanel.remove(_emailSettingsTable);
+			        	_topLevelPanel.remove(_accountsPanel);
 
-		        	_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
-        		}
-        		else
-        		{
-        			History.newItem("signup");
-        		}
-        	}
-        	else
-        	{
-        		_ctrl.loginRequest(navToken);
-        	}
+			        	_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
+	        		}
+	        		else
+	        		{
+	        			History.newItem("signup");
+	        		}
+	        	}
+	        	else
+	        	{
+	        		_ctrl.loginRequest(navToken);
+	        	}
         }
-        else if( "signup".equalsIgnoreCase(navToken) )
+        else if( "signup".equalsIgnoreCase(navToken) ||
+        			 "m".equalsIgnoreCase(navToken) )
         {
-        	_topLevelPanel.remove(_lineupPanel);
-        	_topLevelPanel.remove(_emailSettingsTable);
-        	_topLevelPanel.remove(_accountsPanel);
+	        	_topLevelPanel.remove(_lineupPanel);
+	        	_topLevelPanel.remove(_emailSettingsTable);
+	        	_topLevelPanel.remove(_accountsPanel);
 
-        	_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
+	        	_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
 
-        	_ctrl.loadPlayers();
+	        	_ctrl.loadPlayers();
         }
         else if( "email".equalsIgnoreCase(navToken) )
         {
-        	if( _loginInfo.isLoggedIn() )
-        	{
-        		if( _loginInfo.isAdmin() )
-        		{
-	        		_topLevelPanel.remove(_lineupPanel);
-		        	_topLevelPanel.remove(_tabPanel);
-		        	_topLevelPanel.remove(_accountsPanel);
+	        	if( _loginInfo.isLoggedIn() )
+	        	{
+	        		if( _loginInfo.isAdmin() )
+	        		{
+		        		_topLevelPanel.remove(_lineupPanel);
+			        	_topLevelPanel.remove(_tabPanel);
+			        	_topLevelPanel.remove(_accountsPanel);
 
-		        	_topLevelPanel.add(_emailSettingsTable, DockPanel.CENTER);
+			        	_topLevelPanel.add(_emailSettingsTable, DockPanel.CENTER);
 
-		        	_ctrl.loadAdminData(_loginInfo);
-        		}
-        		else
-        		{
-        			History.newItem("signup");
-        		}
-        	}
-        	else
-        	{
-        		_ctrl.loginRequest(navToken);
-        	}
+			        	_ctrl.loadAdminData(_loginInfo);
+	        		}
+	        		else
+	        		{
+	        			History.newItem("signup");
+	        		}
+	        	}
+	        	else
+	        	{
+	        		_ctrl.loginRequest(navToken);
+	        	}
         }
         else if( "accounts".equalsIgnoreCase(navToken) )
         {
-        	if( _loginInfo.isLoggedIn() )
-        	{
-        		if( _loginInfo.isAdmin() )
-        		{
-	        		_topLevelPanel.remove(_lineupPanel);
-		        	_topLevelPanel.remove(_tabPanel);
-		        	_topLevelPanel.remove(_emailSettingsTable);
+	        	if( _loginInfo.isLoggedIn() )
+	        	{
+	        		if( _loginInfo.isAdmin() )
+	        		{
+		        		_topLevelPanel.remove(_lineupPanel);
+			        	_topLevelPanel.remove(_tabPanel);
+			        	_topLevelPanel.remove(_emailSettingsTable);
 
-		        	_topLevelPanel.add(_accountsPanel, DockPanel.CENTER);
-        		}
-        		else
-        		{
-        			History.newItem("signup");
-        		}
-        	}
-        	else
-        	{
-        		_ctrl.loginRequest(navToken);
-        	}
+			        	_topLevelPanel.add(_accountsPanel, DockPanel.CENTER);
+	        		}
+	        		else
+	        		{
+	        			History.newItem("signup");
+	        		}
+	        	}
+	        	else
+	        	{
+	        		_ctrl.loginRequest(navToken);
+	        	}
         }
         else if( "login".equalsIgnoreCase(navToken) )
         {
-    		_ctrl.loginRequest(navToken);
+    			_ctrl.loginRequest(navToken);
         }
 	}
 
@@ -939,13 +980,13 @@ public class SignupView implements EntryPoint
 			( (UIObject)cap ).addStyleDependentName("errorDialog");
 		}
 
-    	alert.setAnimationEnabled(true);
-    	alert.setGlassEnabled(true);
-    	alert.setText("Doh!");
+	    	alert.setAnimationEnabled(true);
+	    	alert.setGlassEnabled(true);
+	    	alert.setText("Doh!");
 
-    	if(dayOfWeek != null)
-    	{
-	    	alert.addCloseHandler(new CloseHandler<PopupPanel>()
+	    	if(dayOfWeek != null)
+	    	{
+		    	alert.addCloseHandler(new CloseHandler<PopupPanel>()
 			{
 				@Override
 				public void onClose(CloseEvent<PopupPanel> event)
@@ -976,12 +1017,12 @@ public class SignupView implements EntryPoint
 					selectTxtBox.setFocus(true);
 				}
 			});
-    	}
+	    	}
 
-    	HorizontalPanel horizPanel = new HorizontalPanel();
-    	horizPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+	    	HorizontalPanel horizPanel = new HorizontalPanel();
+	    	horizPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
-    	DisplayPageClientBundle myImageBundle = GWT.create(DisplayPageClientBundle.class);
+	    	DisplayPageClientBundle myImageBundle = GWT.create(DisplayPageClientBundle.class);
 		ImageResource busyImgResource = myImageBundle.errorIcon();
 		horizPanel.add( new Image(busyImgResource) );
 
@@ -989,26 +1030,26 @@ public class SignupView implements EntryPoint
 		errMsg.addStyleDependentName("errorDialog");
 		horizPanel.add(errMsg);
 
-    	Button ok = new Button("OK");
-    	ok.addStyleDependentName("errorDialog");
-        ok.addClickHandler(new ClickHandler()
-        {
-        	@Override
+	    	Button ok = new Button("OK");
+	    	ok.addStyleDependentName("errorDialog");
+	    ok.addClickHandler(new ClickHandler()
+	    {
+	        	@Override
 			public void onClick(ClickEvent event)
-        	{
-        		alert.hide();
-        	}
-        });
+	        	{
+	        		alert.hide();
+	        	}
+	    });
 
-        VerticalPanel vertPanel = new VerticalPanel();
-        vertPanel.addStyleName("errorDialogPanel-main");
-        vertPanel.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
-        vertPanel.add(horizPanel);
-        vertPanel.add(ok);
+	    VerticalPanel vertPanel = new VerticalPanel();
+	    vertPanel.addStyleName("errorDialogPanel-main");
+	    vertPanel.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+	    vertPanel.add(horizPanel);
+	    vertPanel.add(ok);
 
-        alert.setWidget(vertPanel);
-    	alert.center();
-    	ok.setFocus(true);
+	    alert.setWidget(vertPanel);
+	    	alert.center();
+	    	ok.setFocus(true);
 	}
 
 	public void showSignupClosedDialog()
@@ -1020,15 +1061,15 @@ public class SignupView implements EntryPoint
 			( (UIObject)cap ).addStyleDependentName("status");
 		}
 
-    	alert.setAnimationEnabled(true);
-    	alert.setGlassEnabled(true);
-    	alert.setText("Too late!");
+	    	alert.setAnimationEnabled(true);
+	    	alert.setGlassEnabled(true);
+	    	alert.setText("Too late!");
 
 
-    	HorizontalPanel horizPanel = new HorizontalPanel();
-    	horizPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+	    	HorizontalPanel horizPanel = new HorizontalPanel();
+	    	horizPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
-    	DisplayPageClientBundle myImageBundle = GWT.create(DisplayPageClientBundle.class);
+	    	DisplayPageClientBundle myImageBundle = GWT.create(DisplayPageClientBundle.class);
 		ImageResource busyImgResource = myImageBundle.errorIcon();
 		horizPanel.add( new Image(busyImgResource) );
 
@@ -1037,14 +1078,14 @@ public class SignupView implements EntryPoint
 		horizPanel.add(errMsg);
 
 		Button ok = new Button("OK");
-    	ok.addStyleDependentName("errorDialog");
+    		ok.addStyleDependentName("errorDialog");
         ok.addClickHandler(new ClickHandler()
         {
-        	@Override
+        		@Override
 			public void onClick(ClickEvent event)
-        	{
-        		alert.hide();
-        	}
+    			{
+        			alert.hide();
+    			}
         });
 
         VerticalPanel vertPanel = new VerticalPanel();
@@ -1054,7 +1095,7 @@ public class SignupView implements EntryPoint
         vertPanel.add(ok);
 
         alert.setWidget(vertPanel);
-    	alert.center();
+        alert.center();
 	}
 
 	public void loadPlayers(List<Player> playersList)
@@ -1143,26 +1184,25 @@ public class SignupView implements EntryPoint
 
 		Button updateButton = new ButtonExtend("Update", rowInd, playerId);
 		updateButton.setTitle("Click on \"Chukkars\" column to change");
-		updateButton.addStyleDependentName("action");
 	    updateButton.addClickHandler(new ClickHandler()
 	    {
-	    	@Override
+	    		@Override
 			public void onClick(ClickEvent event)
-	    	{
-	    		if(signupTable.getWidget(((ButtonExtend)event.getSource()).getRow(), CHUKKARS_COLUMN_INDEX) == _updateTxt)
 	    		{
-		    		_ctrl.editChukkars(
-	    				((ButtonExtend)event.getSource()).getPlayerId(),
-		    			dayOfWeek );
-	    		}
-	    		else
-	    		{
-	    			startEditingChukkars(
-	    				signupTable,
-	    				((ButtonExtend)event.getSource()).getRow(),
-	    				CHUKKARS_COLUMN_INDEX);
-	    		}
-	    	}
+		    		if(signupTable.getWidget(((ButtonExtend)event.getSource()).getRow(), CHUKKARS_COLUMN_INDEX) == _updateTxt)
+		    		{
+			    		_ctrl.editChukkars(
+		    				((ButtonExtend)event.getSource()).getPlayerId(),
+			    			dayOfWeek );
+		    		}
+		    		else
+		    		{
+		    			startEditingChukkars(
+		    				signupTable,
+		    				((ButtonExtend)event.getSource()).getRow(),
+		    				CHUKKARS_COLUMN_INDEX);
+		    		}
+		    	}
 	    });
 
 	    signupTable.setWidget(rowInd, ACTION_COLUMN_INDEX, updateButton);
@@ -1180,12 +1220,12 @@ public class SignupView implements EntryPoint
 			deleteButton.addStyleDependentName("delete");
 		    deleteButton.addClickHandler(new ClickHandler()
 		    {
-		    	@Override
+		    		@Override
 				public void onClick(ClickEvent event)
-		    	{
-		    		ButtonExtend btnSrc = (ButtonExtend)event.getSource();
-		    		_ctrl.removePlayer(btnSrc.getPlayerId(), btnSrc.getRow(), dayOfWeek);
-		    	}
+			    	{
+			    		ButtonExtend btnSrc = (ButtonExtend)event.getSource();
+			    		_ctrl.removePlayer(btnSrc.getPlayerId(), btnSrc.getRow(), dayOfWeek);
+			    	}
 		    });
 
 		    signupTable.setWidget(rowInd, DELETE_COLUMN_INDEX, deleteButton);
@@ -1194,7 +1234,20 @@ public class SignupView implements EntryPoint
 
 	    //----------------------------
 
-	    signupTable.getCellFormatter().addStyleName(rowInd, TIME_COLUMN_INDEX, "signupTimeColumn");
+	    if(!_isMobile)
+	    {
+	    		updateButton.addStyleDependentName("action");
+
+	    		signupTable.getCellFormatter().addStyleName(rowInd, TIME_COLUMN_INDEX, "signupTimeColumn");
+	    }
+	    else
+	    {
+	    		updateButton.addStyleDependentName("mobileAction");
+
+	    		signupTable.getCellFormatter().addStyleName(rowInd, TIME_COLUMN_INDEX, "mobileSignupTimeColumn");
+	    		signupTable.getCellFormatter().addStyleName(rowInd, NAME_COLUMN_INDEX, "mobileSignupNameColumn");
+	    }
+
 	    signupTable.getCellFormatter().addStyleName(rowInd, CHUKKARS_COLUMN_INDEX, "signupNumericColumn");
 		signupTable.getCellFormatter().addStyleName(rowInd, ACTION_COLUMN_INDEX, "signupActionColumn");
 
