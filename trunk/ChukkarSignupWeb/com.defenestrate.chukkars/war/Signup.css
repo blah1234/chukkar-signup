@@ -31,6 +31,21 @@ h1 {
   font-style: italic;
 }
 
+/* time column */
+.mobileSignupTimeColumn {
+  width: 6em;
+  min-width: 6em;
+  max-width: 6em;
+  color: graytext;
+  font-style: italic;
+}
+
+.mobileSignupNameColumn {
+  width: 6em;
+  min-width: 6em;
+  max-width: 6em;
+}
+
 /* num chukkar column */
 .signupNumericColumn {
   text-align: right;
@@ -61,9 +76,19 @@ h1 {
   width: 70px;
 }
 
+/* signup table, the Action buttons */
+.gwt-Button-mobileAction {
+  width: 57px;
+}
+
 /* signup table, the Delete buttons */
 .gwt-Button-delete {
   width: 50px;
+}
+
+.gwt-TextBox-mobileNameEntry {
+    width: 6em;
+    max-width: 6em;
 }
 
 .gwt-TextBox-numChukkars {
