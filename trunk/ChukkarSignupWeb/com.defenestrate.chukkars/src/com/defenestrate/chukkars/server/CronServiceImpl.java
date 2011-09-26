@@ -553,7 +553,8 @@ public class CronServiceImpl extends HttpServlet
             ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
             String subject = strings.getString("clubAbbreviation") + " chukkar signups: " + outFormatter.format( new Date() );
 
-			EmailServiceImpl.sendEmail("erikwrghtw@aol.com", subject, buf.toString(), data);
+            String managerEmail = strings.getString("managerEmail");
+			EmailServiceImpl.sendEmail(managerEmail, subject, buf.toString(), data);
 			EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", subject, buf.toString(), data);
 		}
 
