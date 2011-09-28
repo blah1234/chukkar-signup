@@ -114,10 +114,11 @@ public class CronServiceImpl extends HttpServlet
 
 		int lastDay = getLastSignupDayOfWeek();
 
-		while(cal.get(Calendar.DAY_OF_WEEK) != lastDay)
+		do
 		{
 			cal.add(Calendar.DAY_OF_WEEK, 1);
-		}
+		} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
+
 		cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
 		cal.set(Calendar.MINUTE, 30);
 
