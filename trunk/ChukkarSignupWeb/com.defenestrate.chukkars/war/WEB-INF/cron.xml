@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-  <!-- Horsepark 
+  <!-- Horsepark -->
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page every Wednesday at 7pm</description>
@@ -24,13 +24,12 @@
   
   <cron>
     <url>/signup/cron/sendExportSignupEmail</url>
-    <description>Sends a weekly export of the player signups to Erik</description>
+    <description>Sends a weekly export of the player signups to the club manager</description>
     <schedule>every monday 13:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
-  -->
   
-  <!-- Menlo -->
+  <!-- Menlo 
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page every Sunday at 7pm</description>
@@ -54,8 +53,9 @@
   
   <cron>
     <url>/signup/cron/sendExportSignupEmail</url>
-    <description>Sends a weekly export of the player signups to Erik</description>
+    <description>Sends a weekly export of the player signups to the club manager</description>
     <schedule>every thursday 13:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
+  -->
 </cronentries>
