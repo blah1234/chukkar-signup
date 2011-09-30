@@ -5,7 +5,9 @@
 	android:id="@+id/player_table_row"
 	
 	android:layout_marginBottom="1dip"
-	android:background="@android:color/black"
+	android:background="@drawable/signup_table_row"
+	android:focusable="true"
+	android:focusableInTouchMode="true"
 	
 	android:paddingTop="11dip"
 	android:paddingBottom="11dip">
