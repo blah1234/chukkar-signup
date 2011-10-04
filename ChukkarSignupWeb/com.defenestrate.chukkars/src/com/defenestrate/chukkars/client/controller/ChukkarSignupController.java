@@ -2,6 +2,7 @@ package com.defenestrate.chukkars.client.controller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import com.defenestrate.chukkars.client.AdminService;
 import com.defenestrate.chukkars.client.AdminServiceAsync;
@@ -458,5 +459,33 @@ public class ChukkarSignupController
 	    };
 
 		_adminSvc.createAdminUser(emailAddr, nickname, callback);
+	}
+
+	public void saveDaysConfig(Set<String> activeDayNames)
+	{
+		_view.setBusy(true);
+
+		AsyncCallback<Void> callback = new AsyncCallback<Void>()
+	    {
+			@Override
+			public void onFailure(Throwable caught)
+		    	{
+		    		_view.showErrorDialog("Unable to save game days.", null, null);
+		    		_view.setBusy(false, false);
+		    	}
+
+		    	@Override
+			public void onSuccess(Void ignore)
+		    	{
+		    		//make sure client enumerations are consistent with what
+		    		//was just saved on the server
+		    		Day.disableAll();
+		    		configActiveDays();
+
+		    		_view.setStatus("Game days saved");
+		    	}
+	    };
+
+		_configSvc.saveDaysConfig(activeDayNames, callback);
 	}
 }
