@@ -2,10 +2,16 @@ package com.defenestrate.chukkars.client;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.allen_sauer.gwt.dnd.client.PickupDragController;
 import com.defenestrate.chukkars.client.controller.ChukkarSignupController;
+import com.defenestrate.chukkars.client.dnd.AbsolutePositionExample;
+import com.defenestrate.chukkars.client.dnd.DraggableFactory;
+import com.defenestrate.chukkars.client.dnd.RedBoxDraggableWidget;
 import com.defenestrate.chukkars.client.resources.DisplayPageClientBundle;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.LoginInfo;
@@ -32,6 +38,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
@@ -56,6 +63,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -91,6 +99,10 @@ public class SignupView implements EntryPoint
 	private TextBox _nicknameTxt;
 	private Button _createAdminBtn;
 	private DockPanel _accountsPanel;
+
+	private Button _saveDaysConfigBtn;
+	private DockPanel _dndDaysPanel;
+	private AbsolutePositionExample _dndComponent;
 
 	private StackPanel _linkPanel;
 
@@ -179,6 +191,7 @@ public class SignupView implements EntryPoint
 		layoutLineupComponents();
 		layoutEmailSettingsComponents();
 		layoutAccountsComponents();
+		layoutConfigDaysComponents();
 
 
 		if( (_loginInfo != null) && _loginInfo.isLoggedIn() && _loginInfo.isAdmin() )
@@ -215,6 +228,11 @@ public class SignupView implements EntryPoint
 				 initToken.equals("accounts") )
 		{
 			_topLevelPanel.add(_accountsPanel, DockPanel.CENTER);
+			_linkPanel.showStack(1);
+		}
+		else if( initToken.equals("days") )
+		{
+			_topLevelPanel.add(_dndDaysPanel, DockPanel.CENTER);
 			_linkPanel.showStack(1);
 		}
 
@@ -264,6 +282,7 @@ public class SignupView implements EntryPoint
 	    Hyperlink lineupLink = new Hyperlink("Create&nbsp;Lineup", true, "lineup");
 	    Hyperlink emailLink = new Hyperlink("Email&nbsp;Settings", true, "email");
 	    Hyperlink accountsLink = new Hyperlink("Accounts", true, "accounts");
+	    Hyperlink configDaysLink = new Hyperlink("Game&nbsp;Days", true, "days");
 
 	    VerticalPanel signupLinkPanel = new VerticalPanel();
 	    signupLinkPanel.setSpacing(5);
@@ -274,6 +293,7 @@ public class SignupView implements EntryPoint
 	    adminLinkPanel.add(lineupLink);
 	    adminLinkPanel.add(emailLink);
 	    adminLinkPanel.add(accountsLink);
+	    adminLinkPanel.add(configDaysLink);
 
 	    _linkPanel = new DecoratedStackPanel();
 	    _linkPanel.addStyleDependentName("linkPanel");
@@ -629,6 +649,71 @@ public class SignupView implements EntryPoint
 		_accountsPanel.add(createAdminTable, DockPanel.CENTER);
 	}
 
+	private void layoutConfigDaysComponents()
+	{
+		// create the main common boundary panel to which drag operations will be restricted
+		int boundaryPanelWidth = AbsolutePositionExample.DROP_TARGET_WIDTH + 100;
+		int boundaryPanelHeight = AbsolutePositionExample.DROP_TARGET_HEIGHT * 2;
+		AbsolutePanel boundaryPanel = new AbsolutePanel();
+	    boundaryPanel.addStyleName("demo-main-boundary-panel");
+	    boundaryPanel.setPixelSize(boundaryPanelWidth, boundaryPanelHeight);
+
+	    // instantiate the common drag controller used the less specific examples
+	    PickupDragController dragController = new PickupDragController(boundaryPanel, true);
+	    dragController.setBehaviorMultipleSelection(false);
+	    dragController.setBehaviorConstrainedToBoundaryPanel(true);
+
+	    //add the inactive days; the active days are added in AbsolutePositionExample.onInitialLoad()
+	    Day[] allDays = Day.getAll();
+	    int inactiveX = 100;
+	    int inactiveY = (boundaryPanelHeight / 2) + 50;
+
+	    for(Day currDay : allDays)
+	    {
+	    		Widget draggable;
+
+	    		if( !currDay.isEnabled() )
+	    		{
+	    			draggable = DraggableFactory.createDraggableRedBox( dragController, currDay.toString() );
+
+	    			boundaryPanel.add(draggable, inactiveX, inactiveY);
+
+	    			inactiveX += RedBoxDraggableWidget.DRAGGABLE_SIZE;
+	    			inactiveX += 10;
+	    		}
+	    }
+
+	    /*
+		// for debug purposes only: text area to log drag events as they are triggered
+	    final HTML eventTextArea = new HTML();
+	    eventTextArea.addStyleName("demo-event-text-area");
+	    eventTextArea.setSize(boundaryPanel.getOffsetWidth() + "px", "10em");
+	    _topLevelPanel.add(eventTextArea, DockPanel.EAST);
+
+	    // instantiate shared drag handler to listen for events
+	    DemoDragHandler demoDragHandler = new DemoDragHandler(eventTextArea);
+	    dragController.addDragHandler(demoDragHandler);
+	    */
+
+	    _dndComponent = new AbsolutePositionExample(dragController);
+	    boundaryPanel.add(_dndComponent);
+
+	    //----------------
+
+	    _saveDaysConfigBtn = new Button("Save");
+		_saveDaysConfigBtn.addStyleDependentName("saveAdminSettings");
+
+		Label instructions = new Label("Days dragged into the smaller gray panel will become game days on save.");
+
+		//----------------
+
+		_dndDaysPanel = new DockPanel();
+		_dndDaysPanel.addStyleName("lineupPanel");
+		_dndDaysPanel.add(instructions, DockPanel.NORTH);
+		_dndDaysPanel.add(boundaryPanel, DockPanel.CENTER);
+		_dndDaysPanel.add(_saveDaysConfigBtn, DockPanel.SOUTH);
+	}
+
 	private void setupListeners()
 	{
 		// Add history listener
@@ -775,6 +860,8 @@ public class SignupView implements EntryPoint
 			}
 		});
 
+		//--------------------------
+
 		_createAdminBtn.addClickHandler(new ClickHandler()
 		{
 			@Override
@@ -785,6 +872,26 @@ public class SignupView implements EntryPoint
 
 				_emailAddrTxt.setText("");
 				_nicknameTxt.setText("");
+			}
+		});
+
+		//--------------------------
+
+		_saveDaysConfigBtn.addClickHandler(new ClickHandler()
+		{
+			@Override
+			public void onClick(ClickEvent event)
+			{
+				showWarningDialog("Configuring new game days will delete all existing players. Continue?",
+					new ClickHandler()
+					{
+						@Override
+						public void onClick(ClickEvent event)
+						{
+							Set<String> activeDayNames = getActiveDaysFromDndComponent();
+							_ctrl.saveDaysConfig(activeDayNames);
+						}
+					});
 			}
 		});
 	}
@@ -800,6 +907,7 @@ public class SignupView implements EntryPoint
 			        	_topLevelPanel.remove(_tabPanel);
 			        	_topLevelPanel.remove(_emailSettingsTable);
 			        	_topLevelPanel.remove(_accountsPanel);
+			        	_topLevelPanel.remove(_dndDaysPanel);
 
 			        	_topLevelPanel.add(_lineupPanel, DockPanel.CENTER);
 	        		}
@@ -819,6 +927,7 @@ public class SignupView implements EntryPoint
 	        	_topLevelPanel.remove(_lineupPanel);
 	        	_topLevelPanel.remove(_emailSettingsTable);
 	        	_topLevelPanel.remove(_accountsPanel);
+	        	_topLevelPanel.remove(_dndDaysPanel);
 
 	        	_topLevelPanel.add(_tabPanel, DockPanel.CENTER);
 
@@ -833,6 +942,7 @@ public class SignupView implements EntryPoint
 		        		_topLevelPanel.remove(_lineupPanel);
 			        	_topLevelPanel.remove(_tabPanel);
 			        	_topLevelPanel.remove(_accountsPanel);
+			        	_topLevelPanel.remove(_dndDaysPanel);
 
 			        	_topLevelPanel.add(_emailSettingsTable, DockPanel.CENTER);
 
@@ -857,12 +967,36 @@ public class SignupView implements EntryPoint
 		        		_topLevelPanel.remove(_lineupPanel);
 			        	_topLevelPanel.remove(_tabPanel);
 			        	_topLevelPanel.remove(_emailSettingsTable);
+			        	_topLevelPanel.remove(_dndDaysPanel);
 
 			        	_topLevelPanel.add(_accountsPanel, DockPanel.CENTER);
 	        		}
 	        		else
 	        		{
 	        			History.newItem("signup");
+	        		}
+	        	}
+	        	else
+	        	{
+	        		_ctrl.loginRequest(navToken);
+	        	}
+        }
+        else if( "days".equalsIgnoreCase(navToken) )
+        {
+	        	if( _loginInfo.isLoggedIn() )
+	        	{
+	        		if( _loginInfo.isAdmin() )
+	        		{
+		        		_topLevelPanel.remove(_lineupPanel);
+			        	_topLevelPanel.remove(_tabPanel);
+			        	_topLevelPanel.remove(_emailSettingsTable);
+			        	_topLevelPanel.remove(_accountsPanel);
+
+			        	_topLevelPanel.add(_dndDaysPanel, DockPanel.CENTER);
+	        		}
+	        		else
+	        		{
+	        			History.newItem("days");
 	        		}
 	        	}
 	        	else
@@ -882,6 +1016,22 @@ public class SignupView implements EntryPoint
 		_adminData.setRecipientEmailAddress( _recipientEmailTxt.getText().trim() );
 		_adminData.setSignupNoticeMessage( _signupNoticeTxt.getText().trim() );
 		_adminData.setSignupReminderMessage( _signupReminderTxt.getText().trim() );
+	}
+
+	private Set<String> getActiveDaysFromDndComponent()
+	{
+		List<Widget> widgets = _dndComponent.getAllWidgetsInDropTarget();
+		HashSet<String> ret = new HashSet<String>();
+
+		for(Widget currWidget : widgets)
+		{
+			if(currWidget instanceof RedBoxDraggableWidget)
+			{
+				ret.add( ((RedBoxDraggableWidget)currWidget).getText() );
+			}
+		}
+
+		return ret;
 	}
 
 	private void startEditingChukkars(ClickEvent event)
@@ -1096,6 +1246,71 @@ public class SignupView implements EntryPoint
 
         alert.setWidget(vertPanel);
         alert.center();
+	}
+
+	public void showWarningDialog(String warnMsgStr, ClickHandler okAction)
+	{
+		final DialogBox alert = new DialogBox(true, true);
+		Caption cap = alert.getCaption();
+		if(cap instanceof UIObject)
+		{
+			( (UIObject)cap ).addStyleDependentName("errorDialog");
+		}
+
+	    	alert.setAnimationEnabled(true);
+	    	alert.setGlassEnabled(true);
+	    	alert.setText("Warning");
+
+	    	HorizontalPanel horizPanel = new HorizontalPanel();
+	    	horizPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+
+	    	DisplayPageClientBundle myImageBundle = GWT.create(DisplayPageClientBundle.class);
+		ImageResource warnImgResource = myImageBundle.warningIcon();
+		horizPanel.add( new Image(warnImgResource) );
+
+		Label warnMsg = new Label(warnMsgStr, true);
+		warnMsg.addStyleDependentName("errorDialog");
+		horizPanel.add(warnMsg);
+
+	    	Button ok = new Button("OK");
+	    	ok.addStyleDependentName("errorDialog");
+	    ok.addClickHandler(new ClickHandler()
+	    {
+	        	@Override
+			public void onClick(ClickEvent event)
+	        	{
+	        		alert.hide();
+	        	}
+	    });
+
+	    ok.addClickHandler(okAction);
+
+	    Button cancel = new Button("Cancel");
+	    cancel.addStyleDependentName("errorDialog");
+	    cancel.addClickHandler(new ClickHandler()
+		{
+			@Override
+			public void onClick(ClickEvent event)
+			{
+				alert.hide();
+			}
+		});
+
+	    HorizontalPanel buttonPanel = new HorizontalPanel();
+	    buttonPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+	    buttonPanel.setSpacing(10);
+	    buttonPanel.add(ok);
+	    buttonPanel.add(cancel);
+
+	    VerticalPanel vertPanel = new VerticalPanel();
+	    vertPanel.addStyleName("errorDialogPanel-main");
+	    vertPanel.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+	    vertPanel.add(horizPanel);
+	    vertPanel.add(buttonPanel);
+
+	    alert.setWidget(vertPanel);
+	    	alert.center();
+	    	ok.setFocus(true);
 	}
 
 	public void loadPlayers(List<Player> playersList)
