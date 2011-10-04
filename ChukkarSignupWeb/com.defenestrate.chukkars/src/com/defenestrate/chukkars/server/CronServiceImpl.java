@@ -77,6 +77,11 @@ public class CronServiceImpl extends HttpServlet
 
 	public void removeAllPlayers(HttpServletResponse resp) throws ServletException
 	{
+		removeAllPlayersImpl(resp);
+	}
+
+	static public void removeAllPlayersImpl(HttpServletResponse resp) throws ServletException
+	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 
 		try
@@ -126,45 +131,48 @@ public class CronServiceImpl extends HttpServlet
 
 		//------------------
 
-		resp.setContentType("text/plain;charset=UTF-8");
-		String msg =  null;
-		PrintWriter charWriter = null;
-
-		try
+		if(resp != null)
 		{
-			charWriter = resp.getWriter();
+			resp.setContentType("text/plain;charset=UTF-8");
+			String msg =  null;
+			PrintWriter charWriter = null;
 
-			msg = "All players successfully removed.";
-			charWriter.write(msg);
-
-			//commit the response
-			charWriter.flush();
-		}
-		catch (IOException e)
-		{
-			LOG.log(
-				Level.SEVERE,
-				"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(),
-				e);
-
-			//display stack trace to browser
-			throw new ServletException(e);
-		}
-		finally
-		{
-			if(charWriter != null)
+			try
 			{
-				charWriter.close();
+				charWriter = resp.getWriter();
+
+				msg = "All players successfully removed.";
+				charWriter.write(msg);
+
+				//commit the response
+				charWriter.flush();
+			}
+			catch (IOException e)
+			{
+				LOG.log(
+					Level.SEVERE,
+					"Error encountered trying to write to the ServletResponse:\n" + msg + "\n\n" + e.getMessage(),
+					e);
+
+				//display stack trace to browser
+				throw new ServletException(e);
+			}
+			finally
+			{
+				if(charWriter != null)
+				{
+					charWriter.close();
+				}
 			}
 		}
 	}
 
-	private void logTask(String taskName) throws ServletException
+	static private void logTask(String taskName) throws ServletException
 	{
 		logTask(taskName, null);
 	}
 
-	private void logTask(String taskName, Date runDate) throws ServletException
+	static private void logTask(String taskName, Date runDate) throws ServletException
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 
@@ -226,7 +234,7 @@ public class CronServiceImpl extends HttpServlet
 		}
 	}
 
-	private int getLastSignupDayOfWeek()
+	static private int getLastSignupDayOfWeek()
 	{
 		//Get the first day in the week that a game will be played
 		Day[] allDays = Day.getAll();
@@ -246,7 +254,7 @@ public class CronServiceImpl extends HttpServlet
 	 * Returns the day immediately before the specified first game day
 	 * of the week.
 	 */
-	private int getLastSignupDayOfWeek(Day firstGameDayOfWeek)
+	static private int getLastSignupDayOfWeek(Day firstGameDayOfWeek)
 	{
 		if(firstGameDayOfWeek == Day.MONDAY)
 		{
@@ -498,12 +506,6 @@ public class CronServiceImpl extends HttpServlet
 
 			for(Player currPlayer : allPlayersList)
 			{
-				if(currPlayer.getChukkarCount() == 0)
-				{
-					//ignore players with a 0-count
-					continue;
-				}
-
 				Day currDay = currPlayer.getRequestDay();
 				List<Player> valList;
 
