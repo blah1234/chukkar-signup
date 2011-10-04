@@ -461,6 +461,7 @@ public class CronServiceImpl extends HttpServlet
 	public void sendExportSignupEmail(HttpServletResponse resp) throws ServletException
 	{
 		MessageAdmin data = getEnabledMessageAdmin();
+		String managerEmail = null;
 
 		if(data != null)
 		{
@@ -556,7 +557,7 @@ public class CronServiceImpl extends HttpServlet
             ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
             String subject = strings.getString("clubAbbreviation") + " chukkar signups: " + outFormatter.format( new Date() );
 
-            String managerEmail = strings.getString("managerEmail");
+            managerEmail = strings.getString("managerEmail");
 			EmailServiceImpl.sendEmail(managerEmail, subject, buf.toString(), data);
 			EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", subject, buf.toString(), data);
 		}
@@ -573,7 +574,7 @@ public class CronServiceImpl extends HttpServlet
 
 			if(data != null)
 			{
-				msg = "Signup export email successfully sent to Erik.";
+				msg = "Signup export email successfully sent to " + managerEmail;
 			}
 			else
 			{
