@@ -18,7 +18,7 @@ import com.defenestrate.chukkars.shared.Day;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class LayoutConfigServiceImpl extends RemoteServiceServlet
-							  		 implements LayoutConfigService
+							  		implements LayoutConfigService
 {
 	////////////////////////////////CONSTANTS /////////////////////////////////
 	private static final Logger LOG = Logger.getLogger( LayoutConfigServiceImpl.class.getName() );
