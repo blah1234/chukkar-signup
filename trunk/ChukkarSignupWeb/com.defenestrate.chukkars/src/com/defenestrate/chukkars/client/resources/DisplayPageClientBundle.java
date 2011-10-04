@@ -10,4 +10,7 @@ public interface DisplayPageClientBundle extends ClientBundle
 
 	@Source("com/defenestrate/chukkars/images/error.jpg")
 	ImageResource errorIcon();
+
+	@Source("com/defenestrate/chukkars/images/warning.png")
+	ImageResource warningIcon();
 }
