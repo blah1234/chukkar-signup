@@ -52,6 +52,14 @@ public enum Day
 		};
 	}
 
+	static final public void disableAll()
+	{
+		for( Day currDay : getAll() )
+		{
+			currDay.setEnabled(false);
+		}
+	}
+
 	public boolean isEnabled()
 	{
 		return _isEnabled;
