@@ -87,8 +87,8 @@ public class LayoutConfigServiceImpl extends RemoteServiceServlet
 
 				tx.commit();
 
-				//also make sure in-memory enumeration is consistent with
-				//what was just saved on the server
+				//also make sure in-memory enumeration on the server
+				//is consistent with what was just saved into the DB
 				currDay.setEnabled( activeDayNames.contains(currDay.toString()) );
 			}
 
