@@ -485,7 +485,12 @@ public class CronServiceImpl extends HttpServlet
 					pWrite = new PrintWriter(strWrite);
 					e.printStackTrace(pWrite);
 
-					EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "Export signup error", strWrite.toString(), data);
+					EmailServiceImpl.sendEmail(
+						"hwang.shawn@gmail.com",
+						"Export signup error",
+						strWrite.toString(),
+						data.getAdmin().getEmailAddress(),
+						data.getAdmin().getNickname() );
 				}
 				finally
 				{
@@ -555,14 +560,16 @@ public class CronServiceImpl extends HttpServlet
 			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
             outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
             ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-            String subject = strings.getString("clubAbbreviation") + " chukkar signups: " + outFormatter.format( new Date() );
+            String clubAbbr = strings.getString("clubAbbreviation");
+            String subject = clubAbbr + " chukkar signups: " + outFormatter.format( new Date() );
 
             managerEmails = strings.getString("managerEmail");
+            String clubListEmail = strings.getString("clubListEmail");
             String[] mgrEmailArray = managerEmails.split(",");
 
             for(String currEmail : mgrEmailArray)
             {
-            		EmailServiceImpl.sendEmail(currEmail.trim(), subject, buf.toString(), data);
+            		EmailServiceImpl.sendEmail(currEmail.trim(), subject, buf.toString(), clubListEmail, clubAbbr);
             }
 		}
 
