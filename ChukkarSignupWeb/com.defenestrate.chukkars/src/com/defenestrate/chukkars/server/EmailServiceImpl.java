@@ -29,43 +29,52 @@ public class EmailServiceImpl extends RemoteServiceServlet
 	///////////////////////////////// METHODS //////////////////////////////////
 	static public void sendEmail(String subject, String msgBody, MessageAdmin data) throws ServletException
 	{
-		sendEmail(data.getRecipientEmailAddress(), subject, msgBody, data);
+		sendEmail( data.getRecipientEmailAddress(),
+				   subject,
+				   msgBody,
+				   data.getAdmin().getEmailAddress(),
+				   data.getAdmin().getNickname() );
 	}
-	
-	static public void sendEmail(String recipientAddress, String subject, String msgBody, MessageAdmin data) throws ServletException
+
+	static public void sendEmail(String recipientAddress,
+								String subject,
+								String msgBody,
+								String fromAddress,
+								String fromName) throws ServletException
 	{
 		Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
 
-        try 
+        try
         {
             Message msg = new MimeMessage(session);
-            msg.setFrom( new InternetAddress(data.getAdmin().getEmailAddress(), data.getAdmin().getNickname()) );
+            msg.setFrom( new InternetAddress(fromAddress, fromName) );
             msg.addRecipient( Message.RecipientType.TO, new InternetAddress(recipientAddress) );
             msg.setSubject(subject);
             msg.setText(msgBody);
             Transport.send(msg);
-        } 
-        catch(AddressException e) 
+        }
+        catch(AddressException e)
         {
-        	throw new ServletException(e);
-        } 
-        catch(MessagingException e) 
+        		throw new ServletException(e);
+        }
+        catch(MessagingException e)
         {
-        	throw new ServletException(e);
+        		throw new ServletException(e);
         }
         catch(UnsupportedEncodingException e)
         {
-        	throw new ServletException(e);	
+        		throw new ServletException(e);
         }
 	}
-	
+
+	@Override
 	public void sendEmail(String recipientAddress, String subject, String msgBody, LoginInfo data)
 	{
 		Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
 
-        try 
+        try
         {
             Message msg = new MimeMessage(session);
             msg.setFrom( new InternetAddress(data.getEmailAddress(), data.getNickname()) );
@@ -73,30 +82,30 @@ public class EmailServiceImpl extends RemoteServiceServlet
             msg.setSubject(subject);
             msg.setText(msgBody);
             Transport.send(msg);
-        } 
-        catch(AddressException e) 
+        }
+        catch(AddressException e)
         {
-        	LOG.log(Level.SEVERE,
-    				"Error constructing recipient email address: " + recipientAddress,
-    				e);
-        	
-        	throw new RuntimeException(e);
-        } 
-        catch(MessagingException e) 
+	        	LOG.log(Level.SEVERE,
+	    				"Error constructing recipient email address: " + recipientAddress,
+	    				e);
+
+	        	throw new RuntimeException(e);
+        }
+        catch(MessagingException e)
         {
-        	LOG.log(Level.SEVERE,
-    				"Error constructing or sending email message",
-    				e);
-        	
-        	throw new RuntimeException(e);
+	        	LOG.log(Level.SEVERE,
+	    				"Error constructing or sending email message",
+	    				e);
+
+	        	throw new RuntimeException(e);
         }
         catch(UnsupportedEncodingException e)
         {
-        	LOG.log(Level.SEVERE,
-    				"Error constructing sender email address: " + data.getEmailAddress(),
-    				e);
-        	
-        	throw new RuntimeException(e);	
+	        	LOG.log(Level.SEVERE,
+	    				"Error constructing sender email address: " + data.getEmailAddress(),
+	    				e);
+
+	        	throw new RuntimeException(e);
         }
 	}
 }
