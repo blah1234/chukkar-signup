@@ -358,7 +358,7 @@ public class CronServiceImpl extends HttpServlet
 		{
 			String msgBody = data.getSignupNoticeMessage();
 			ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup for the upcoming week", msgBody, data);
+			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup for the upcoming week", msgBody, data, false);
 		}
 
 		//------------------
@@ -412,7 +412,7 @@ public class CronServiceImpl extends HttpServlet
 		{
 			String msgBody = data.getSignupReminderMessage();
 			ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 12 noon", msgBody, data);
+			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 12 noon", msgBody, data, false);
 		}
 
 		//------------------
@@ -485,12 +485,7 @@ public class CronServiceImpl extends HttpServlet
 					pWrite = new PrintWriter(strWrite);
 					e.printStackTrace(pWrite);
 
-					EmailServiceImpl.sendEmail(
-						"hwang.shawn@gmail.com",
-						"Export signup error",
-						strWrite.toString(),
-						data.getAdmin().getEmailAddress(),
-						data.getAdmin().getNickname() );
+					EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "Export signup error", strWrite.toString(), data, false);
 				}
 				finally
 				{
@@ -560,16 +555,14 @@ public class CronServiceImpl extends HttpServlet
 			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
             outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
             ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-            String clubAbbr = strings.getString("clubAbbreviation");
-            String subject = clubAbbr + " chukkar signups: " + outFormatter.format( new Date() );
+            String subject = strings.getString("clubAbbreviation") + " chukkar signups: " + outFormatter.format( new Date() );
 
             managerEmails = strings.getString("managerEmail");
-            String clubListEmail = strings.getString("clubListEmail");
             String[] mgrEmailArray = managerEmails.split(",");
 
             for(String currEmail : mgrEmailArray)
             {
-            		EmailServiceImpl.sendEmail(currEmail.trim(), subject, buf.toString(), clubListEmail, clubAbbr);
+            		EmailServiceImpl.sendEmail(currEmail.trim(), subject, buf.toString(), data, true);
             }
 		}
 

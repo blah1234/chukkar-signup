@@ -5,6 +5,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -27,20 +28,12 @@ public class EmailServiceImpl extends RemoteServiceServlet
 
 
 	///////////////////////////////// METHODS //////////////////////////////////
-	static public void sendEmail(String subject, String msgBody, MessageAdmin data) throws ServletException
+	static public void sendEmail(String subject, String msgBody, MessageAdmin data, boolean useClubListAddressAsReplyTo) throws ServletException
 	{
-		sendEmail( data.getRecipientEmailAddress(),
-				   subject,
-				   msgBody,
-				   data.getAdmin().getEmailAddress(),
-				   data.getAdmin().getNickname() );
+		sendEmail(data.getRecipientEmailAddress(), subject, msgBody, data, useClubListAddressAsReplyTo);
 	}
 
-	static public void sendEmail(String recipientAddress,
-								String subject,
-								String msgBody,
-								String fromAddress,
-								String fromName) throws ServletException
+	static public void sendEmail(String recipientAddress, String subject, String msgBody, MessageAdmin data, boolean useClubListAddressAsReplyTo) throws ServletException
 	{
 		Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
@@ -48,7 +41,13 @@ public class EmailServiceImpl extends RemoteServiceServlet
         try
         {
             Message msg = new MimeMessage(session);
-            msg.setFrom( new InternetAddress(fromAddress, fromName) );
+            msg.setFrom( new InternetAddress(data.getAdmin().getEmailAddress(), data.getAdmin().getNickname()) );
+
+            if(useClubListAddressAsReplyTo) 
+            {
+            		msg.setReplyTo( new Address[] {new InternetAddress(data.getRecipientEmailAddress())} );
+            }
+
             msg.addRecipient( Message.RecipientType.TO, new InternetAddress(recipientAddress) );
             msg.setSubject(subject);
             msg.setText(msgBody);
