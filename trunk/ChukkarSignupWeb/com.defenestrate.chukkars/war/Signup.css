@@ -59,6 +59,7 @@ h1 {
 
 /* main panel */
 .mainPanel {
+  background-color: transparent;
   margin: 15px 15px 15px 15px;
 }
 
