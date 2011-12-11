@@ -13,3 +13,4 @@ Steps 4 - 6 are now taken care of by the new "Game Days" configuration DnD panel
     http://<application name>.appspot.com/signup/cron/removeAllPlayers
 
 7) Add email settings.
+8) make sure to add admin sender email to https://appengine.google.com/permissions?app_id=s~<app_id>
