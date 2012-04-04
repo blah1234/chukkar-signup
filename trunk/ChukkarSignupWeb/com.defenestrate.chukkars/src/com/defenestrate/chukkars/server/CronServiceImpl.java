@@ -112,22 +112,33 @@ public class CronServiceImpl extends HttpServlet
 
 		logTask(CronTask.RESET);
 
-		//log the time when signup should be closed
-		Calendar cal = Calendar.getInstance();
+		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+        boolean enableSignupCutoff = Boolean.parseBoolean( strings.getString("enableSignupCutoff") );
+        Calendar cal = Calendar.getInstance();
 		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
-		cal.setTime( new Date() );
 
-		int lastDay = getLastSignupDayOfWeek();
+        if(enableSignupCutoff)
+        {
+			//log the time when signup should be closed
+			cal.setTime( new Date() );
 
-		do
-		{
-			cal.add(Calendar.DAY_OF_WEEK, 1);
-		} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
+			int lastDay = getLastSignupDayOfWeek();
 
-		cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
-		cal.set(Calendar.MINUTE, 30);
+			do
+			{
+				cal.add(Calendar.DAY_OF_WEEK, 1);
+			} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
 
-		logTask( CronTask.CLOSE_SIGNUP, cal.getTime() );
+			cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
+			cal.set(Calendar.MINUTE, 30);
+        }
+        else
+        {
+        		//otherwise signup is never closed
+        		cal.set(Calendar.YEAR, 9999);
+        }
+
+        logTask( CronTask.CLOSE_SIGNUP, cal.getTime() );
 
 		//------------------
 
@@ -504,23 +515,32 @@ public class CronServiceImpl extends HttpServlet
 				}
 			};
 			Map<Day, List<Player>> dayToPlayers = new TreeMap<Day, List<Player>>(dayComp);
+			Calendar nowCal = Calendar.getInstance();
+			nowCal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+			nowCal.setTime( new Date() );
+			Day nowDay = calendarDayOfWeekToDay( nowCal.get(Calendar.DAY_OF_WEEK) );
 
 			for(Player currPlayer : allPlayersList)
 			{
 				Day currDay = currPlayer.getRequestDay();
-				List<Player> valList;
 
-				if( dayToPlayers.containsKey(currDay) )
+				//don't show days that are already in the past
+				if( nowDay.getNumber() <= currDay.getNumber() )
 				{
-					valList = dayToPlayers.get(currDay);
-				}
-				else
-				{
-					valList = new ArrayList<Player>();
-					dayToPlayers.put(currDay, valList);
-				}
+					List<Player> valList;
 
-				valList.add(currPlayer);
+					if( dayToPlayers.containsKey(currDay) )
+					{
+						valList = dayToPlayers.get(currDay);
+					}
+					else
+					{
+						valList = new ArrayList<Player>();
+						dayToPlayers.put(currDay, valList);
+					}
+
+					valList.add(currPlayer);
+				}
 			}
 
 
@@ -550,6 +570,10 @@ public class CronServiceImpl extends HttpServlet
 				}
 
 				buf.append("\n\n\n");
+			}
+
+			if(buf.length() == 0) {
+				buf.append("Nobody signed up for " + nowDay + " through the end of the week!");
 			}
 
 			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
@@ -606,6 +630,29 @@ public class CronServiceImpl extends HttpServlet
 			{
 				charWriter.close();
 			}
+		}
+	}
+
+	private Day calendarDayOfWeekToDay(int calendarDayOfWeek)
+	{
+		switch (calendarDayOfWeek)
+		{
+		case Calendar.MONDAY:
+			return Day.MONDAY;
+		case Calendar.TUESDAY:
+			return Day.TUESDAY;
+		case Calendar.WEDNESDAY:
+			return Day.WEDNESDAY;
+		case Calendar.THURSDAY:
+			return Day.THURSDAY;
+		case Calendar.FRIDAY:
+			return Day.FRIDAY;
+		case Calendar.SATURDAY:
+			return Day.SATURDAY;
+		case Calendar.SUNDAY:
+			return Day.SUNDAY;
+		default:
+			throw new IllegalArgumentException("calendarDayOfWeek not recognized: " + calendarDayOfWeek);
 		}
 	}
 
