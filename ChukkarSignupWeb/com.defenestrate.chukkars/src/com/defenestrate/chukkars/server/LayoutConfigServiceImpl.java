@@ -1,9 +1,12 @@
 package com.defenestrate.chukkars.server;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -122,35 +125,44 @@ public class LayoutConfigServiceImpl extends RemoteServiceServlet
 
 	static public Date getSignupClosedImpl()
 	{
-		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
-
 		//default is "never"
-		Date ret = new Date(Long.MAX_VALUE);
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+		cal.set(Calendar.YEAR, 9999);
+		Date ret = cal.getTime();
 
-		try
-		{
-		    Query q = pm.newQuery(CronTask.class);
-			q.setFilter("_name == name");
-			q.declareParameters("String name");
-			q.setUnique(true);
-			CronTask currTask = (CronTask)q.execute(CronTask.CLOSE_SIGNUP);
+		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+        boolean enableSignupCutoff = Boolean.parseBoolean( strings.getString("enableSignupCutoff") );
 
-			if(currTask != null)
+        if(enableSignupCutoff)
+        {
+        		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
+
+			try
 			{
-				ret = currTask.getRunDate();
+			    Query q = pm.newQuery(CronTask.class);
+				q.setFilter("_name == name");
+				q.declareParameters("String name");
+				q.setUnique(true);
+				CronTask currTask = (CronTask)q.execute(CronTask.CLOSE_SIGNUP);
+
+				if(currTask != null)
+				{
+					ret = currTask.getRunDate();
+				}
 			}
-		}
-		catch(Exception e)
-		{
-			LOG.log(
-				Level.SEVERE,
-				"Error encountered trying to find task " + CronTask.CLOSE_SIGNUP + ":\n" + e.getMessage(),
-				e);
-		}
-		finally
-		{
-			pm.close();
-		}
+			catch(Exception e)
+			{
+				LOG.log(
+					Level.SEVERE,
+					"Error encountered trying to find task " + CronTask.CLOSE_SIGNUP + ":\n" + e.getMessage(),
+					e);
+			}
+			finally
+			{
+				pm.close();
+			}
+        }
 
 		return ret;
 	}
