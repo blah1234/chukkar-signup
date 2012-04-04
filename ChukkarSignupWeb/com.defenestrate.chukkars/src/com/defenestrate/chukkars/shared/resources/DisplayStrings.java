@@ -22,4 +22,12 @@ public interface DisplayStrings extends Constants {
   	 * Returns the minimum number of players that make up a chukkar.
   	 */
   	int minPlayersPerChukkar();
+
+  	/**
+  	 * Indicates whether or not the application should enforce a cutoff
+  	 * time for signups.
+  	 * @return <code>true</code> if the application should enforce a cutoff
+  	 * time for signups; <code>false</code> otherwise.
+  	 */
+  	boolean enableSignupCutoff();
 }
