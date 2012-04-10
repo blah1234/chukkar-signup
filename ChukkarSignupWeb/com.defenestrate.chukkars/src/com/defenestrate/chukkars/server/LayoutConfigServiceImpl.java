@@ -3,7 +3,9 @@ package com.defenestrate.chukkars.server;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -118,19 +120,14 @@ public class LayoutConfigServiceImpl extends RemoteServiceServlet
 	}
 
 	@Override
-	public Date getSignupClosed()
+	public Map<Day, Date> getSignupClosed()
 	{
 		return getSignupClosedImpl();
 	}
 
-	static public Date getSignupClosedImpl()
+	static public Map<Day, Date> getSignupClosedImpl()
 	{
-		//default is "never"
-		Calendar cal = Calendar.getInstance();
-		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
-		cal.set(Calendar.YEAR, 9999);
-		Date ret = cal.getTime();
-
+		Map<Day, Date> ret = new HashMap<Day, Date>();
 		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
         boolean enableSignupCutoff = Boolean.parseBoolean( strings.getString("enableSignupCutoff") );
 
@@ -141,27 +138,46 @@ public class LayoutConfigServiceImpl extends RemoteServiceServlet
 			try
 			{
 			    Query q = pm.newQuery(CronTask.class);
-				q.setFilter("_name == name");
-				q.declareParameters("String name");
-				q.setUnique(true);
-				CronTask currTask = (CronTask)q.execute(CronTask.CLOSE_SIGNUP);
+				q.setFilter("_name.startsWith(\"" + CronTask.CLOSE_SIGNUP + "\")");
+				List<CronTask> results = (List<CronTask>)q.execute();
 
-				if(currTask != null)
+				if(results != null)
 				{
-					ret = currTask.getRunDate();
+					for(CronTask currTask : results)
+					{
+						Day currDay = Day.valueOf(
+							Integer.parseInt(currTask.getName().substring(CronTask.CLOSE_SIGNUP.length())) );
+						ret.put( currDay, currTask.getRunDate() );
+					}
 				}
 			}
 			catch(Exception e)
 			{
 				LOG.log(
 					Level.SEVERE,
-					"Error encountered trying to find task " + CronTask.CLOSE_SIGNUP + ":\n" + e.getMessage(),
+					"Error encountered trying to find tasks " + CronTask.CLOSE_SIGNUP + ":\n" + e.getMessage(),
 					e);
 			}
 			finally
 			{
 				pm.close();
 			}
+        }
+        else
+        {
+	        	//default is "never"
+	    		Calendar cal = Calendar.getInstance();
+	    		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+	    		cal.set(Calendar.YEAR, 9999);
+	    		Date never = cal.getTime();
+
+	        	ret.put(Day.MONDAY, never);
+	    		ret.put(Day.TUESDAY, never);
+	    		ret.put(Day.WEDNESDAY, never);
+	    		ret.put(Day.THURSDAY, never);
+	    		ret.put(Day.FRIDAY, never);
+	    		ret.put(Day.SATURDAY, never);
+	    		ret.put(Day.SUNDAY, never);
         }
 
 		return ret;
