@@ -225,4 +225,46 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 
 		return retList;
 	}
+
+	static protected Player getPlayerImpl(Long playerId)
+	{
+		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
+
+		Player retPlayer = null;
+		Transaction tx = pm.currentTransaction();
+
+		try
+		{
+		    tx.begin();
+
+		    retPlayer = pm.getObjectById(Player.class, playerId);
+
+			if(retPlayer == null)
+			{
+				throw new IllegalArgumentException("Player not found with id = " + playerId);
+			}
+
+		    tx.commit();
+		}
+		catch(Exception e)
+		{
+			LOG.log(
+				Level.SEVERE,
+				"Error encountered trying to retrievethe player with id = " + playerId + ":\n" + e.getMessage(),
+				e);
+
+		    if( tx.isActive() )
+		    {
+		        tx.rollback();
+		    }
+
+		    throw new RuntimeException(e);
+		}
+		finally
+		{
+			pm.close();
+		}
+
+		return retPlayer;
+	}
 }
