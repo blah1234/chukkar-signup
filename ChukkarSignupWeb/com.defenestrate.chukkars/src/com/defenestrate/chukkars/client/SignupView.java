@@ -1267,7 +1267,7 @@ public class SignupView implements EntryPoint
 		ImageResource busyImgResource = myImageBundle.errorIcon();
 		horizPanel.add( new Image(busyImgResource) );
 
-		Label errMsg = new Label("Signup is closed.", true);
+		Label errMsg = new Label("Signup is closed. Try signing up for another day.", true);
 		errMsg.addStyleDependentName("status");
 		horizPanel.add(errMsg);
 
