@@ -2,6 +2,7 @@ package com.defenestrate.chukkars.client;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.defenestrate.chukkars.shared.Day;
@@ -28,7 +29,7 @@ public interface LayoutConfigService extends RemoteService
 
 	/**
 	 * Returns the date and time past which signup is closed
-	 * @return the date and time past which signup is closed
+	 * @return map of date and time past which signup is closed
 	 */
-	Date getSignupClosed();
+	Map<Day, Date> getSignupClosed();
 }
