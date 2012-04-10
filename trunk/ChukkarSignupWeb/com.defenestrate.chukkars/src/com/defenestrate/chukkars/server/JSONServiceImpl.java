@@ -135,14 +135,29 @@ public class JSONServiceImpl extends HttpServlet
 	 */
 	public void addPlayer(HttpServletRequest req, HttpServletResponse resp)
 	{
-		Date closeDate = LayoutConfigServiceImpl.getSignupClosedImpl();
-		Date now = new Date();
-		boolean isSignupClosed = now.after(closeDate);
+		Day requestDay = Day.valueOf( req.getParameter("_requestDay") );
+		Map<Day, Date> closeDateMap = LayoutConfigServiceImpl.getSignupClosedImpl();
+		boolean isSignupClosed;
+
+		if( closeDateMap.containsKey(requestDay) )
+		{
+			Date closeDate = closeDateMap.get(requestDay);
+			Date now = new Date();
+			isSignupClosed = now.after(closeDate);
+		}
+		else
+		{
+			isSignupClosed = false;
+			LOG.log(
+				Level.SEVERE,
+				requestDay + " could not be found in the closeDateMap. This should never happen! closeDateMap:\n" + closeDateMap,
+				new Throwable().fillInStackTrace() );
+		}
+
 		String respStr;
 
 		if(!isSignupClosed)
 		{
-			Day requestDay = Day.valueOf( req.getParameter("_requestDay") );
 			String name = req.getParameter("_name");
 			Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
 
@@ -198,14 +213,30 @@ public class JSONServiceImpl extends HttpServlet
 	 */
 	public void editChukkars(HttpServletRequest req, HttpServletResponse resp)
 	{
-		Date closeDate = LayoutConfigServiceImpl.getSignupClosedImpl();
-		Date now = new Date();
-		boolean isSignupClosed = now.after(closeDate);
+		Long playerId = new Long( req.getParameter("_id") );
+		Player playerToEdit = PlayerServiceImpl.getPlayerImpl(playerId);
+		Map<Day, Date> closeDateMap = LayoutConfigServiceImpl.getSignupClosedImpl();
+		boolean isSignupClosed;
+
+		if( closeDateMap.containsKey(playerToEdit.getRequestDay()) )
+		{
+			Date closeDate = closeDateMap.get( playerToEdit.getRequestDay() );
+			Date now = new Date();
+			isSignupClosed = now.after(closeDate);
+		}
+		else
+		{
+			isSignupClosed = false;
+			LOG.log(
+				Level.SEVERE,
+				playerToEdit.getRequestDay() + " could not be found in the closeDateMap. This should never happen! closeDateMap:\n" + closeDateMap,
+				new Throwable().fillInStackTrace() );
+		}
+
 		String respStr;
 
 		if(!isSignupClosed)
 		{
-			Long playerId = new Long( req.getParameter("_id") );
 			Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
 
 			Player editedPlayer = PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
