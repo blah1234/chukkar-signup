@@ -1,7 +1,9 @@
 package com.defenestrate.chukkars.client.controller;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.defenestrate.chukkars.client.AdminService;
@@ -119,19 +121,20 @@ public class ChukkarSignupController
 	    _loginSvc.login(GWT.getHostPageBaseURL(), initToken, async);
 	}
 
-	public void getSignupCloseDate(final String initToken)
+	public void getSignupCloseDates(final String initToken)
 	{
-	    AsyncCallback<Date> async = new AsyncCallback<Date>()
+	    AsyncCallback<Map<Day, Date>> async = new AsyncCallback<Map<Day, Date>>()
 	    {
 	    		@Override
 			public void onFailure(Throwable error)
 		    	{
 		    		//render by default with no close date
-	    			_view.renderModule( initToken, new Date(Long.MAX_VALUE) );
+		    		Map<Day, Date> ret = new HashMap<Day, Date>();
+		    		_view.renderModule(initToken, ret);
 		    	}
 
 		    	@Override
-			public void onSuccess(Date result)
+			public void onSuccess(Map<Day, Date> result)
 		    	{
 		    		_view.renderModule(initToken, result);
 		    	}
