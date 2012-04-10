@@ -31,6 +31,8 @@ import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -110,7 +112,7 @@ public class SignupView implements EntryPoint
 	private Anchor _logOutLink;
 	private BusyIndicator _busy;
 	private Label _statusLbl;
-	private boolean _isSignupClosed;
+	private Map<Day, Date> _signupClosedMap;
 
 	private LoginInfo _loginInfo;
 	private MessageAdminClientCopy _adminData;
@@ -151,14 +153,12 @@ public class SignupView implements EntryPoint
 
 	public void renderModule(String initToken)
 	{
-		_ctrl.getSignupCloseDate(initToken);
+		_ctrl.getSignupCloseDates(initToken);
 	}
 
-	public void renderModule(String initToken, Date signupClosed)
+	public void renderModule(String initToken, Map<Day, Date> signupClosedMap)
 	{
-		Date now = new Date();
-		_isSignupClosed = ( !_loginInfo.isAdmin() && now.after(signupClosed) );
-
+		_signupClosedMap = signupClosedMap;
 		_ctrl.isBootstrapping(initToken);
 	}
 
@@ -187,7 +187,7 @@ public class SignupView implements EntryPoint
 		}
 
 		layoutNavigationComponents();
-		layoutSignupComponents();
+		Day firstGameDay = layoutSignupComponents();
 		layoutLineupComponents();
 		layoutEmailSettingsComponents();
 		layoutAccountsComponents();
@@ -257,22 +257,42 @@ public class SignupView implements EntryPoint
 		RootPanel.get("signupPanel").add(_topLevelPanel);
 
 
-		if(_isSignupClosed)
+		if(firstGameDay != null)
 		{
-			handleSignupClosed();
+			boolean isClosed = isSignupClosed(firstGameDay);
+
+			if(isClosed)
+			{
+				handleSignupClosed(firstGameDay, isClosed);
+			}
 		}
 	}
 
-	private void handleSignupClosed()
+	private boolean isSignupClosed(Day gameDay)
 	{
-		for( DayLayout currLayout : _dayToLayoutMap.values() )
+		if( _signupClosedMap.containsKey(gameDay) )
 		{
-			currLayout._addRowBtn.setEnabled(false);
-			currLayout._chukkarsTxt.setEnabled(false);
-			currLayout._nameTxt.setEnabled(false);
+			Date signupClosed = _signupClosedMap.get(gameDay);
+			Date now = new Date();
+			return ( !_loginInfo.isAdmin() && now.after(signupClosed) );
 		}
+		else
+		{
+			return false;
+		}
+	}
 
-		showSignupClosedDialog();
+	private void handleSignupClosed(Day gameDay, boolean isClosed)
+	{
+		DayLayout currLayout = _dayToLayoutMap.get(gameDay);
+		currLayout._addRowBtn.setEnabled(!isClosed);
+		currLayout._chukkarsTxt.setEnabled(!isClosed);
+		currLayout._nameTxt.setEnabled(!isClosed);
+
+		if(isClosed)
+		{
+			showSignupClosedDialog();
+		}
 	}
 
 	private void layoutNavigationComponents()
@@ -301,7 +321,10 @@ public class SignupView implements EntryPoint
 	    _linkPanel.add(adminLinkPanel, "Admin Tasks");
 	}
 
-	private void layoutSignupComponents()
+	/**
+	 * @return the first day in the week that a game will be played
+	 */
+	private Day layoutSignupComponents()
 	{
 		_updateTxt = new TextBoxExtend();
 		_updateTxt.addStyleDependentName("numChukkars");
@@ -313,16 +336,23 @@ public class SignupView implements EntryPoint
 
 		//-------------
 
+		Day ret = null;
 		Day[] allDays = Day.getAll();
 		for(Day currDay : allDays)
 		{
 			if( currDay.isEnabled() )
 			{
+				if(ret == null)
+				{
+					ret = currDay;
+				}
+
 				DayLayout layout = new DayLayout();
 				_dayToLayoutMap.put(currDay, layout);
 
 				// Create tables for chukkar signup.
 				layout._signupTable = new FlexTable();
+				layout._signupTable.setTitle( currDay.toString() );
 
 				layout._signupTable.setText(0, TIME_COLUMN_INDEX, "Time");
 				layout._signupTable.setText(0, NAME_COLUMN_INDEX, "Name");
@@ -469,6 +499,8 @@ public class SignupView implements EntryPoint
 				_topLevelPanel.add(loginPanel, DockPanel.NORTH);
 			}
 		}
+
+		return ret;
 	}
 
 	private void layoutLineupComponents()
@@ -760,17 +792,14 @@ public class SignupView implements EntryPoint
 			    	}
 		    });
 
-		    	if(!_isSignupClosed)
-		    	{
-			    	currLayout._signupTable.addClickHandler(new ClickHandler()
+		    	currLayout._signupTable.addClickHandler(new ClickHandler()
+			{
+				@Override
+				public void onClick(ClickEvent event)
 				{
-					@Override
-					public void onClick(ClickEvent event)
-					{
-						startEditingChukkars(event);
-					}
-				});
-		    	}
+					startEditingChukkars(event);
+				}
+			});
 
 	   	 	//--------------------
 
@@ -834,6 +863,20 @@ public class SignupView implements EntryPoint
     				Day dayOfWeek = Day.valueOf(tabText);
 
 				stopEditingChukkars(dayOfWeek, false);
+			}
+		});
+
+		_tabPanel.addSelectionHandler(new SelectionHandler<Integer>()
+		{
+			@Override
+			public void onSelection(SelectionEvent<Integer> event)
+			{
+				int selectedTab = event.getSelectedItem();
+				String tabText = _tabPanel.getTabBar().getTabHTML(selectedTab);
+				Day dayOfWeek = Day.valueOf(tabText);
+				boolean isClosed = isSignupClosed(dayOfWeek);
+
+				handleSignupClosed(dayOfWeek, isClosed);
 			}
 		});
 
@@ -1037,9 +1080,10 @@ public class SignupView implements EntryPoint
 	private void startEditingChukkars(ClickEvent event)
 	{
 		FlexTable signupTable = (FlexTable)event.getSource();
+		Day gameDay = Day.valueOf( signupTable.getTitle() );
 		Cell clickCell = signupTable.getCellForEvent(event);
 
-		if(clickCell != null)
+		if( (clickCell != null) && !isSignupClosed(gameDay) )
 		{
 			int row = clickCell.getRowIndex();
 			int col = clickCell.getCellIndex();
@@ -1202,7 +1246,7 @@ public class SignupView implements EntryPoint
 	    	ok.setFocus(true);
 	}
 
-	public void showSignupClosedDialog()
+	private void showSignupClosedDialog()
 	{
 		final DialogBox alert = new DialogBox(true, true);
 		Caption cap = alert.getCaption();
@@ -1424,7 +1468,7 @@ public class SignupView implements EntryPoint
 
 	    //-------------------------
 
-		updateButton.setEnabled(!_isSignupClosed);
+		updateButton.setEnabled( !isSignupClosed(dayOfWeek) );
 
 	    //-------------------------
 
