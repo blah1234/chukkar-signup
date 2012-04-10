@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <!-- Horsepark -->
+  <cron>
+    <url>/signup/cron/removeAllPlayers</url>
+    <description>Resets the signup page every Wednesday at 7pm</description>
+    <schedule>every wednesday 19:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupNoticeEmail</url>
+    <description>Sends a weekly email reminding players to signup for chukkars</description>
+    <schedule>every friday 09:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupReminderEmail</url>
+    <description>Sends a weekly last reminder to players to signup for chukkars</description>
+    <schedule>every monday 09:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendExportSignupEmail</url>
+    <description>Sends a weekly export of the player signups to the club manager</description>
+    <schedule>every monday 13:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <!-- Menlo 
+  <cron>
+    <url>/signup/cron/removeAllPlayers</url>
+    <description>Resets the signup page every Sunday at 7pm</description>
+    <schedule>every sunday 19:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupNoticeEmail</url>
+    <description>Sends a weekly email reminding players to signup for chukkars</description>
+    <schedule>every monday 09:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupReminderEmail</url>
+    <description>Sends a weekly last reminder to players to signup for chukkars</description>
+    <schedule>every thursday 09:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendExportSignupEmail</url>
+    <description>Sends a weekly export of the player signups to the club manager</description>
+    <schedule>every thursday 13:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  -->
+</cronentries>

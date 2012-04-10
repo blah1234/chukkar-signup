@@ -1,0 +1,255 @@
+/** Add css rules here for your application. */
+
+
+/** Example rules used by the template application (remove for your app) */
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+  color: #777777;
+  margin: 40px 0px 70px;
+  text-align: center;
+}
+
+/* signup table header row */
+.signupHeader {
+  background-color: #2062B8;
+  color: white;
+  font-style: italic;
+}
+
+/* signup flex table */
+.signupTable {
+  padding: 2px;
+  margin-top:6px;
+  margin-bottom:6px;
+}
+
+/* time column */
+.signupTimeColumn {
+  width: 12em;
+  color: graytext;
+  font-style: italic;
+}
+
+/* time column */
+.mobileSignupTimeColumn {
+  width: 6em;
+  min-width: 6em;
+  max-width: 6em;
+  color: graytext;
+  font-style: italic;
+}
+
+.mobileSignupNameColumn {
+  width: 6em;
+  min-width: 6em;
+  max-width: 6em;
+}
+
+/* num chukkar column */
+.signupNumericColumn {
+  text-align: right;
+  width:4em;
+}
+
+/* signup table Action column */
+.signupActionColumn {
+  text-align: center;
+}
+
+/* main panel */
+.mainPanel {
+  background-color: transparent;
+  margin: 15px 15px 15px 15px;
+}
+
+.chukkarsPanel {
+  margin: 6px 0px 6px 30px;
+}
+
+.gwt-DecoratedStackPanel-linkPanel {
+  margin-right: 20px;
+  width: 175px;
+}
+
+/* signup table, the Action buttons */
+.gwt-Button-action {
+  width: 70px;
+}
+
+/* signup table, the Action buttons */
+.gwt-Button-mobileAction {
+  width: 57px;
+}
+
+/* signup table, the Delete buttons */
+.gwt-Button-delete {
+  width: 50px;
+}
+
+.gwt-TextBox-mobileNameEntry {
+    width: 6em;
+    max-width: 6em;
+}
+
+.gwt-TextBox-numChukkars {
+	width: 4em;
+}
+
+/* num game chukkars label */
+.gwt-Label-gameChukkarsLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: medium;
+  font-weight: bold;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+/* num chukkars total label */
+.gwt-Label-totalChukkarsLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: medium;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.loginPanel {
+  float: right;
+  margin-bottom: 30px;
+}
+
+/* logged in user userNickname label */
+.gwt-Label-userNicknameLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: 11px;
+}
+
+.gwt-Label-pipeLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: 15px;
+}
+
+/* logged in user email label */
+.gwt-Label-userEmailLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  margin-right: 10px;
+  margin-left: 5px;
+  font-size: 11px;
+}
+
+.gwt-Anchor-loginLogoutLink {
+  font-family: Arial,Helvetica,sans-serif !important;
+  font-size: 11px !important;
+  margin-left: 10px;
+}
+
+
+/* ------------ Lineups page ---------- */
+
+.lineupPanel {
+  border-spacing: 5px 30px;
+}
+
+.gwt-Button-copy {
+  width: 75px;
+}
+
+.rightCenterAlignLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  text-align: right;
+}
+
+.btnPanel {
+  float: right;
+  border-spacing: 10px 0px;
+}
+
+
+/* ------------ Admin page ------------ */
+
+.rightTopAlignLbl {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  float:right;
+}
+
+.gwt-TextBox-recipientEmail {
+  width: 25em;
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+.adminTable {
+  border-spacing: 5px 20px;
+}
+
+.gwt-TextArea-signupTxt {
+  font-family: Arial,Helvetica,sans-serif;
+  width: 40em;
+  height: 30ex;
+}
+
+/* save button */
+.gwt-Button-saveAdminSettings {
+  width: 75px;
+  float: right; 
+}
+
+
+/* ------------ Accounts page ------------ */
+
+.gwt-Label-title {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  font-size: 25px;
+}
+
+.gwt-Label-status {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  font-style: italic;
+  font-size: 15px;
+  color: graytext;
+}
+
+
+/* ------------ Busy Indicator Dialog ------------ */
+.dialogVPanel {
+  margin: 50px 100px 50px 100px;
+}
+
+.gwt-Label-busyLbl {
+  font-size: large;
+  margin-bottom: 10px;
+  color: activeborder;
+}
+
+
+/* ------------ Error Dialog ------------ */
+.gwt-DialogBox .Caption-errorDialog {
+  font-size: large;
+  text-align:center;
+}
+
+.gwt-DialogBox .Caption-status {
+  font-family: Arial,Helvetica,sans-serif;
+  font-weight: bold;
+  font-style: italic;
+  font-size: 15px;
+  color: graytext;
+  text-align:center;
+}
+
+.gwt-Button-errorDialog {
+  width: 75px;
+}
+
+.gwt-Label-errorDialog {
+  font-size: large;
+  margin-right: 10px;
+}
+
+.errorDialogPanel-main {
+  margin-bottom: 10px;
+}

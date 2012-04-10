@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+  <listener>
+    <listener-class>
+      com.defenestrate.chukkars.server.listener.ServerStartupListener
+    </listener-class>
+  </listener>
+  
+  
+  <!-- Servlets -->
+  <servlet>
+    <servlet-name>layoutConfigServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.LayoutConfigServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>layoutConfigServiceImpl</servlet-name>
+    <url-pattern>/signup/layoutConfig/*</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>adminService</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.AdminServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>adminService</servlet-name>
+    <url-pattern>/signup/admin</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>loginService</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.LoginServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>loginService</servlet-name>
+    <url-pattern>/signup/login</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>playerServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.PlayerServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>playerServiceImpl</servlet-name>
+    <url-pattern>/signup/player</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>emailServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.EmailServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>emailServiceImpl</servlet-name>
+    <url-pattern>/signup/email</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>cronServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.CronServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>cronServiceImpl</servlet-name>
+    <url-pattern>/signup/cron/*</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>jsonServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.JSONServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>jsonServiceImpl</servlet-name>
+    <url-pattern>/signup/json/*</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>configServiceImpl</servlet-name>
+    <servlet-class>com.defenestrate.chukkars.server.ConfigurationServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>configServiceImpl</servlet-name>
+    <url-pattern>/signup/config/*</url-pattern>
+  </servlet-mapping>
+  
+  
+  <security-constraint>
+    <web-resource-collection>
+  		<url-pattern>/signup/cron/*</url-pattern>
+	</web-resource-collection>
+    <auth-constraint>
+    	<role-name>admin</role-name>
+	</auth-constraint>
+  </security-constraint>
+  
+  
+  <security-constraint>
+    <web-resource-collection>
+  		<url-pattern>/signup/config/*</url-pattern>
+	</web-resource-collection>
+    <auth-constraint>
+    	<role-name>admin</role-name>
+	</auth-constraint>
+  </security-constraint>
+  
+  
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>Signup.html</welcome-file>
+  </welcome-file-list>
+
+</web-app>
