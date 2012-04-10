@@ -110,6 +110,39 @@ public class CronServiceImpl extends HttpServlet
 			pm.close();
 		}
 
+		//-----------------------
+		//reset all CronTasks as well
+
+		pm = PersistenceManagerHelper.getPersistenceManager();
+
+		try
+		{
+			Extent<CronTask> e = pm.getExtent(CronTask.class);
+			Iterator<CronTask> iter = e.iterator();
+
+			while( iter.hasNext() )
+			{
+				CronTask delTask = iter.next();
+				pm.deletePersistent(delTask);
+			}
+		}
+		catch(Exception e)
+		{
+			LOG.log(
+				Level.SEVERE,
+				"Error encountered trying to remove all cron tasks:\n" + e.getMessage(),
+				e);
+
+			//display stack trace to browser
+			throw new ServletException(e);
+		}
+		finally
+		{
+			pm.close();
+		}
+
+		//-------------------
+
 		logTask(CronTask.RESET);
 
 		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
@@ -119,26 +152,45 @@ public class CronServiceImpl extends HttpServlet
 
         if(enableSignupCutoff)
         {
-			//log the time when signup should be closed
-			cal.setTime( new Date() );
+        		boolean isOneDayEnabled = false;
+        		Day[] allDays = Day.getAll();
+        		for(Day currDay : allDays)
+        		{
+        			if( currDay.isEnabled() )
+        			{
+        				isOneDayEnabled = true;
 
-			int lastDay = getLastSignupDayOfWeek();
+        				//log the time when signup should be closed
+        				cal.setTime( new Date() );
 
-			do
-			{
-				cal.add(Calendar.DAY_OF_WEEK, 1);
-			} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
+        				int lastDay = getLastSignupDayOfWeek(currDay);
 
-			cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
-			cal.set(Calendar.MINUTE, 30);
+        				do
+        				{
+        					cal.add(Calendar.DAY_OF_WEEK, 1);
+        				} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
+
+        				cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
+        				cal.set(Calendar.MINUTE, 30);
+
+        				logTask( CronTask.CLOSE_SIGNUP + currDay.getNumber(), cal.getTime() );
+        			}
+        		}
+
+
+        		if(!isOneDayEnabled)
+        		{
+        			//otherwise signup is never closed
+            		cal.set(Calendar.YEAR, 9999);
+            		logTask( CronTask.CLOSE_SIGNUP + 1, cal.getTime() );
+        		}
         }
         else
         {
         		//otherwise signup is never closed
         		cal.set(Calendar.YEAR, 9999);
+        		logTask( CronTask.CLOSE_SIGNUP + 1, cal.getTime() );
         }
-
-        logTask( CronTask.CLOSE_SIGNUP, cal.getTime() );
 
 		//------------------
 
