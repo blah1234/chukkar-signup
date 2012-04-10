@@ -23,6 +23,13 @@ public enum Day
 
 
 	/////////////////////////////// CONSTRUCTORS ///////////////////////////////
+	private Day()
+	{
+		//necessary for GWT serialization only
+		_numRepresentation = 1;
+		_isEnabled = false;
+	}
+
 	private Day(int numRepresentation)
 	{
 		_numRepresentation = numRepresentation;
@@ -37,6 +44,29 @@ public enum Day
 
 
 	///////////////////////////////// METHODS //////////////////////////////////
+	static final public Day valueOf(int numRepresentation)
+	{
+		switch(numRepresentation)
+		{
+		case 1:
+			return MONDAY;
+		case 2:
+			return TUESDAY;
+		case 3:
+			return WEDNESDAY;
+		case 4:
+			return THURSDAY;
+		case 5:
+			return FRIDAY;
+		case 6:
+			return SATURDAY;
+		case 7:
+			return SUNDAY;
+		default:
+			throw new IllegalArgumentException(numRepresentation + " is not a valid number representation for the current list of defined Days.");
+		}
+	}
+
 	static final public Day[] getAll()
 	{
 		return new Day[]
