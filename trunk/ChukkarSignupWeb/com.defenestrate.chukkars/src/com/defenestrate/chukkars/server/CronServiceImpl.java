@@ -576,8 +576,10 @@ public class CronServiceImpl extends HttpServlet
 			{
 				Day currDay = currPlayer.getRequestDay();
 
-				//don't show days that are already in the past
-				if( nowDay.getNumber() <= currDay.getNumber() )
+				//TODO: BelAir: don't show days that are already in the past
+				//if( nowDay.getNumber() <= currDay.getNumber() )
+				//TODO: Menlo & HPPC: only show days in the future
+				if( nowDay.getNumber() < currDay.getNumber() )
 				{
 					List<Player> valList;
 
