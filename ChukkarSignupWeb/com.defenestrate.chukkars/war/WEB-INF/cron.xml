@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-  <!-- Horsepark -->
+  <!-- Horsepark 
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page every Wednesday at 7pm</description>
@@ -18,18 +18,19 @@
   <cron>
     <url>/signup/cron/sendSignupReminderEmail</url>
     <description>Sends a weekly last reminder to players to signup for chukkars</description>
-    <schedule>every monday 09:00</schedule>
+    <schedule>every monday,tuesday 09:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   
   <cron>
     <url>/signup/cron/sendExportSignupEmail</url>
     <description>Sends a weekly export of the player signups to the club manager</description>
-    <schedule>every monday 13:00</schedule>
+    <schedule>every monday,tuesday 13:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
+  -->
   
-  <!-- Menlo 
+  <!-- Menlo -->  
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page every Sunday at 7pm</description>
@@ -47,14 +48,51 @@
   <cron>
     <url>/signup/cron/sendSignupReminderEmail</url>
     <description>Sends a weekly last reminder to players to signup for chukkars</description>
-    <schedule>every thursday 09:00</schedule>
+    <schedule>every thursday,saturday 09:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   
   <cron>
     <url>/signup/cron/sendExportSignupEmail</url>
     <description>Sends a weekly export of the player signups to the club manager</description>
-    <schedule>every thursday 13:00</schedule>
+    <schedule>every thursday,saturday 13:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+
+  
+  <!-- Bel Air  
+  <cron>
+    <url>/signup/cron/removeAllPlayers</url>
+    <description>Resets the signup page at 10am</description>
+    <schedule>every saturday 10:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupNoticeEmail</url>
+    <description>Sends a weekly email reminding players to signup for chukkars</description>
+    <schedule>every saturday 10:30</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendSignupReminderEmail</url>
+    <description>Sends a weekly last reminder to players to signup for chukkars</description>
+    <schedule>every wednesday 09:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendExportSignupEmail</url>
+    <description>Sends a weekly export of the player signups to the club manager</description>
+    <schedule>every monday,tuesday,thursday 13:00</schedule>
+    <timezone>America/Los_Angeles</timezone>
+  </cron>
+  
+  <cron>
+    <url>/signup/cron/sendExportSignupEmail</url>
+    <description>Sends a weekly export of the player signups to the club manager</description>
+    <schedule>every friday 19:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   -->
