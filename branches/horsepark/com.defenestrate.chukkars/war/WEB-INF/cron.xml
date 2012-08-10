@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-  <!-- Horsepark  
+  <!-- Horsepark --> 
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page every Wednesday at 7pm</description>
@@ -28,7 +28,7 @@
     <schedule>every monday,tuesday 13:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
-  -->
+  
   
   <!-- Menlo    
   <cron>
@@ -58,9 +58,9 @@
     <schedule>every thursday,saturday 13:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
--->
+
   
-  <!-- Bel Air -->  
+  <!-- Bel Air   
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page at 10am</description>
