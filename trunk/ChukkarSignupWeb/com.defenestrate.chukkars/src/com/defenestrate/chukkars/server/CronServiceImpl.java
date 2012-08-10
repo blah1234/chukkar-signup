@@ -579,8 +579,11 @@ public class CronServiceImpl extends HttpServlet
 				//TODO: BelAir: don't show days that are already in the past
 				//if( nowDay.getNumber() <= currDay.getNumber() )
 				//TODO: Menlo & HPPC: only show days in the future
-				if( nowDay.getNumber() < currDay.getNumber() )
+				if( (nowDay.getNumber() % 7) < currDay.getNumber() )
 				{
+					//% 7 so that when export is sent on Sun (number
+					//representation = 7), Mon (number = 1) will be
+					//counted as a day in the future.
 					List<Player> valList;
 
 					if( dayToPlayers.containsKey(currDay) )
@@ -627,7 +630,7 @@ public class CronServiceImpl extends HttpServlet
 			}
 
 			if(buf.length() == 0) {
-				buf.append("Nobody signed up for " + nowDay + " through the end of the week!");
+				buf.append("Nobody signed up for " + Day.valueOf((nowDay.getNumber() % 7) + 1) + " through the end of the week!");
 			}
 
 			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
