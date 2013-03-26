@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Common view pager for horizontal swipe to change pages. -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+>
+    <LinearLayout
+        android:id="@+id/empty_container"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+		android:layout_alignParentTop="true"
+        />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/empty_container"
+    />
+    
+    <com.defenestrate.chukkars.android.view.PageIndexer
+        android:id="@+id/view_pager_indexer"
+        android:layout_height="@dimen/view_pager_indexer_height"
+        android:layout_width="match_parent"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/holo_blue_light"
+        android:visibility="gone"
+    />
+    
+    <!-- Swiping indicators -->
+    <ImageView 
+        android:id="@+id/swipe_indicator_left"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/swiping_left_normal"
+        android:visibility="invisible"
+    />
+    
+    <ImageView 
+        android:id="@+id/swipe_indicator_right"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/swiping_right_normal"
+        android:visibility="invisible"
+    />
+    
+    <!-- View to show a loading animation. -->
+
+    <RelativeLayout
+        android:id="@+id/page_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <!-- View to show a loading animation. -->
+        <ProgressBar
+            android:id="@+id/loading_icon"
+            style="@android:style/Widget.DeviceDefault.ProgressBar.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminate="true"
+            />
+        
+        <TextView
+            android:id="@+id/loading_msg"
+            android:layout_below="@id/loading_icon"
+            style="@style/Label.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+</RelativeLayout>
