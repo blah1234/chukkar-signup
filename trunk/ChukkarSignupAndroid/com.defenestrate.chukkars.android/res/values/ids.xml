@@ -10,4 +10,6 @@
     <item type="id" name="player_id_tag" />
     
     <item type="id" name="get_server_data_request" />
+    
+    <item type="id" name="position_tag" />
 </resources>
