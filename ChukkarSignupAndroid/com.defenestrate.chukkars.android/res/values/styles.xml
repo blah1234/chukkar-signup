@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<style name="AppTheme.ViewPager" parent="@android:Theme.Holo.Light"/>
+	
+	<style name="Label.Medium" parent="@android:TextAppearance.DeviceDefault.Medium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/label</item>
+    </style>
+    
     <!-- Text style for the table header -->
     <style name="TableHeaderText" parent="@android:style/TextAppearance.Small">
         <item name="android:textStyle">italic</item>

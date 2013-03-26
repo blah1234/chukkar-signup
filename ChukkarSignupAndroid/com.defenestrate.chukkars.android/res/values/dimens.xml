@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Height of the view pager indexer (scrollbar-like widget). -->
+    <dimen name="view_pager_indexer_height">3dp</dimen>
+    
+</resources>
