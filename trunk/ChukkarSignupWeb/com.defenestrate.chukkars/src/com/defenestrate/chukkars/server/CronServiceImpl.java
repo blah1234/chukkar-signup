@@ -181,15 +181,13 @@ public class CronServiceImpl extends HttpServlet
         		if(!isOneDayEnabled)
         		{
         			//otherwise signup is never closed
-            		cal.set(Calendar.YEAR, 9999);
-            		logTask( CronTask.CLOSE_SIGNUP + 1, cal.getTime() );
+            		logTask( CronTask.CLOSE_SIGNUP + 1, getNever() );
         		}
         }
         else
         {
         		//otherwise signup is never closed
-        		cal.set(Calendar.YEAR, 9999);
-        		logTask( CronTask.CLOSE_SIGNUP + 1, cal.getTime() );
+        		logTask( CronTask.CLOSE_SIGNUP + 1, getNever() );
         }
 
 		//------------------
@@ -228,6 +226,18 @@ public class CronServiceImpl extends HttpServlet
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return the programatic representation for "never" in this app
+	 */
+	static public Date getNever()
+	{
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+		cal.set(Calendar.YEAR, 9999);
+		Date never = cal.getTime();
+		return never;
 	}
 
 	static private void logTask(String taskName) throws ServletException
@@ -467,15 +477,61 @@ public class CronServiceImpl extends HttpServlet
 		}
 	}
 
+	private boolean isTodayCutoffDay()
+	{
+		Calendar nowCal = Calendar.getInstance();
+		nowCal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+		int dayOfWeekNow = nowCal.get(Calendar.DAY_OF_WEEK);
+
+		Day dayNow;
+
+		switch (dayOfWeekNow)
+		{
+		case Calendar.MONDAY:
+			dayNow = Day.MONDAY;
+			break;
+		case Calendar.TUESDAY:
+			dayNow = Day.TUESDAY;
+			break;
+		case Calendar.WEDNESDAY:
+			dayNow = Day.WEDNESDAY;
+			break;
+		case Calendar.THURSDAY:
+			dayNow = Day.THURSDAY;
+			break;
+		case Calendar.FRIDAY:
+			dayNow = Day.FRIDAY;
+			break;
+		case Calendar.SATURDAY:
+			dayNow = Day.SATURDAY;
+			break;
+		case Calendar.SUNDAY:
+			dayNow = Day.SUNDAY;
+			break;
+		default:
+			throw new IllegalArgumentException("dayOfWeekNow not recognized: " + dayOfWeekNow);
+		}
+
+		Day possibleGameDay = dayNow.tomorrow();
+		return possibleGameDay.isEnabled();
+	}
+
 	public void sendSignupReminderEmail(HttpServletResponse resp) throws ServletException
 	{
-		MessageAdmin data = getEnabledMessageAdmin();
+		//Determine if today is the cutoff day
+		boolean isCutoff = isTodayCutoffDay();
+		MessageAdmin data = null;
 
-		if(data != null)
+		if(isCutoff)
 		{
-			String msgBody = data.getSignupReminderMessage();
-			ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 12 noon", msgBody, data, false);
+			data = getEnabledMessageAdmin();
+
+			if(data != null)
+			{
+				String msgBody = data.getSignupReminderMessage();
+				ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+				EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 12 noon", msgBody, data, false);
+			}
 		}
 
 		//------------------
@@ -492,9 +548,13 @@ public class CronServiceImpl extends HttpServlet
 			{
 				msg = "Signup reminder email successfully sent.";
 			}
-			else
+			else if(isCutoff)
 			{
 				msg = "Weekly emails are not enabled. No email sent.";
+			}
+			else
+			{
+				msg = "Today is not the cutoff day for signups. No email sent.";
 			}
 
 			charWriter.write(msg);
@@ -523,128 +583,135 @@ public class CronServiceImpl extends HttpServlet
 
 	public void sendExportSignupEmail(HttpServletResponse resp) throws ServletException
 	{
-		MessageAdmin data = getEnabledMessageAdmin();
+		//Determine if today is the cutoff day
+		boolean isCutoff = isTodayCutoffDay();
+		MessageAdmin data = null;
 		String managerEmails = null;
 
-		if(data != null)
+		if(isCutoff)
 		{
-			List<Player> allPlayersList = null;
+			data = getEnabledMessageAdmin();
 
-			try
+			if(data != null)
 			{
-				allPlayersList = PlayerServiceImpl.getPlayersImpl();
-			}
-			catch(Exception e)
-			{
-				LOG.log(Level.SEVERE,
-						"Error getting all signed up players",
-						e);
-
-				PrintWriter pWrite = null;
+				List<Player> allPlayersList = null;
 
 				try
 				{
-					StringWriter strWrite = new StringWriter();
-					pWrite = new PrintWriter(strWrite);
-					e.printStackTrace(pWrite);
-
-					EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "Export signup error", strWrite.toString(), data, false);
+					allPlayersList = PlayerServiceImpl.getPlayersImpl();
 				}
-				finally
+				catch(Exception e)
 				{
-					IOUtils.closeQuietly(pWrite);
-				}
-			}
+					LOG.log(Level.SEVERE,
+							"Error getting all signed up players",
+							e);
 
+					PrintWriter pWrite = null;
 
-			Comparator<Day> dayComp = new Comparator<Day>()
-			{
-				@Override
-				public int compare(Day o1, Day o2)
-				{
-					int ret = o1.getNumber() - o2.getNumber();
-					return ret;
-				}
-			};
-			Map<Day, List<Player>> dayToPlayers = new TreeMap<Day, List<Player>>(dayComp);
-			Calendar nowCal = Calendar.getInstance();
-			nowCal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
-			nowCal.setTime( new Date() );
-			Day nowDay = calendarDayOfWeekToDay( nowCal.get(Calendar.DAY_OF_WEEK) );
-
-			for(Player currPlayer : allPlayersList)
-			{
-				Day currDay = currPlayer.getRequestDay();
-
-				//TODO: BelAir: don't show days that are already in the past
-				//if( nowDay.getNumber() <= currDay.getNumber() )
-				//TODO: Menlo & HPPC: only show days in the future
-				if( (nowDay.getNumber() % 7) < currDay.getNumber() )
-				{
-					//% 7 so that when export is sent on Sun (number
-					//representation = 7), Mon (number = 1) will be
-					//counted as a day in the future.
-					List<Player> valList;
-
-					if( dayToPlayers.containsKey(currDay) )
+					try
 					{
-						valList = dayToPlayers.get(currDay);
+						StringWriter strWrite = new StringWriter();
+						pWrite = new PrintWriter(strWrite);
+						e.printStackTrace(pWrite);
+
+						EmailServiceImpl.sendEmail("hwang.shawn@gmail.com", "Export signup error", strWrite.toString(), data, false);
 					}
-					else
+					finally
 					{
-						valList = new ArrayList<Player>();
-						dayToPlayers.put(currDay, valList);
+						IOUtils.closeQuietly(pWrite);
 					}
-
-					valList.add(currPlayer);
 				}
-			}
 
 
-			StringBuffer buf = new StringBuffer();
-
-			for( Day currDay : dayToPlayers.keySet() )
-			{
-				buf.append(currDay);
-				buf.append(":\n");
-
-				List<Player> valList = dayToPlayers.get(currDay);
-				ChukkarCount counts = calculateGameChukkars(valList);
-
-				buf.append("# Chukkars Total: ");
-				buf.append(counts._numTotalChukkars);
-				buf.append("\n");
-				buf.append("# Game Chukkars: ");
-				buf.append(counts._numGameChukkars);
-				buf.append("\n\n");
-
-				for(Player currPlayer : valList)
+				Comparator<Day> dayComp = new Comparator<Day>()
 				{
-					buf.append( currPlayer.getName() );
-					buf.append("\t");
-					buf.append( currPlayer.getChukkarCount() );
+					@Override
+					public int compare(Day o1, Day o2)
+					{
+						int ret = o1.getNumber() - o2.getNumber();
+						return ret;
+					}
+				};
+				Map<Day, List<Player>> dayToPlayers = new TreeMap<Day, List<Player>>(dayComp);
+				Calendar nowCal = Calendar.getInstance();
+				nowCal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+				nowCal.setTime( new Date() );
+				Day nowDay = calendarDayOfWeekToDay( nowCal.get(Calendar.DAY_OF_WEEK) );
+
+				for(Player currPlayer : allPlayersList)
+				{
+					Day currDay = currPlayer.getRequestDay();
+
+					//TODO: BelAir: don't show days that are already in the past
+					//if( nowDay.getNumber() <= currDay.getNumber() )
+					//TODO: Menlo & HPPC: only show days in the future
+					if( (nowDay.getNumber() % 7) < currDay.getNumber() )
+					{
+						//% 7 so that when export is sent on Sun (number
+						//representation = 7), Mon (number = 1) will be
+						//counted as a day in the future.
+						List<Player> valList;
+
+						if( dayToPlayers.containsKey(currDay) )
+						{
+							valList = dayToPlayers.get(currDay);
+						}
+						else
+						{
+							valList = new ArrayList<Player>();
+							dayToPlayers.put(currDay, valList);
+						}
+
+						valList.add(currPlayer);
+					}
+				}
+
+
+				StringBuffer buf = new StringBuffer();
+
+				for( Day currDay : dayToPlayers.keySet() )
+				{
+					buf.append(currDay);
+					buf.append(":\n");
+
+					List<Player> valList = dayToPlayers.get(currDay);
+					ChukkarCount counts = calculateGameChukkars(valList);
+
+					buf.append("# Chukkars Total: ");
+					buf.append(counts._numTotalChukkars);
 					buf.append("\n");
+					buf.append("# Game Chukkars: ");
+					buf.append(counts._numGameChukkars);
+					buf.append("\n\n");
+
+					for(Player currPlayer : valList)
+					{
+						buf.append( currPlayer.getName() );
+						buf.append("\t");
+						buf.append( currPlayer.getChukkarCount() );
+						buf.append("\n");
+					}
+
+					buf.append("\n\n\n");
 				}
 
-				buf.append("\n\n\n");
+				if(buf.length() == 0) {
+					buf.append("Nobody signed up for " + Day.valueOf((nowDay.getNumber() % 7) + 1) + " through the end of the week!");
+				}
+
+				DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
+	            outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
+	            ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+	            String subject = strings.getString("clubAbbreviation") + " chukkar signups: " + outFormatter.format( new Date() );
+
+	            managerEmails = strings.getString("managerEmail");
+	            String[] mgrEmailArray = managerEmails.split(",");
+
+	            for(String currEmail : mgrEmailArray)
+	            {
+	            		EmailServiceImpl.sendEmail(currEmail.trim(), subject, buf.toString(), data, true);
+	            }
 			}
-
-			if(buf.length() == 0) {
-				buf.append("Nobody signed up for " + Day.valueOf((nowDay.getNumber() % 7) + 1) + " through the end of the week!");
-			}
-
-			DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
-            outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
-            ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-            String subject = strings.getString("clubAbbreviation") + " chukkar signups: " + outFormatter.format( new Date() );
-
-            managerEmails = strings.getString("managerEmail");
-            String[] mgrEmailArray = managerEmails.split(",");
-
-            for(String currEmail : mgrEmailArray)
-            {
-            		EmailServiceImpl.sendEmail(currEmail.trim(), subject, buf.toString(), data, true);
-            }
 		}
 
 		//------------------------------
@@ -661,9 +728,13 @@ public class CronServiceImpl extends HttpServlet
 			{
 				msg = "Signup export email successfully sent to " + managerEmails;
 			}
-			else
+			else if(isCutoff)
 			{
 				msg = "Weekly emails are not enabled. No email sent.";
+			}
+			else
+			{
+				msg = "Today is not the cutoff day for signups. No email sent.";
 			}
 
 			charWriter.write(msg);

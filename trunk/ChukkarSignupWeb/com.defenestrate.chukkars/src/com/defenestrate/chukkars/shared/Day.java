@@ -104,4 +104,50 @@ public enum Day
 	{
 		return _numRepresentation;
 	}
+
+	public Day tomorrow()
+	{
+		switch(_numRepresentation)
+		{
+		case 1:
+			return TUESDAY;
+		case 2:
+			return WEDNESDAY;
+		case 3:
+			return THURSDAY;
+		case 4:
+			return FRIDAY;
+		case 5:
+			return SATURDAY;
+		case 6:
+			return SUNDAY;
+		case 7:
+			return MONDAY;
+		default:
+			throw new IllegalArgumentException(_numRepresentation + " is not a valid number representation for the current list of defined Days.");
+		}
+	}
+
+	public Day yesterday()
+	{
+		switch(_numRepresentation)
+		{
+		case 1:
+			return SUNDAY;
+		case 2:
+			return MONDAY;
+		case 3:
+			return TUESDAY;
+		case 4:
+			return WEDNESDAY;
+		case 5:
+			return THURSDAY;
+		case 6:
+			return FRIDAY;
+		case 7:
+			return SATURDAY;
+		default:
+			throw new IllegalArgumentException(_numRepresentation + " is not a valid number representation for the current list of defined Days.");
+		}
+	}
 }
