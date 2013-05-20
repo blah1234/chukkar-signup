@@ -1,14 +1,12 @@
 package com.defenestrate.chukkars.server;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -166,10 +164,7 @@ public class LayoutConfigServiceImpl extends RemoteServiceServlet
         else
         {
 	        	//default is "never"
-	    		Calendar cal = Calendar.getInstance();
-	    		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
-	    		cal.set(Calendar.YEAR, 9999);
-	    		Date never = cal.getTime();
+	    		Date never = CronServiceImpl.getNever();
 
 	        	ret.put(Day.MONDAY, never);
 	    		ret.put(Day.TUESDAY, never);
