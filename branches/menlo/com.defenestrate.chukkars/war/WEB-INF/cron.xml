@@ -19,14 +19,14 @@
   <cron>
     <url>/signup/cron/sendSignupReminderEmail</url>
     <description>Sends a weekly last reminder to players to signup for chukkars</description>
-    <schedule>every thursday,saturday 09:00</schedule>
+    <schedule>every day 09:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   
   <cron>
     <url>/signup/cron/sendExportSignupEmail</url>
     <description>Sends a weekly export of the player signups to the club manager</description>
-    <schedule>every thursday,saturday 13:00</schedule>
+    <schedule>every day 13:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   
