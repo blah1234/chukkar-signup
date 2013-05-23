@@ -1,0 +1,125 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/button1"
+            android:layout_width="104dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/button_text"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/button2"
+            android:layout_width="104dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/button_text"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/button3"
+            android:layout_width="104dp"
+            android:layout_height="36dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/button_text"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/lower_labels_area"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:layout_marginBottom="6dp"
+        android:layout_marginLeft="12dp"
+        android:orientation="vertical"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/lower_label1"
+            style="@style/Label.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAllCaps="true"
+            android:textColor="@android:color/primary_text_dark"
+            android:shadowColor="@android:color/darker_gray"
+            android:shadowDx="-1"
+            android:shadowDy="-1"
+            android:shadowRadius="1"
+            android:textStyle="bold"
+            android:alpha=".7"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/lower_label2"
+            style="@style/Label.Small.ListItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="@android:color/primary_text_dark"
+            android:shadowColor="@android:color/darker_gray"
+            android:shadowDx="-1"
+            android:shadowDy="-1"
+            android:shadowRadius="1"
+            android:alpha=".7"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutCircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:orientation="horizontal"
+        android:padding="15dp" >
+
+        <com.defenestrate.chukkars.android.view.CircleButton
+            android:id="@+id/circle"
+            style="@style/CircleButtonDefaults"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/circle_button_add_player" />
+    </LinearLayout>
+
+</merge>

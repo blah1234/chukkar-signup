@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@drawable/press_publishing"/>
+    <item android:state_selected="true" android:drawable="@drawable/select_publishing"/>
+    <item android:state_focused="true" android:drawable="@drawable/focus_publishing"/>
+    <!-- 
+    	This cause problem with hovering, if we set background color framework can't highlight row when hover (PLM-2160)
+    	<item android:drawable="@color/background"/> 
+     -->
+    <item>
+        <shape android:shape="rectangle">
+           <solid android:color="@android:color/transparent"/>
+        </shape>
+    </item>
+</selector>

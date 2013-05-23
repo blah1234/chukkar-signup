@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <!--  Circle button defaults -->
+    <dimen name="circle_button_width">100dp</dimen>
+    <dimen name="circle_button_height">100dp</dimen>
+    
+    <!-- Circle button dimensions that differ from default style -->
+
+    <!-- LIBRARY Album Detail - Matched Album (Premium only) -->
+    <!-- CATALOG Album Detail - Premium User -->
+    <!-- ARTIST RADIO -->
+    <integer name="circle_button_library_album_matched_sweep_angle_bottom_left">-90</integer>
+    <integer name="circle_button_library_album_matched_start_angle_bottom_right">90</integer>
+    <integer name="circle_button_library_album_matched_sweep_angle_bottom_right">-90</integer>
+
+    <!-- LIBRARY Album Detail - Unmatched Album or Store-only User -->
+    <!-- PLAY ALL SONGS -->
+    <!-- Uses default attributes -->
+
+    <!-- CATALOG Album Detail - Store-only User -->
+    <!-- BUY SONGS -->
+    <integer name="circle_button_catalog_album_store_sweep_angle_bottom_left">-80</integer>
+    <integer name="circle_button_catalog_album_store_start_angle_bottom_right">100</integer>
+    <integer name="circle_button_catalog_album_store_sweep_angle_bottom_right">-100</integer>
+
+    <!-- LIBRARY Artist Detail - Matched Artist (Premium only) -->
+    <!-- CATALOG Artist Detail - Premium User -->
+    <!-- ARTIST RADIO -->
+    <integer name="circle_button_library_artist_matched_sweep_angle_bottom_left">-90</integer>
+    <integer name="circle_button_library_artist_matched_start_angle_bottom_right">90</integer>
+    <integer name="circle_button_library_artist_matched_sweep_angle_bottom_right">-90</integer>
+
+    <!-- LIBRARY Artist Detail - Store-only User -->
+    <!-- PLAY ALL SONGS -->
+    <!-- Uses default attributes -->
+
+    <!-- CATALOG Artist Detail - Store-only User -->
+    <!-- ??? -->
+    <!-- Uses default attributes -->
+</resources>

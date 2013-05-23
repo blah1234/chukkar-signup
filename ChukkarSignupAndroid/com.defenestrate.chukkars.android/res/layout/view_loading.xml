@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Common view pager for horizontal swipe to change pages. -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+>
+	<!-- View to show a loading animation. -->
+	<ProgressBar
+	    android:id="@+id/loading_icon"
+	    style="@android:style/Widget.DeviceDefault.ProgressBar.Large"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_centerInParent="true"
+	    android:indeterminate="true"
+	    />
+	
+	<TextView
+	    android:id="@+id/loading_msg"
+	    android:layout_below="@id/loading_icon"
+	    style="@style/Label.Medium"
+	    android:text="@string/loading"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_centerInParent="true"
+	    />
+
+</RelativeLayout>

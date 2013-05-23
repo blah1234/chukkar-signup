@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/title"
+    android:layout_weight="1"
+    android:layout_width="0dp"
+    android:layout_height="48dp"
+    android:gravity="center"
+    style="@style/Label.Medium.Button"
+    android:minWidth="100dp"
+    android:background="@drawable/tab_indicator_ab_holo"
+    android:textColor="@color/list_selector_textcolor"
+/>

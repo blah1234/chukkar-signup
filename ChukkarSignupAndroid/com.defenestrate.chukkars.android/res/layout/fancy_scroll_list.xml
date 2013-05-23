@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Use a FrameLayout container to support fancy scroll. 
+Set the top margin to be the height of the action bar so that it doesn't overlap.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+>
+	<LinearLayout 
+	    android:id="@+id/data_error_container"
+	    android:layout_height="match_parent"
+	    android:layout_width="match_parent"
+	    android:visibility="gone"
+	/>         
+	
+    <include layout="@layout/subtitle" />
+
+    <FrameLayout
+        android:id="@+id/list_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+    >
+        <com.samsung.music.view.FancyScrollListView
+            android:id="@+id/android:list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/List"
+        />
+        
+        <LinearLayout
+            android:id="@+id/banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:visibility="gone"  >
+        </LinearLayout>
+        
+	</FrameLayout>
+
+</LinearLayout>

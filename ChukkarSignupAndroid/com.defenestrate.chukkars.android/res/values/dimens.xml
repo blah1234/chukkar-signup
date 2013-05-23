@@ -3,5 +3,43 @@
 
     <!-- Height of the view pager indexer (scrollbar-like widget). -->
     <dimen name="view_pager_indexer_height">3dp</dimen>
+
+    <!-- Padding for list item top -->
+    <dimen name="list_item_padding_top">13dp</dimen>
+    <!-- Padding for list item left -->
+    <dimen name="list_item_padding_left">16dp</dimen>
+    <!-- Padding for list item bottom -->
+    <dimen name="list_item_padding_bottom">13dp</dimen>
+    <!-- Padding for overall list item right -->
+    <dimen name="list_item_padding_right">16dp</dimen>
     
+    <!-- Padding for radio grid list item bottom -->
+    <dimen name="list_item_radio_grid_padding_bottom">4dp</dimen>
+    
+    <!-- Padding for a ListView's default divider. Only affects left and right -->
+    <dimen name="list_divider_padding">16dp</dimen>
+    
+    <!-- GUI 4.11.2 use px instead of dp, 2px is smaller than 1dp. -->
+    <!-- Default height for the divider. -->
+    <dimen name="divider_height">2px</dimen>
+    
+    <!-- Padding for list item bottom for any inactive list rows at the very bottom of the list -->
+    <!-- dimension = 2X list_item_padding_bottom-->
+    <dimen name="last_list_item_padding_bottom">26dp</dimen>
+    
+    <!-- Maximum width of the primary icon of a list item -->
+    <dimen name="list_item_primary_icon_max_width">77dp</dimen>
+    
+    <!-- Width and height of the mini icon within the primary icon in My Music->Playlists -->
+    <dimen name="list_item_mini_icon_width">23dp</dimen>
+    <dimen name="list_item_mini_icon_height">23dp</dimen>
+    
+    <!-- Maximum height of the primary icon of a list item -->
+    <dimen name="list_item_primary_icon_max_height">77dp</dimen>
+    
+    <!-- Margin space between icon and labels -->
+    <dimen name="list_item_margin_between_icon_and_labels">12dp</dimen>
+    
+    <!-- Margin space between list item label1 and label2 -->
+    <dimen name="list_item_margin_between_labels">2dp</dimen>
 </resources>

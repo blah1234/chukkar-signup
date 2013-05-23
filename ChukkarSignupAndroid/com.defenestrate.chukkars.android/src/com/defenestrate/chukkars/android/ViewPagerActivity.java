@@ -116,6 +116,7 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
     		mLeftIndicatorShown = false;
     		startFadeAnimation(mSwipeIndicatorLeft, FADE_OUT);
     	}
+
     	if(currentPage < totalPages - 1) {
     		startFadeAnimation(mSwipeIndicatorRight, FADE_IN_AND_OUT);
     		mRightIndicatorShown = true;
@@ -348,6 +349,8 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
         		currLstnr.onPageScrollStateChanged(state);
         	}
         }
+
+        /** @todo for swipe indicators for each page change
         switch(state) {
         case ViewPager.SCROLL_STATE_IDLE:
         	if(mLeftIndicatorShown) {
@@ -378,7 +381,7 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
         		startFadeAnimation(mSwipeIndicatorRight, FADE_OUT);
         	}
         	break;
-        }
+        } */
     }
 
 	/**
@@ -434,7 +437,7 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
 		public void onAnimationEnd(Animation animation) {
 			boolean targetVisibility = (Boolean)v.getTag(R.id.position_tag);
 			if(fadeOut && targetVisibility)
-				v.setVisibility(View.INVISIBLE);
+				v.setVisibility(View.GONE);
 		}
 
 		@Override

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -27,11 +28,13 @@ import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
+import com.defenestrate.chukkars.android.util.PropertiesUtil;
 
 
 public class Main extends ViewPagerActivity {
@@ -49,7 +52,9 @@ public class Main extends ViewPagerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mHandler = new Handler() {
+        SignupDayFragment.resetUsedCoverArtIds();
+
+        mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 if(msg.what == R.id.message_what_error) {
@@ -96,42 +101,17 @@ public class Main extends ViewPagerActivity {
 		    	if(activeDaysList != null)
 			    {
 		    		for(int i=0, n=activeDaysList.size(); i<n; i++) {
-		    			addPage(SignupDayFragment.class, null);
+		    			Day currDay = activeDaysList.get(i);
+
+		    			Bundle args = new Bundle();
+		    			args.putString( SignupDayFragment.SIGNUP_DAY_KEY, currDay.name() );
+		    			args.putInt(SignupDayFragment.PAGE_INDEX_KEY, i);
+
+		    			addPage(SignupDayFragment.class, args);
 		    		}
 
 		    		showInitialIndicator();
 			    }
-
-
-		    	/*
-		    	ChukkarSignup.this.finishActivity(R.id.get_server_data_request);
-
-
-		    	TheMissingTabHost tabHost = getTabHost();  // The activity TabHost
-			    TheMissingTabSpec spec;  // Resusable TabSpec for each tab
-			    Intent intent;  // Reusable Intent for each tab
-
-			    if(activeDaysList != null)
-			    {
-				    for(int i=0, n=activeDaysList.size(); i<n; i++)
-				    {
-				    	Day currDay = activeDaysList.get(i);
-
-					    // Create an Intent to launch an Activity for the tab (to be reused)
-					    intent = new Intent().setClass(ChukkarSignup.this, SignupActivity.class);
-					    intent.putExtra(TAB_INDEX_KEY, i);
-
-					    // Initialize a TabSpec for each tab and add it to the TabHost
-					    View tabView = getTabIndicator(
-					    	currDay.toString(),
-					    	"",
-					    	tabHost.getTabWidget() );
-					    spec = tabHost.newTabSpec(currDay.toString()).setIndicator(tabView).setContent(intent);
-					    tabHost.addTab(spec);
-				    }
-
-				    tabHost.setCurrentTab(0);
-			    }*/
 		    }
 		};
 
@@ -152,7 +132,7 @@ public class Main extends ViewPagerActivity {
 		{
 			//http get
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpGet get = new HttpGet( getResources().getString(R.string.query_reset_url) );
+			HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), "query_reset_url") );
 			HttpResponse response = httpclient.execute(get);
 
 			HttpEntity entity = response.getEntity();
@@ -182,6 +162,7 @@ public class Main extends ViewPagerActivity {
 	    	}
 
 	    	DateFormat inParser = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
+	    	inParser.setTimeZone( TimeZone.getTimeZone("GMT") );
 	    	Date resetDate = inParser.parse(result);
 	    	Date prevResetDate = getPreviousWebAppResetDate();
 
@@ -246,6 +227,7 @@ public class Main extends ViewPagerActivity {
     		try
     		{
 				DateFormat inParser = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a", Locale.US);
+		    	inParser.setTimeZone( TimeZone.getTimeZone("GMT") );
 			    Date prevResetDate = inParser.parse(resetDate);
 
 		    	return prevResetDate;
@@ -334,7 +316,7 @@ public class Main extends ViewPagerActivity {
 		{
 			//http get
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpGet get = new HttpGet( getResources().getString(R.string.get_active_days_url) );
+			HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), "get_active_days_url") );
 			HttpResponse response = httpclient.execute(get);
 
 			HttpEntity entity = response.getEntity();

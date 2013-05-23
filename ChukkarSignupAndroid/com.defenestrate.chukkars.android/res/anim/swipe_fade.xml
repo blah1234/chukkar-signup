@@ -9,7 +9,7 @@
 	<alpha android:interpolator="@android:interpolator/accelerate_quad" 
 	    android:fromAlpha="1.0"
 	    android:toAlpha="0.0"
-	    android:duration="2000"
+	    android:duration="5000"
 	    android:startOffset="500" 
 	/>
 	

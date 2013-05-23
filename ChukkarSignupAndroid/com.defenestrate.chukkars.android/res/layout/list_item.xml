@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Similar to list_item_base.xml, with an additional label and context menu. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/list_item_padding_left"
+    android:paddingRight="@dimen/list_item_padding_right"
+    android:paddingTop="@dimen/list_item_padding_top"
+    android:paddingBottom="@dimen/list_item_padding_bottom"
+    android:orientation="horizontal"
+    android:background="@drawable/actionbar_btn_background"
+    android:descendantFocusability="afterDescendants"
+>
+    <include layout="@layout/list_item_content_base" />
+
+    <TextView
+        android:id="@+id/label3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Label.Medium.ListItem"
+        android:layout_gravity="center"
+        android:visibility="gone"
+    />
+</LinearLayout>
