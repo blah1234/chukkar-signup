@@ -1,7 +1,3 @@
-/**
- * @author			<a href="mailto:lwang@mspot.com">Larry Wang</a>
- * @copyright		Copyright (c) 2012 mSpot, Inc. All rights reserved.
- */
 package com.defenestrate.chukkars.android;
 
 import java.util.ArrayList;
@@ -237,6 +233,16 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
      */
     public void removePage(final int position, boolean forced) {
     	mPagerAdapter.removePage(position, forced);
+    }
+
+    /**
+     * Removes all the pages from the view pager, and forces the pager to refresh
+     * itself after the last page has been removed.
+     */
+    protected void removeAllPages() {
+    	for(int i=getCount() - 1; i>=0; i--) {
+    		mPagerAdapter.removePage(i, i == 0);
+    	}
     }
 
     /**
@@ -623,7 +629,7 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
         		else
         			return null;
         	}catch(Exception e){
-        		Log.e(TAG, "FragmentStatePagerAdapter unable to create new instance of fragment");
+        		Log.e(TAG, "FragmentStatePagerAdapter unable to create new instance of fragment", e);
         		return null;
         	}
         }

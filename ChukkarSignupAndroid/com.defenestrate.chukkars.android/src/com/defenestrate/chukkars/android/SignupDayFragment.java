@@ -463,10 +463,6 @@ public class SignupDayFragment extends FancyScrollListFragment
         return random;
     }
 
-    static public void resetUsedCoverArtIds() {
-    	sUsedCoverArtIds.clear();
-    }
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
     	super.onActivityCreated(savedInstanceState);
@@ -550,8 +546,8 @@ public class SignupDayFragment extends FancyScrollListFragment
         args.putString( FancyScrollSignupDayListAdapter.CIRCLE_BUTTON_TOP_STRING, getString(R.string.circle_button_top_text) );
         args.putString( FancyScrollSignupDayListAdapter.CIRCLE_BUTTON_BOTTOM_STRING, getString(R.string.circle_button_bottom_text) );
 
-        args.putString( FancyScrollSignupDayListAdapter.LOWER_LABEL_1_STRING, "placeholder: eventually this will be the game day");
-        args.putString( FancyScrollSignupDayListAdapter.LOWER_LABEL_2_STRING, "placeholder: eventually this will be the number of game chukkars");
+        args.putString( FancyScrollSignupDayListAdapter.LOWER_LABEL_1_STRING, getString(R.string.game_day_loading) );
+        args.putString( FancyScrollSignupDayListAdapter.LOWER_LABEL_2_STRING, getString(R.string.game_chukkars_loading) );
 
 
         FancyScrollListSubadapter subadapter = new SignupDayListSubadapter(mPlayerSignupList, getActivity(), this);
