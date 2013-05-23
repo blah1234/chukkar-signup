@@ -54,8 +54,6 @@ public class Main extends ViewPagerActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SignupDayFragment.resetUsedCoverArtIds();
-
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
@@ -70,13 +68,18 @@ public class Main extends ViewPagerActivity
 
         // Show the page indexer.
         setUsePagerIndexer(true);
+	}
 
-        //start the data load process
+	@Override
+	protected void onStart() {
+		super.onStart();
+
+		//start the data load process
         loadActiveDaysAsync();
 	}
 
 	@Override
-    public void onStop()
+    protected void onStop()
 	{
     	// The activity is no longer visible (it is now "stopped")
 		super.onStop();
@@ -89,6 +92,12 @@ public class Main extends ViewPagerActivity
 
 	    // Commit the edits!
 	    editor.commit();
+
+	    //----------
+
+	    //remove all pages. Next time activity starts up, we will requery the
+	    //server data
+	    removeAllPages();
 	}
 
 	private void loadActiveDaysAsync()
