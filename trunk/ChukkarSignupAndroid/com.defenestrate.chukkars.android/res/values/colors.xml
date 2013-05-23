@@ -22,4 +22,10 @@
 
     <!-- Background color of Page index cue. opacity is 80% -->
     <color name="page_index_cue_background">#ccffffff</color>	
+    
+    <!-- The default color of a secondary text label. -->
+    <color name="label2">#FF646464</color>
+    
+    <!-- Artist detail song list Label2 color -->
+    <color name="songs_header_buttons_lower_labels_background">#80111111</color>
 </resources>

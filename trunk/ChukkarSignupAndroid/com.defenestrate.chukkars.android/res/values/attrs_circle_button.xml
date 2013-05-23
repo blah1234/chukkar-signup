@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <declare-styleable name="CircleButton">
+        <attr name="width" format="dimension" />
+        <attr name="height" format="dimension" />
+
+        <attr name="textMiddle" format="string" />
+        <attr name="textTop" format="string" />
+        <attr name="textLower" format="string" />
+        <attr name="textBottomLeft" format="string" />
+        <attr name="textBottomRight" format="string" />
+
+        <attr name="textStartAngleTop" format="float" />
+        <attr name="textStartAngleLower" format="float" />
+        <attr name="textStartAngleBottomLeft" format="float" />
+        <attr name="textStartAngleBottomRight" format="float" />
+
+        <attr name="textSweepAngleTop" format="float" />
+        <attr name="textSweepAngleLower" format="float" />
+        <attr name="textSweepAngleBottomLeft" format="float" />
+        <attr name="textSweepAngleBottomRight" format="float" />
+
+        <attr name="textSizeMiddle" format="dimension" />
+        <attr name="textSizeTop" format="dimension" />
+        <attr name="textSizeLower" format="dimension" />
+        <attr name="textSizeBottomLeft" format="dimension" />
+        <attr name="textSizeBottomRight" format="dimension" />
+
+        <attr name="textColorMiddle" format="color" />
+        <attr name="textColorTop" format="color" />
+        <attr name="textColorLower" format="color" />
+        <attr name="textColorBottomLeft" format="color" />
+        <attr name="textColorBottomRight" format="color" />
+
+        <attr name="isTextBoldMiddle" format="boolean" />
+        <attr name="isTextBoldTop" format="boolean" />
+        <attr name="isTextBoldLower" format="boolean" />
+        <attr name="isTextBoldBottomLeft" format="boolean" />
+        <attr name="isTextBoldBottomRight" format="boolean" />
+
+        <attr name="textOffsetMiddle" format="dimension" />
+        <attr name="textOffsetTop" format="dimension" />
+        <attr name="textOffsetLower" format="dimension" />
+        <attr name="textOffsetBottomLeft" format="dimension" />
+        <attr name="textOffsetBottomRight" format="dimension" />
+
+        <attr name="textAlignMiddle" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+        <attr name="textAlignTop" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+        <attr name="textAlignLower" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+        <attr name="textAlignBottomLeft" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+            <attr name="textAlignBottomRight" format="enum">
+            <enum name="center" value="0"/>
+            <enum name="left" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+    </declare-styleable>
+</resources>

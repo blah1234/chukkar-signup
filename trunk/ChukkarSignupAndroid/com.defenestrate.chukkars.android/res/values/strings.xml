@@ -14,11 +14,6 @@
     
     <string name="tab_title">({0} game chukkars)</string>
     
-    <string name="get_players_url">http://defenestrate2.appspot.com/signup/json/getAllPlayers</string>
-    <string name="add_player_url">http://defenestrate2.appspot.com/signup/json/addPlayer</string>
-    <string name="edit_chukkars_url">http://defenestrate2.appspot.com/signup/json/editChukkars</string>
-    <string name="query_reset_url">http://defenestrate2.appspot.com/signup/json/getResetDate</string>
-    <string name="get_active_days_url">http://defenestrate2.appspot.com/signup/json/getActiveDays</string>
     <string name="totals_list_field">_totalsList</string>
     <string name="players_list_field">_playersList</string>
     <string name="curr_player_persisted_field">_currPersisted</string>
@@ -43,4 +38,13 @@
     
     <string name="signup_closed">Too late! Signup is closed.</string>
     <string name="blank_name">Name can\'t be blank.</string>
+    
+    <string name="error_no_data_connection">Unable to connect to the network.\nPlease check network settings\nand try again.</string>
+    <string name="loading">Loading&#8230;</string>
+    <string name="error_loading">This page cannot be displayed. Try again later.</string>
+    <string name="unable_to_display">Unable to display this page</string>
+    
+    <string name="empty_signup_message">Nobody signed up yet. Be the first.</string>
+    <string name="circle_button_top_text">Sign up for</string>
+    <string name="circle_button_bottom_text">Chukkars</string>
 </resources>
