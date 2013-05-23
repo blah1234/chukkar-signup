@@ -34,10 +34,12 @@ import android.util.Log;
 
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
+import com.defenestrate.chukkars.android.util.Constants;
 import com.defenestrate.chukkars.android.util.PropertiesUtil;
 
 
-public class Main extends ViewPagerActivity {
+public class Main extends ViewPagerActivity
+				  implements Constants {
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
 	static private final String STARTUP_CONFIG_PREFS_NAME = "startup-config";
@@ -71,6 +73,22 @@ public class Main extends ViewPagerActivity {
 
         //start the data load process
         loadActiveDaysAsync();
+	}
+
+	@Override
+    public void onStop()
+	{
+    	// The activity is no longer visible (it is now "stopped")
+		super.onStop();
+
+		Resources res = getResources();
+		SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
+	    SharedPreferences.Editor editor = settings.edit();
+	    editor.remove( res.getString(R.string.content_key) );
+	    editor.remove( res.getString(R.string.last_modified_key) );
+
+	    // Commit the edits!
+	    editor.commit();
 	}
 
 	private void loadActiveDaysAsync()

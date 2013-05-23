@@ -49,6 +49,7 @@ import android.widget.Toast;
 
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.exception.SignupClosedException;
+import com.defenestrate.chukkars.android.util.Constants;
 import com.defenestrate.chukkars.android.util.PlayerSignupData;
 import com.defenestrate.chukkars.android.util.PropertiesUtil;
 import com.defenestrate.chukkars.android.widget.FancyScrollListAdapter.FancyScrollListSubadapter;
@@ -58,10 +59,9 @@ import com.defenestrate.chukkars.android.widget.SignupDayListSubadapter;
 
 
 public class SignupDayFragment extends FancyScrollListFragment
-							   implements FancyScrollListSubadapterCallback {
+							   implements FancyScrollListSubadapterCallback, Constants {
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
-	static private final String SERVER_DATA_PREFS_NAME = "all-players.json";
 	private static final String LOG_TAG = "SignupDayFragment";
 	static final String PAGE_INDEX_KEY = "PAGE_INDEX_KEY";
 	static final String SIGNUP_DAY_KEY = "SIGNUP_DAY_KEY";
