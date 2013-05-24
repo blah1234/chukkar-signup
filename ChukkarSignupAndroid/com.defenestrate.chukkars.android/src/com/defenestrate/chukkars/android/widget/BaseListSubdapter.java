@@ -52,7 +52,7 @@ public abstract class BaseListSubdapter extends BaseAdapter implements OnItemCli
     protected static final int NEXT_ROW_TYPE = 3;
 
     /** Padding between TextView and shuffle icon. */ //MHIV-545
-    protected static final int PADDING_BETWEEN_TEXT_IMAGE = 12;
+    protected static final int PADDING_BETWEEN_TEXT_IMAGE = 40;
 
 
 	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
@@ -441,7 +441,7 @@ public abstract class BaseListSubdapter extends BaseAdapter implements OnItemCli
 			}
 		});
         final TextView tv = (TextView) songView.findViewById(R.id.label);
-    	tv.setCompoundDrawablesWithIntrinsicBounds(null, null, mHeaderIcon, null);
+    	tv.setCompoundDrawablesWithIntrinsicBounds(mHeaderIcon, null, null, null);
     	tv.setCompoundDrawablePadding(PADDING_BETWEEN_TEXT_IMAGE); //Adding Padding between the TextView and the image : MHIV-545
     	tv.setText(mHeaderText);
     	return songView;
