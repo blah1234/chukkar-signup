@@ -44,7 +44,7 @@
     <string name="error_loading">This page cannot be displayed. Try again later.</string>
     <string name="unable_to_display">Unable to display this page</string>
     
-    <string name="empty_signup_message">Nobody signed up yet. Be the first.</string>
+    <string name="empty_signup_message">No one signed up yet.\nBe the first.</string>
     <string name="circle_button_top_text">Sign up for</string>
     <string name="circle_button_bottom_text">Chukkars</string>
     <string name="game_day_loading">Loading game day&#8230;</string>

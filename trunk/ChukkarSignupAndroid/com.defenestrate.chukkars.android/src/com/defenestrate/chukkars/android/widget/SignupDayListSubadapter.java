@@ -3,6 +3,7 @@ package com.defenestrate.chukkars.android.widget;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 
 import com.defenestrate.chukkars.android.R;
@@ -27,7 +28,9 @@ public class SignupDayListSubadapter extends FancyScrollListSubadapter {
 
 	public void refreshHeader() {
 		if(getListItemCount() == 0) {
-        	setHeader(mContext.getResources().getString(R.string.empty_signup_message), null);
+        	setHeader(
+        		mContext.getResources().getString(R.string.empty_signup_message),
+        		(BitmapDrawable)mContext.getResources().getDrawable(R.drawable.icon_add_player) );
         } else {
         	setHeader(null, null);
         }
