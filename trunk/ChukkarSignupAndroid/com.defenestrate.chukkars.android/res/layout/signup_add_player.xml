@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/controls_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+>
+    <ImageView
+    	android:id="@+id/background"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	android:layout_alignParentTop="true"
+    	android:scaleType="centerCrop"
+    	android:alpha=".2"
+  	/>
+	
+    <include
+    	android:id="@+id/name_heading"
+    	android:layout_width="match_parent"
+    	android:layout_height="wrap_content"
+    	android:layout_alignParentTop="true" 
+    	layout="@layout/list_divider"
+    />
+    
+    <EditText
+        android:id="@+id/name_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/name_heading"
+        android:inputType="textPersonName"
+        android:layout_marginTop="@dimen/list_divider_padding"
+        android:layout_marginLeft="@dimen/list_divider_padding"
+        android:layout_marginRight="@dimen/list_divider_padding"
+        android:layout_marginBottom="50dp"
+        android:textAppearance="@style/Label.XLarge"
+        android:gravity="center"
+        android:imeOptions="actionDone"
+    />
+    
+    <include
+        android:id="@+id/chukkars_heading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/name_field" 
+        layout="@layout/list_divider"
+    />
+    
+    <View 
+        android:id="@+id/chukkars_slider_track"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/ring"
+        android:layout_below="@id/chukkars_heading"
+    />
+    
+    <TextView
+    	android:id="@+id/chukkars_label"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	android:layout_alignTop="@id/chukkars_slider_track"
+    	android:gravity="center"
+    	android:textSize="64sp"
+   	/>
+
+    <ImageView
+    	android:id="@+id/chukkars_slider_thumb"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:padding="50dp"
+   	/>
+    
+    <!-- View to show a loading animation. -->
+
+    <RelativeLayout
+        android:id="@+id/page_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <!-- View to show a loading animation. -->
+        <ProgressBar
+            android:id="@+id/loading_icon"
+            style="@android:style/Widget.DeviceDefault.ProgressBar.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminate="true"
+            />
+        
+        <TextView
+            android:id="@+id/loading_msg"
+            android:layout_below="@id/loading_icon"
+            style="@style/Label.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+</RelativeLayout>
