@@ -52,6 +52,11 @@ public class ViewPagerActivity extends ChukkarsActivity implements ViewPager.OnP
     private boolean mIsSwipeShownOnce = false;
 
 
+    public ViewPagerActivity() {
+    	mOnPageChangeLstnrs = new LinkedHashSet<ViewPager.OnPageChangeListener>();
+    }
+
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +66,6 @@ public class ViewPagerActivity extends ChukkarsActivity implements ViewPager.OnP
         mViewPager = (ViewPager) findViewById(R.id.view_pager);
         mPageIndexer = (PageIndexer) findViewById(R.id.view_pager_indexer);
         mPagerAdapter = createViewPagerAdapter(mViewPager);
-        mOnPageChangeLstnrs = new LinkedHashSet<ViewPager.OnPageChangeListener>();
 
         mSwipeIndicatorLeft = (ImageView)findViewById(R.id.swipe_indicator_left);
         mSwipeIndicatorRight = (ImageView)findViewById(R.id.swipe_indicator_right);
