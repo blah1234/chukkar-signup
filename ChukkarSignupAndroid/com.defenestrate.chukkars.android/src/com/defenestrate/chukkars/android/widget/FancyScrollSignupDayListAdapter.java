@@ -23,7 +23,6 @@ import android.widget.TextView;
 
 import com.defenestrate.chukkars.android.R;
 import com.defenestrate.chukkars.android.ViewPagerActivity;
-import com.defenestrate.chukkars.android.view.CircleButton;
 import com.defenestrate.chukkars.android.widget.FancyScrollListAdapter.FancyScrollListSubadapter.FancyScrollListSubadapterCallback;
 
 
