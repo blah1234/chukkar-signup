@@ -24,7 +24,6 @@ import org.json.JSONException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -103,8 +102,6 @@ public class Main extends ViewPagerActivity
 
 	private void resetCachedData()
 	{
-		Resources res = getResources();
-
 		//also erase the active days data
 		SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 	    SharedPreferences.Editor editor = settings.edit();
@@ -298,7 +295,6 @@ public class Main extends ViewPagerActivity
 
 	private void writeResetDate(String resetDate)
 	{
-		Resources res = getResources();
 		SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 	    SharedPreferences.Editor editor = settings.edit();
 	    editor.putString(RESET_DATE_KEY, resetDate);
@@ -340,7 +336,6 @@ public class Main extends ViewPagerActivity
 
 	private List<Day> getActiveDays() throws IOException, JSONException
 	{
-    	Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
         String activeDaysData = settings.getString(ACTIVE_DAYS_KEY, null);
 
@@ -385,7 +380,6 @@ public class Main extends ViewPagerActivity
 	    	result = strWrite.toString().trim();
 
 	    	//write json data to file
-	    	Resources res = getResources();
 			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 		    SharedPreferences.Editor editor = settings.edit();
 		    editor.putString(ACTIVE_DAYS_KEY, result);
@@ -412,7 +406,6 @@ public class Main extends ViewPagerActivity
 
 		if(data == null)
 		{
-	    	Resources res = getResources();
 	    	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
 	        result = settings.getString(ACTIVE_DAYS_KEY, null);
 
