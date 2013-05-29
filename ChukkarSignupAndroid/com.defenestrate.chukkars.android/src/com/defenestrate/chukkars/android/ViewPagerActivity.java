@@ -20,17 +20,15 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.defenestrate.chukkars.android.view.PageIndexer;
+import com.defenestrate.chukkars.android.widget.PageIndexer;
 
 /**
  * Base class of a view pager
  * (horizontal swiping of multiple pages).
  */
-public class ViewPagerActivity extends Activity implements ViewPager.OnPageChangeListener {
+public class ViewPagerActivity extends ChukkarsActivity implements ViewPager.OnPageChangeListener {
 
-	private static final String LOG_TAG = ViewPagerActivity.class.getSimpleName();
 	private static final int FADE_IN 			= 0;
 	private static final int FADE_OUT 			= 1;
 	private static final int FADE_IN_AND_OUT	= 2;
@@ -51,6 +49,8 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
 
     private boolean mRightIndicatorShown = false;
     private boolean mLeftIndicatorShown = false;
+    private boolean mIsSwipeShownOnce = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,30 +96,32 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
     @Override
     protected void onResume() {
     	super.onResume();
-
-    	showInitialIndicator();
     }
 
 	public void showInitialIndicator() {
-		int currentPage = mViewPager.getCurrentItem();
-    	int totalPages = mPagerAdapter.getCount();
+		if(!mIsSwipeShownOnce) {
+    		mIsSwipeShownOnce = true;
+
+			int currentPage = mViewPager.getCurrentItem();
+	    	int totalPages = mPagerAdapter.getCount();
 
 
-    	if(currentPage > 0) {
-    		startFadeAnimation(mSwipeIndicatorLeft, FADE_IN_AND_OUT);
-    		mLeftIndicatorShown = true;
-    	} else if(mLeftIndicatorShown) {
-    		mLeftIndicatorShown = false;
-    		startFadeAnimation(mSwipeIndicatorLeft, FADE_OUT);
-    	}
+	    	if(currentPage > 0) {
+	    		startFadeAnimation(mSwipeIndicatorLeft, FADE_IN_AND_OUT);
+	    		mLeftIndicatorShown = true;
+	    	} else if(mLeftIndicatorShown) {
+	    		mLeftIndicatorShown = false;
+	    		startFadeAnimation(mSwipeIndicatorLeft, FADE_OUT);
+	    	}
 
-    	if(currentPage < totalPages - 1) {
-    		startFadeAnimation(mSwipeIndicatorRight, FADE_IN_AND_OUT);
-    		mRightIndicatorShown = true;
-    	} else if(mRightIndicatorShown) {
-    		mRightIndicatorShown = false;
-    		startFadeAnimation(mSwipeIndicatorRight, FADE_OUT);
-    	}
+	    	if(currentPage < totalPages - 1) {
+	    		startFadeAnimation(mSwipeIndicatorRight, FADE_IN_AND_OUT);
+	    		mRightIndicatorShown = true;
+	    	} else if(mRightIndicatorShown) {
+	    		mRightIndicatorShown = false;
+	    		startFadeAnimation(mSwipeIndicatorRight, FADE_OUT);
+	    	}
+		}
 	}
 
     /**
@@ -468,40 +470,6 @@ public class ViewPagerActivity extends Activity implements ViewPager.OnPageChang
         		currLstnr.onPageSelected(position);
         	}
         }
-    }
-
-    /**
-     * Show/hide a loading indicator.
-     *
-     * @param show          <code>true</code> to show a loading indicator,
-     *                      <code>false</code> to hide a loading indicator.
-     */
-    public void showLoading(boolean show, String text) {
-        final View v = findViewById(R.id.page_loading);
-        if (v != null) {
-        	v.setVisibility(show ? View.VISIBLE : View.GONE);
-        	final TextView msg = (TextView) v.findViewById(R.id.loading_msg);
-        	if (msg != null) {
-        		if (text != null) {
-        			msg.setText(text);
-        			msg.setVisibility(show ? View.VISIBLE : View.GONE);
-        		} else {
-        			msg.setVisibility(View.GONE);
-        		}
-        	}
-        } else {
-            Log.w(LOG_TAG, "showLoading: view for R.id.loading doesn't exist");
-        }
-    }
-
-    /**
-     * Show/hide a loading indicator.
-     *
-     * @param show          <code>true</code> to show a loading indicator,
-     *                      <code>false</code> to hide a loading indicator.
-     */
-    public void showLoading(boolean show) {
-    	showLoading(show, null);
     }
 
     /**
