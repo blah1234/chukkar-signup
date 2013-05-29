@@ -250,7 +250,7 @@ public class SignupDayFragment extends FancyScrollListFragment
     	}
     }
 
-    private void getServerData(int tabIndex)
+    private void getServerData(int pageIndex)
 	{
     	if(mTask != null) {
     		mTask.cancel(true);
@@ -278,8 +278,8 @@ public class SignupDayFragment extends FancyScrollListFragment
 						_dataLastModified = HttpUtil.writeServerData(response, getActivity());
 					}
 
-					Integer tabIndexArg = params[0];
-					return tabIndexArg;
+					Integer pageIndexArg = params[0];
+					return pageIndexArg;
 			    }
 				catch(SignupClosedException e)
 				{
@@ -318,7 +318,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 		};
 
 		mTask = task;
-		task.execute(tabIndex);
+		task.execute(pageIndex);
 	}
 
     private void loadPlayersImpl(int pageIndex)
@@ -657,6 +657,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 		Intent i = new Intent(getActivity(), AddPlayerActivity.class);
 		i.putExtra(SIGNUP_DAY_KEY, _selectedDay);
 		i.putExtra( COVER_ART_KEY, getAssignedCoverArtId() );
+		i.putExtra(TITLE_RES_KEY, R.string.menu_add);
 
 		startActivityForResult(i, R.id.get_server_data_request);
 	}
@@ -668,6 +669,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 		i.putExtra(PLAYER_ID_KEY, mSelectedPlayer.mPlayerId);
 		i.putExtra(PLAYER_NAME_KEY, mSelectedPlayer.mName);
 		i.putExtra(NUM_CHUKKARS_KEY, mSelectedPlayer.mNumChukkars);
+		i.putExtra(TITLE_RES_KEY, R.string.menu_edit);
 
 		startActivityForResult(i, R.id.get_server_data_request);
 	}
