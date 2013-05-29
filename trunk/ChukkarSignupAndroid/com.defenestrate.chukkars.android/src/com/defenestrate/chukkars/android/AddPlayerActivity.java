@@ -62,34 +62,18 @@ public class AddPlayerActivity extends ChukkarsActivity
 	private int mSliderCenterX, mSliderCenterY, mSliderRadius;
 	private boolean mInitialized = false;
 	private AsyncTask<String, Void, Day> mTask;
-	private Handler _errHandler;
+	private final Handler _errHandler;
 	private boolean mActivityDestroyed = false;
 	private int mInitNumChukkars = DEFAULT_INIT_NUM_CHUKKARS;
+	private boolean mIsCreateNewPlayer;
+	private String mEditPlayerId;
 
 	static private int sSysStatusBarHeight = -1;
 
 
-	//////////////////////////////// METHODS ///////////////////////////////////
-	@Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        overridePendingTransition(R.anim.drop_in, R.anim.hold);
-
-        ActionBar actionBar = getActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-
-        this.setTitle(R.string.menu_add);
-
-        setContentView(R.layout.signup_add_player);
-
-        mSelectedDay = (Day)getIntent().getSerializableExtra(SIGNUP_DAY_KEY);
-        int coverArtRes = getIntent().getIntExtra(COVER_ART_KEY, R.drawable.cover10);
-
-        ImageView backgroundImage = (ImageView)findViewById(R.id.background);
-        backgroundImage.setImageDrawable( getResources().getDrawable(coverArtRes) );
-
-    	_errHandler = new Handler( Looper.getMainLooper() )
+	///////////////////////////// CONSTRUCTORS /////////////////////////////////
+	public AddPlayerActivity() {
+		_errHandler = new Handler( Looper.getMainLooper() )
         {
             @Override
             public void handleMessage(Message msg)
@@ -111,6 +95,28 @@ public class AddPlayerActivity extends ChukkarsActivity
             	}
             }
         };
+	}
+
+
+	//////////////////////////////// METHODS ///////////////////////////////////
+	@Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        overridePendingTransition(R.anim.drop_in, R.anim.hold);
+
+        ActionBar actionBar = getActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
+        this.setTitle( getIntent().getIntExtra(TITLE_RES_KEY, R.string.menu_add) );
+
+        setContentView(R.layout.signup_add_player);
+
+        mSelectedDay = (Day)getIntent().getSerializableExtra(SIGNUP_DAY_KEY);
+
+        int coverArtRes = getIntent().getIntExtra(COVER_ART_KEY, R.drawable.cover10);
+        ImageView backgroundImage = (ImageView)findViewById(R.id.background);
+        backgroundImage.setImageDrawable( getResources().getDrawable(coverArtRes) );
 
         initNameWidgets();
         initNumChukkarWidgets();
@@ -143,10 +149,14 @@ public class AddPlayerActivity extends ChukkarsActivity
 
         if(playerName != null) {
         	//editing an existing player
+        	mIsCreateNewPlayer = false;
         	mNameEdit.setText(playerName);
         	mNameEdit.setKeyListener(null);
+
+        	mEditPlayerId = getIntent().getStringExtra(PLAYER_ID_KEY);
         } else {
         	//adding a new player
+        	mIsCreateNewPlayer = true;
 	        mNameEdit.setOnTouchListener(new View.OnTouchListener() {
 
 				@Override
@@ -310,7 +320,12 @@ public class AddPlayerActivity extends ChukkarsActivity
             return true;
 
         case R.id.menu_save:
-        	addPlayer( mSelectedDay, mNameEdit.getText().toString(), mChukkarsLabel.getText().toString() );
+        	if(mIsCreateNewPlayer) {
+        		addPlayer( mSelectedDay, mNameEdit.getText().toString(), mChukkarsLabel.getText().toString() );
+        	} else {
+        		editNumChukkars( mSelectedDay, mEditPlayerId, mChukkarsLabel.getText().toString() );
+        	}
+
         	return true;
 
         case android.R.id.home:
@@ -470,7 +485,10 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 					HttpResponse response = httpclient.execute(post);
 
-					HttpUtil.writeServerData(response, AddPlayerActivity.this);
+					if( !isCancelled() ) {
+						HttpUtil.writeServerData(response, AddPlayerActivity.this);
+					}
+
 					return Day.valueOf(selectedDayArg);
 			    }
 				catch(SignupClosedException e)
@@ -498,21 +516,99 @@ public class AddPlayerActivity extends ChukkarsActivity
 		    @Override
 		    protected void onPostExecute(Day result)
 		    {
-		    	mTask = null;
-		    	showLoading(false);
-
-		    	if(result != null) {
-		    		Intent i = new Intent();
-		    		i.putExtra(SELECTED_DAY_KEY, result);
-			    	setResult(RESULT_OK, i);
-
-			    	finish();
-		    	}
+		    	onAsyncTaskComplete(result);
 		    }
 		};
 
 		mTask = task;
         task.execute(selectedDay.toString(), name, numChukkars);
+	}
+
+	private void editNumChukkars(Day selectedDay, String playerId, String numChukkars)
+	{
+		if(mTask != null) {
+    		mTask.cancel(true);
+    	}
+
+		AsyncTask<String, Void, Day> task = new AsyncTask<String, Void, Day>()
+		{
+			@Override
+			protected void onPreExecute()
+			{
+				//show the "busy" dialog
+				showLoading(true);
+			}
+
+		    @Override
+		    protected Day doInBackground(String... params)
+		    {
+				try
+				{
+					String selectedDayArg = params[0];
+					String playerIdArg = params[1];
+					String numChukkarsArg = params[2];
+
+					//http post
+					HttpClient httpclient = new DefaultHttpClient();
+					HttpPost post = new HttpPost( PropertiesUtil.getURLProperty(getResources(), "edit_chukkars_url") );
+
+					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+					nameValuePairs.add( new BasicNameValuePair(PLAYER_ID_FIELD, playerIdArg) );
+			        nameValuePairs.add( new BasicNameValuePair(PLAYER_NUMCHUKKARS_FIELD, numChukkarsArg) );
+			        post.setEntity( new UrlEncodedFormEntity(nameValuePairs) );
+
+					HttpResponse response = httpclient.execute(post);
+
+					if( !isCancelled() ) {
+						HttpUtil.writeServerData(response, AddPlayerActivity.this);
+					}
+
+					return Day.valueOf(selectedDayArg);
+			    }
+				catch(SignupClosedException e)
+				{
+					//show error toast on GUI thread
+					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+			    	msg.arg1 = R.string.signup_closed;
+					_errHandler.sendMessage(msg);
+
+					return null;
+				}
+				catch(IOException e)
+				{
+					//unable to connect to server
+					//show error toast on GUI thread
+					Message msg = _errHandler.obtainMessage(R.id.message_what_error);
+			    	msg.arg1 = R.string.server_connect_error;
+					_errHandler.sendMessage(msg);
+
+					Log.e(LOG_TAG, e.getMessage(), e);
+					return null;
+				}
+		    }
+
+		    @Override
+		    protected void onPostExecute(Day result)
+		    {
+		    	onAsyncTaskComplete(result);
+		    }
+		};
+
+		mTask = task;
+        task.execute(selectedDay.toString(), playerId, numChukkars);
+	}
+
+	private void onAsyncTaskComplete(Day signupDay) {
+		mTask = null;
+    	showLoading(false);
+
+    	if(signupDay != null) {
+    		Intent i = new Intent();
+    		i.putExtra(SELECTED_DAY_KEY, signupDay);
+	    	setResult(RESULT_OK, i);
+
+	    	finish();
+    	}
 	}
 
 	@Override
