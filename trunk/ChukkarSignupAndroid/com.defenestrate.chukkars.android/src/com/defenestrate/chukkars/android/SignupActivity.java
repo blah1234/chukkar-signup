@@ -504,8 +504,6 @@ public class SignupActivity extends Activity implements Constants
 		    @Override
 		    protected Integer doInBackground(String... params)
 		    {
-		    	Resources res = getResources();
-
 				try
 				{
 					Integer tabIndexArg = new Integer( params[0] );
