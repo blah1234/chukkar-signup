@@ -12,7 +12,9 @@ public interface Constants {
     String LAST_MODIFIED_KEY = "LAST_MODIFIED_KEY";
     String RESET_DATE_KEY = "RESET_DATE_KEY";
     String ACTIVE_DAYS_KEY = "ACTIVE_DAYS_KEY";
-    String TOAST_MSG_KEY = "TOAST_MSG_KEY";
+    String PLAYER_ID_KEY = "PLAYER_ID_KEY";
+	String PLAYER_NAME_KEY = "PLAYER_NAME_KEY";
+	String NUM_CHUKKARS_KEY = "NUM_CHUKKARS_KEY";
 
     String TOTALS_LIST_FIELD = "_totalsList";
     String PLAYERS_LIST_FIELD ="_playersList";

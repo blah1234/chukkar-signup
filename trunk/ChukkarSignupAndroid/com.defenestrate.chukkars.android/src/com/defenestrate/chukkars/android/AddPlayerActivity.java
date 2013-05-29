@@ -50,6 +50,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
 	private static final String LOG_TAG = AddPlayerActivity.class.getSimpleName();
+	private static final int DEFAULT_INIT_NUM_CHUKKARS = 2;
 
 
 	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
@@ -63,6 +64,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 	private AsyncTask<String, Void, Day> mTask;
 	private Handler _errHandler;
 	private boolean mActivityDestroyed = false;
+	private int mInitNumChukkars = DEFAULT_INIT_NUM_CHUKKARS;
 
 	static private int sSysStatusBarHeight = -1;
 
@@ -136,35 +138,45 @@ public class AddPlayerActivity extends ChukkarsActivity
 
         mNameEdit = (EditText)findViewById(R.id.name_field);
         mNameEdit.setTypeface( Typeface.createFromAsset(getAssets(), "fonts/roboto_thin.ttf") );
-        mNameEdit.setOnTouchListener(new View.OnTouchListener() {
 
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				int action = event.getAction();
+        String playerName = getIntent().getStringExtra(PLAYER_NAME_KEY);
 
-				switch (action) {
-				case MotionEvent.ACTION_DOWN:
-					mNameEdit.setCursorVisible(true);
+        if(playerName != null) {
+        	//editing an existing player
+        	mNameEdit.setText(playerName);
+        	mNameEdit.setKeyListener(null);
+        } else {
+        	//adding a new player
+	        mNameEdit.setOnTouchListener(new View.OnTouchListener() {
 
-				default:
-					return false;
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					int action = event.getAction();
+
+					switch (action) {
+					case MotionEvent.ACTION_DOWN:
+						mNameEdit.setCursorVisible(true);
+
+					default:
+						return false;
+					}
 				}
-			}
-		});
+			});
 
-        mNameEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+	        mNameEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				switch (actionId) {
-				case EditorInfo.IME_ACTION_DONE:
-					mNameEdit.setCursorVisible(false);
+				@Override
+				public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+					switch (actionId) {
+					case EditorInfo.IME_ACTION_DONE:
+						mNameEdit.setCursorVisible(false);
 
-				default:
-					return false;
+					default:
+						return false;
+					}
 				}
-			}
-		});
+			});
+        }
 	}
 
 	private void initNumChukkarWidgets() {
@@ -177,7 +189,17 @@ public class AddPlayerActivity extends ChukkarsActivity
 
         mChukkarsLabel = (TextView)findViewById(R.id.chukkars_label);
         mChukkarsLabel.setTypeface( Typeface.createFromAsset(getAssets(), "fonts/roboto_thin.ttf") );
-        mChukkarsLabel.setText("2");
+
+        //editing an existing player
+        String numChukkars = getIntent().getStringExtra(NUM_CHUKKARS_KEY);
+
+        if(numChukkars == null) {
+        	//adding a new player
+        	numChukkars = Integer.toString(DEFAULT_INIT_NUM_CHUKKARS);
+        }
+
+        mInitNumChukkars = Integer.parseInt(numChukkars);
+    	mChukkarsLabel.setText(numChukkars);
 
 
         mSliderTrack = findViewById(R.id.chukkars_slider_track);
@@ -305,7 +327,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 	private void setInitialThumbPosition() {
 		//init chukkar count is 2
-		float percentAroundCircle = 1 / 6f;
+		float percentAroundCircle = mInitNumChukkars / 12f;
 //			Log.i(TAG, "Percent around circle: " + percentAroundCircle);
 		double angle = 0;
 		if(percentAroundCircle <= 0.25f)
