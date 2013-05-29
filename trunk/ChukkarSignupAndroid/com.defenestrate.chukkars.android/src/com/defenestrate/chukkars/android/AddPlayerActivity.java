@@ -74,7 +74,7 @@ public class AddPlayerActivity extends ChukkarsActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        overridePendingTransition(R.anim.fly_in, R.anim.hold);
+        overridePendingTransition(R.anim.drop_in, R.anim.hold);
 
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -318,6 +318,7 @@ public class AddPlayerActivity extends ChukkarsActivity
             Intent intent = new Intent(this, Main.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            overridePendingTransition(R.anim.hold, R.anim.rise_up);
             return true;
 
         default:
@@ -403,7 +404,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 		}
 
 
-		String hourStr = Integer.toString(hour);
+		String hourStr = Integer.toString(hour % 12);
 
 		if( !mChukkarsLabel.getText().equals(hourStr) ) {
 			mChukkarsLabel.setText(hourStr);
@@ -512,5 +513,12 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 		mTask = task;
         task.execute(selectedDay.toString(), name, numChukkars);
+	}
+
+	@Override
+	public void finish() {
+		super.finish();
+
+		overridePendingTransition(R.anim.hold, R.anim.rise_up);
 	}
 }
