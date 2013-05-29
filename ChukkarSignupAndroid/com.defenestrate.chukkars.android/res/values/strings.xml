@@ -10,7 +10,7 @@
     <string name="tab_title">({0} game chukkars)</string>
     
     <string name="menu_add">Sign up</string>
-    <string name="menu_edit">Update Chukkars</string>
+    <string name="menu_edit">Make a change</string>
     <string name="button_save">Save</string>
     <string name="button_cancel">Cancel</string>
     <string name="edit_chukkars_warning">"You''ve previously only created or edited:\n{0}\nDon''t be evil..."</string>
