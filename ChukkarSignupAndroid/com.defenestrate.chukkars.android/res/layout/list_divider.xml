@@ -9,7 +9,6 @@
     <!-- app:split=" " to bold the first word. -->
 
     <TextView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/label1"
         style="@style/Label.Medium"
         android:layout_width="match_parent"
@@ -22,8 +21,6 @@
 
     
     <TextView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/label2"
         style="@style/Label.Medium.More"
         android:layout_width="wrap_content"
@@ -47,7 +44,6 @@
     </ImageView>
     
     <TextView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/below_divider_label"
         style="@style/Label.Small.ListItem"
         android:layout_width="match_parent"
