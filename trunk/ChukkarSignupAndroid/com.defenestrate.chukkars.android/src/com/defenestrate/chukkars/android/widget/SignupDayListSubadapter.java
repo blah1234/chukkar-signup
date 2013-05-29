@@ -37,12 +37,6 @@ public class SignupDayListSubadapter extends FancyScrollListSubadapter {
 	}
 
 	@Override
-	public boolean isListItemEnabled(int row) {
-		//make sure header rows are not enabled
-    	return (row >= 0);
-	}
-
-	@Override
 	protected void onItemClick(View v, int position, long id) {
 		// TODO Auto-generated method stub
 
