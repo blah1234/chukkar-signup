@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<style name="AppTheme.ViewPager" parent="@android:Theme.Holo.Light"/>
-	
+	<style name="AppTheme" parent="@android:Theme.Holo.Light"/>
+	 
     <!-- Text style for the table header -->
     <style name="TableHeaderText" parent="@android:style/TextAppearance.Small">
         <item name="android:textStyle">italic</item>
@@ -52,6 +52,11 @@
         <item name="android:ellipsize">marquee</item>
         <item name="android:minHeight">17dp</item>
         <item name="android:layout_marginTop">@dimen/list_item_margin_between_labels</item>
+    </style>
+    
+    <style name="Label.XLarge" parent="@android:TextAppearance.DeviceDefault.Large">
+        <item name="android:textSize">40sp</item>
+        <item name="android:textColor">@color/label</item>
     </style>
     
     <style name="Label.Large" parent="@android:TextAppearance.DeviceDefault.Large">
