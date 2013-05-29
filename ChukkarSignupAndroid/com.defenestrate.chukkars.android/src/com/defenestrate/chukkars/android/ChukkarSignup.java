@@ -33,8 +33,9 @@ import android.util.Log;
 
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
+import com.defenestrate.chukkars.android.util.Constants;
 
-public class ChukkarSignup extends Activity
+public class ChukkarSignup extends Activity implements Constants
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	static private final String STARTUP_CONFIG_PREFS_NAME = "startup-config";
@@ -163,7 +164,7 @@ public class ChukkarSignup extends Activity
 	{
     	Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
-        String activeDaysData = settings.getString(res.getString(R.string.active_days_key), null);
+        String activeDaysData = settings.getString(ACTIVE_DAYS_KEY, null);
 
     	boolean doesDataExist = (activeDaysData != null);
 
@@ -209,7 +210,7 @@ public class ChukkarSignup extends Activity
 	    	Resources res = getResources();
 			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 		    SharedPreferences.Editor editor = settings.edit();
-		    editor.putString(res.getString(R.string.active_days_key), result);
+		    editor.putString(ACTIVE_DAYS_KEY, result);
 
 		    // Commit the edits!
 		    editor.commit();
@@ -235,7 +236,7 @@ public class ChukkarSignup extends Activity
 		{
 	    	Resources res = getResources();
 	    	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
-	        result = settings.getString(res.getString(R.string.active_days_key), null);
+	        result = settings.getString(ACTIVE_DAYS_KEY, null);
 
 	        if(result == null)
 	    	{
@@ -345,7 +346,7 @@ public class ChukkarSignup extends Activity
 				    			Resources res = getResources();
 				    			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 				    		    SharedPreferences.Editor editor = settings.edit();
-				    		    editor.remove( res.getString(R.string.active_days_key) );
+				    		    editor.remove(ACTIVE_DAYS_KEY);
 				    		    editor.commit();
 
 					    		doReload = Boolean.TRUE;
@@ -409,7 +410,7 @@ public class ChukkarSignup extends Activity
 	{
 		Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
-        String resetDate = settings.getString(res.getString(R.string.reset_date_key), null);
+        String resetDate = settings.getString(RESET_DATE_KEY, null);
 
     	boolean doesDataExist = (resetDate != null);
 
@@ -441,7 +442,7 @@ public class ChukkarSignup extends Activity
 		Resources res = getResources();
 		SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 	    SharedPreferences.Editor editor = settings.edit();
-	    editor.putString(res.getString(R.string.reset_date_key), resetDate);
+	    editor.putString(RESET_DATE_KEY, resetDate);
 
 	    // Commit the edits!
 	    editor.commit();
