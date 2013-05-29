@@ -42,4 +42,6 @@
     
     <!-- Margin space between list item label1 and label2 -->
     <dimen name="list_item_margin_between_labels">2dp</dimen>
+    
+    <dimen name="chukkar_slider_track_thickness">4dp</dimen>
 </resources>
