@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Animation to slide down for the Activity that's coming. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+	android:shareInterpolator="false"
+	android:duration="@android:integer/config_longAnimTime"
+>
+    <translate 
+        android:fromYDelta="0"
+        android:toYDelta="-100%p"
+        android:interpolator="@android:anim/accelerate_interpolator"
+    />
+    
+    <alpha  
+	    android:fromAlpha="1.0"
+	    android:toAlpha="0.0"
+	    android:interpolator="@android:anim/linear_interpolator"
+	/>
+</set>

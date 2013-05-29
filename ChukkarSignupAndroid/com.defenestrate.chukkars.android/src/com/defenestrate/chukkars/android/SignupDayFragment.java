@@ -630,6 +630,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 
 			@Override
 			protected void onHeaderCircleButtonClick(View v) {
+				closeActionMode();
 				launchAddPlayerPage();
 			}
 
