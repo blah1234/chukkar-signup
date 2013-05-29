@@ -39,7 +39,7 @@ import com.defenestrate.chukkars.android.util.PropertiesUtil;
 
 
 public class Main extends ViewPagerActivity
-				  implements Constants {
+				  implements SignupDayFragment.OnPlayerModificationListener, Constants {
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
 	static private final String STARTUP_CONFIG_PREFS_NAME = "startup-config";
@@ -47,6 +47,8 @@ public class Main extends ViewPagerActivity
 
 	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
 	private Handler mHandler;
+	private boolean mHasNewData;
+	private Day mInitialVisibleDay;
 
 
 	//////////////////////////////// METHODS ///////////////////////////////////
@@ -66,38 +68,57 @@ public class Main extends ViewPagerActivity
             }
         };
 
+        mHasNewData = true;
+
         // Show the page indexer.
         setUsePagerIndexer(true);
+	}
+
+	@Override
+	public void onPlayerModificationSave(Day selectedDay) {
+		mHasNewData = true;
+		mInitialVisibleDay = selectedDay;
+	}
+
+	@Override
+	public void onPlayerModificationCancel() {
+		mHasNewData = false;
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		//start the data load process
-        loadActiveDaysAsync();
+		if(mHasNewData) {
+			//remove all pages. Next time activity starts up, we will requery
+			//or use the cached server data, as appropriate
+		    removeAllPages();
+
+			//start the data load process
+	        loadActiveDaysAsync();
+		} else {
+			mHasNewData = false;
+		}
 	}
 
-	@Override
-    protected void onStop()
+	private void resetCachedData()
 	{
-    	// The activity is no longer visible (it is now "stopped")
-		super.onStop();
-
 		Resources res = getResources();
-		SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
-	    SharedPreferences.Editor editor = settings.edit();
-	    editor.remove( res.getString(R.string.content_key) );
-	    editor.remove( res.getString(R.string.last_modified_key) );
 
-	    // Commit the edits!
+		//also erase the active days data
+		SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
+	    SharedPreferences.Editor editor = settings.edit();
+	    editor.remove(ACTIVE_DAYS_KEY);
 	    editor.commit();
 
-	    //----------
+	    //------------
 
-	    //remove all pages. Next time activity starts up, we will requery the
-	    //server data
-	    removeAllPages();
+	    settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
+	    editor = settings.edit();
+	    editor.remove(CONTENT_KEY);
+	    editor.remove(LAST_MODIFIED_KEY);
+	    // Commit the edits!
+	    editor.commit();
 	}
 
 	private void loadActiveDaysAsync()
@@ -127,8 +148,15 @@ public class Main extends ViewPagerActivity
 
 		    	if(activeDaysList != null)
 			    {
+		    		int selectedPosition = 0;
+
 		    		for(int i=0, n=activeDaysList.size(); i<n; i++) {
 		    			Day currDay = activeDaysList.get(i);
+
+		    			if(currDay == mInitialVisibleDay) {
+		    				selectedPosition = i;
+		    				mInitialVisibleDay = null;
+		    			}
 
 		    			Bundle args = new Bundle();
 		    			args.putString( SignupDayFragment.SIGNUP_DAY_KEY, currDay.name() );
@@ -137,6 +165,7 @@ public class Main extends ViewPagerActivity
 		    			addPage(SignupDayFragment.class, args);
 		    		}
 
+		    		selectPage(selectedPosition);
 		    		showInitialIndicator();
 			    }
 		    }
@@ -203,12 +232,7 @@ public class Main extends ViewPagerActivity
 
 	    		if(prevResetDate != null)
 	    		{
-		    		//also erase the active days data
-	    			Resources res = getResources();
-	    			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
-	    		    SharedPreferences.Editor editor = settings.edit();
-	    		    editor.remove( res.getString(R.string.active_days_key) );
-	    		    editor.commit();
+	    			resetCachedData();
 	    		}
 	    	}
 	    }
@@ -243,9 +267,8 @@ public class Main extends ViewPagerActivity
 
 	private Date getPreviousWebAppResetDate()
 	{
-		Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
-        String resetDate = settings.getString(res.getString(R.string.reset_date_key), null);
+        String resetDate = settings.getString(RESET_DATE_KEY, null);
 
     	boolean doesDataExist = (resetDate != null);
 
@@ -278,7 +301,7 @@ public class Main extends ViewPagerActivity
 		Resources res = getResources();
 		SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 	    SharedPreferences.Editor editor = settings.edit();
-	    editor.putString(res.getString(R.string.reset_date_key), resetDate);
+	    editor.putString(RESET_DATE_KEY, resetDate);
 
 	    // Commit the edits!
 	    editor.commit();
@@ -319,7 +342,7 @@ public class Main extends ViewPagerActivity
 	{
     	Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
-        String activeDaysData = settings.getString(res.getString(R.string.active_days_key), null);
+        String activeDaysData = settings.getString(ACTIVE_DAYS_KEY, null);
 
     	boolean doesDataExist = (activeDaysData != null);
 
@@ -365,7 +388,7 @@ public class Main extends ViewPagerActivity
 	    	Resources res = getResources();
 			SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
 		    SharedPreferences.Editor editor = settings.edit();
-		    editor.putString(res.getString(R.string.active_days_key), result);
+		    editor.putString(ACTIVE_DAYS_KEY, result);
 
 		    // Commit the edits!
 		    editor.commit();
@@ -391,7 +414,7 @@ public class Main extends ViewPagerActivity
 		{
 	    	Resources res = getResources();
 	    	SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
-	        result = settings.getString(res.getString(R.string.active_days_key), null);
+	        result = settings.getString(ACTIVE_DAYS_KEY, null);
 
 	        if(result == null)
 	    	{
