@@ -15,6 +15,7 @@ public interface Constants {
     String PLAYER_ID_KEY = "PLAYER_ID_KEY";
 	String PLAYER_NAME_KEY = "PLAYER_NAME_KEY";
 	String NUM_CHUKKARS_KEY = "NUM_CHUKKARS_KEY";
+	String TITLE_RES_KEY = "TITLE_RES_KEY";
 
     String TOTALS_LIST_FIELD = "_totalsList";
     String PLAYERS_LIST_FIELD ="_playersList";
