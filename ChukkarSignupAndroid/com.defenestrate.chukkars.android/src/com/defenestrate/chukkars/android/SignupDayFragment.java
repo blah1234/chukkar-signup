@@ -81,6 +81,7 @@ public class SignupDayFragment extends FancyScrollListFragment
     private ActionMode mActionMode;
     private View mPrevSelectedView;
     private OnPageChangeListener mOnPageChangeLstnr;
+    private PlayerSignupData mSelectedPlayer;
 
     static private final Random mRand = new Random();
     static private final Set<Integer> sUsedCoverArtIds = new TreeSet<Integer>();
@@ -171,10 +172,10 @@ public class SignupDayFragment extends FancyScrollListFragment
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
-//                    case R.id.menu_share:
-//                        shareCurrentItem();
-//                        mode.finish(); // Action picked, so close the CAB
-//                        return true;
+                    case R.id.edit_player:
+                        launchEditPlayerPage();
+                        mode.finish(); // Action picked, so close the CAB
+                        return true;
                     default:
                         return false;
                 }
@@ -611,6 +612,8 @@ public class SignupDayFragment extends FancyScrollListFragment
                 mActionMode = getActivity().startActionMode(mActionModeCallback);
                 v.setSelected(true);
                 mPrevSelectedView = v;
+
+                mSelectedPlayer = (PlayerSignupData)getListItem(position);
         	}
         };
 
@@ -646,12 +649,24 @@ public class SignupDayFragment extends FancyScrollListFragment
 
 		mPrevSelectedView = null;
 		mActionMode = null;
+		mSelectedPlayer = null;
 	}
 
 	private void launchAddPlayerPage() {
 		Intent i = new Intent(getActivity(), AddPlayerActivity.class);
 		i.putExtra(SIGNUP_DAY_KEY, _selectedDay);
 		i.putExtra( COVER_ART_KEY, getAssignedCoverArtId() );
+
+		startActivityForResult(i, R.id.get_server_data_request);
+	}
+
+	private void launchEditPlayerPage() {
+		Intent i = new Intent(getActivity(), AddPlayerActivity.class);
+		i.putExtra(SIGNUP_DAY_KEY, _selectedDay);
+		i.putExtra( COVER_ART_KEY, getAssignedCoverArtId() );
+		i.putExtra(PLAYER_ID_KEY, mSelectedPlayer.mPlayerId);
+		i.putExtra(PLAYER_NAME_KEY, mSelectedPlayer.mName);
+		i.putExtra(NUM_CHUKKARS_KEY, mSelectedPlayer.mNumChukkars);
 
 		startActivityForResult(i, R.id.get_server_data_request);
 	}
