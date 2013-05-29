@@ -62,9 +62,10 @@ import android.widget.Toast;
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.exception.SignupClosedException;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
+import com.defenestrate.chukkars.android.util.Constants;
 import com.defenestrate.chukkars.android.widget.NumberPicker;
 
-public class SignupActivity extends Activity
+public class SignupActivity extends Activity implements Constants
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	static private final String SERVER_DATA_PREFS_NAME = "all-players.json";
@@ -126,8 +127,8 @@ public class SignupActivity extends Activity
     	{
 	    	Resources res = getResources();
 	    	SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
-	        String data = settings.getString(res.getString(R.string.content_key), null);
-	        long lastModified = settings.getLong(res.getString(R.string.last_modified_key), 0);
+	        String data = settings.getString(CONTENT_KEY, null);
+	        long lastModified = settings.getLong(LAST_MODIFIED_KEY, 0);
 
 	    	boolean doesDataExist = (data != null);
 
@@ -172,8 +173,8 @@ public class SignupActivity extends Activity
 		Resources res = getResources();
 		SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
 	    SharedPreferences.Editor editor = settings.edit();
-	    editor.remove( res.getString(R.string.content_key) );
-	    editor.remove( res.getString(R.string.last_modified_key) );
+	    editor.remove(CONTENT_KEY);
+	    editor.remove(LAST_MODIFIED_KEY);
 
 	    // Commit the edits!
 	    editor.commit();
@@ -516,8 +517,8 @@ public class SignupActivity extends Activity
 					HttpPost post = new HttpPost( /*res.getString(R.string.edit_chukkars_url)*/ );
 
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_id_field), playerIdArg) );
-			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), numChukkarsArg) );
+					nameValuePairs.add( new BasicNameValuePair(PLAYER_ID_FIELD, playerIdArg) );
+			        nameValuePairs.add( new BasicNameValuePair(PLAYER_NUMCHUKKARS_FIELD, numChukkarsArg) );
 			        post.setEntity( new UrlEncodedFormEntity(nameValuePairs) );
 
 					HttpResponse response = httpclient.execute(post);
@@ -578,8 +579,6 @@ public class SignupActivity extends Activity
 		    @Override
 		    protected Integer doInBackground(String... params)
 		    {
-		    	Resources res = getResources();
-
 				try
 				{
 					Integer tabIndexArg = new Integer( params[0] );
@@ -592,9 +591,9 @@ public class SignupActivity extends Activity
 					HttpPost post = new HttpPost( /*res.getString(R.string.add_player_url)*/ );
 
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-					nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_requestDay_field), selectedDayArg) );
-			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_name_field), nameArg) );
-			        nameValuePairs.add( new BasicNameValuePair(res.getString(R.string.player_numChukkars_field), numChukkarsArg) );
+					nameValuePairs.add( new BasicNameValuePair(PLAYER_REQUESTDAY_FIELD, selectedDayArg) );
+			        nameValuePairs.add( new BasicNameValuePair(PLAYER_NAME_FIELD, nameArg) );
+			        nameValuePairs.add( new BasicNameValuePair(PLAYER_NUMCHUKKARS_FIELD, numChukkarsArg) );
 			        post.setEntity( new UrlEncodedFormEntity(nameValuePairs) );
 
 					HttpResponse response = httpclient.execute(post);
@@ -669,7 +668,7 @@ public class SignupActivity extends Activity
     {
     	Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
-        String data = settings.getString(res.getString(R.string.content_key), null);
+        String data = settings.getString(CONTENT_KEY, null);
 
         if(data != null)
         {
@@ -685,9 +684,8 @@ public class SignupActivity extends Activity
     	//parse json data
 	    try
 	    {
-	    	Resources res = getResources();
 	    	JSONObject data = new JSONObject(result);
-	    	JSONArray jArray = data.getJSONArray( res.getString(R.string.totals_list_field) );
+	    	JSONArray jArray = data.getJSONArray( TOTALS_LIST_FIELD );
 
 	    	if(jArray.length() <= tabIndex)
 	    	{
@@ -703,7 +701,7 @@ public class SignupActivity extends Activity
 				return;
 	    	}
 
-	    	String dayStr = jArray.getJSONObject(tabIndex).getString( res.getString(R.string.total_day_field) );
+	    	String dayStr = jArray.getJSONObject(tabIndex).getString( TOTAL_DAY_FIELD );
 	    	_selectedDay = Day.valueOf(dayStr);
 
 	    	//format the titles in the tabs
@@ -729,13 +727,13 @@ public class SignupActivity extends Activity
             DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
             outFormatter.setTimeZone( TimeZone.getTimeZone("GMT") );
 
-            jArray = data.getJSONArray( res.getString(R.string.players_list_field) );
+            jArray = data.getJSONArray( PLAYERS_LIST_FIELD );
 
             for(int i=0, n=jArray.length(); i<n; i++)
             {
                 JSONObject currPlayer = jArray.getJSONObject(i);
 
-                Day currRequestDay = Day.valueOf( currPlayer.getString( res.getString(R.string.player_requestDay_field)) );
+                Day currRequestDay = Day.valueOf( currPlayer.getString( PLAYER_REQUESTDAY_FIELD) );
                 if(currRequestDay == _selectedDay)
                 {
                 	/* Create and add a new row */
@@ -749,14 +747,14 @@ public class SignupActivity extends Activity
 
                     //assign the data to the appropriate columns
                     TextView idText = (TextView)rootView.findViewById(R.id.player_id_col);
-                    idText.setText( currPlayer.getString(res.getString(R.string.player_id_field)) );
+                    idText.setText( currPlayer.getString(PLAYER_ID_FIELD) );
 
                     //------------
 
                 	TextView timeText = (TextView)rootView.findViewById(R.id.player_time_col);
                 	try
             		{
-                		String createDate = currPlayer.getString( res.getString(R.string.player_createDate_field) );
+                		String createDate = currPlayer.getString( PLAYER_CREATEDATE_FIELD );
                 		Date dateTime = inParser.parse(createDate);
                 		String displayDateTime = outFormatter.format(dateTime);
             			timeText.setText(displayDateTime);
@@ -775,27 +773,27 @@ public class SignupActivity extends Activity
             		//-------------
 
                 	TextView nameText = (TextView)rootView.findViewById(R.id.player_name_col);
-                	nameText.setText( currPlayer.getString(res.getString(R.string.player_name_field)) );
+                	nameText.setText( currPlayer.getString(PLAYER_NAME_FIELD) );
 
                 	//-----------
 
                 	TextView chukkarsText = (TextView)rootView.findViewById(R.id.player_chukkars_col);
-                	chukkarsText.setText( currPlayer.getString(res.getString(R.string.player_numChukkars_field)) );
+                	chukkarsText.setText( currPlayer.getString(PLAYER_NUMCHUKKARS_FIELD) );
                 }
             }
 
 
-            if( data.has(res.getString(R.string.curr_player_persisted_field)) )
+            if( data.has(CURR_PLAYER_PERSISTED_FIELD) )
             {
             	//persist the Id of the newly persisted Player, ONLY if
             	//it doesn't already exist in the DB
-            	JSONObject persistedPlayer = data.getJSONObject( res.getString(R.string.curr_player_persisted_field) );
-            	long id = persistedPlayer.getLong( res.getString(R.string.player_id_field) );
+            	JSONObject persistedPlayer = data.getJSONObject( CURR_PLAYER_PERSISTED_FIELD );
+            	long id = persistedPlayer.getLong( PLAYER_ID_FIELD );
             	SignupDbAdapter db = getDBHelper();
 
             	if( !db.containsPlayer(id) )
             	{
-            		String name = persistedPlayer.getString( res.getString(R.string.player_name_field) );
+            		String name = persistedPlayer.getString(PLAYER_NAME_FIELD );
             		db.createPlayer(id, name);
             	}
 
@@ -911,10 +909,10 @@ public class SignupActivity extends Activity
 	    	Resources res = getResources();
 			SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
 		    SharedPreferences.Editor editor = settings.edit();
-		    editor.putString(res.getString(R.string.content_key), result);
+		    editor.putString(CONTENT_KEY, result);
 
 		    _dataLastModified = new Date().getTime();
-		    editor.putLong(res.getString(R.string.last_modified_key), _dataLastModified);
+		    editor.putLong(LAST_MODIFIED_KEY, _dataLastModified);
 
 		    // Commit the edits!
 		    editor.commit();
