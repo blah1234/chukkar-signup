@@ -2,7 +2,7 @@
  * @author			<a href="mailto:lwang@mspot.com">Larry Wang</a>
  * @copyright		Copyright (c) 2012 mSpot, Inc. All rights reserved.
  */
-package com.defenestrate.chukkars.android.view;
+package com.defenestrate.chukkars.android.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
