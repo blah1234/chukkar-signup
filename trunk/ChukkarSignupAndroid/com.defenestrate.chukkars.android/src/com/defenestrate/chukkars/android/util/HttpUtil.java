@@ -12,7 +12,6 @@ import org.apache.http.HttpResponse;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 
 import com.defenestrate.chukkars.android.exception.SignupClosedException;
 
@@ -57,7 +56,6 @@ public class HttpUtil implements Constants {
 	    	}
 
 	    	//write json data to preferences
-	    	Resources res = ctx.getResources();
 			SharedPreferences settings = ctx.getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
 		    SharedPreferences.Editor editor = settings.edit();
 		    editor.putString(CONTENT_KEY, result);
