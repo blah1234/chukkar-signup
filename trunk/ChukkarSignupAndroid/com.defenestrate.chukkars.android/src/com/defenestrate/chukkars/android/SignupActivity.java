@@ -664,7 +664,6 @@ public class SignupActivity extends Activity implements Constants
 
     private void loadPlayersImpl(int tabIndex)
     {
-    	Resources res = getResources();
     	SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
         String data = settings.getString(CONTENT_KEY, null);
 
