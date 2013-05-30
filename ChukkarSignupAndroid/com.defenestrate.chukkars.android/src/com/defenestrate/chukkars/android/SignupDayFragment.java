@@ -212,12 +212,6 @@ public class SignupDayFragment extends FancyScrollListFragment
 		return ret;
     }
 
-    public void onStart() {
-    	super.onStart();
-    	int i=0;
-    	i++;
-    }
-
     @Override public void onDestroyView() {
     	super.onDestroyView();
 
