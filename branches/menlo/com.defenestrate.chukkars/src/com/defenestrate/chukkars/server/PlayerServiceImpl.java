@@ -50,6 +50,7 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 
 			currPlayer = new Player(name, numChukkars, requestDay);
 			pm.makePersistent(currPlayer);
+			pm.flush();
 
 			tx.commit();
 		}
@@ -182,9 +183,12 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 
 		List<Player> retList = new ArrayList<Player>();
+		Transaction tx = pm.currentTransaction();
 
 		try
 		{
+			tx.begin();
+
 			Extent<Player> e = pm.getExtent(Player.class);
 			Iterator<Player> iter = e.iterator();
 
@@ -208,6 +212,8 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 				int insertIndex = (index + 1) * -1;
 				retList.add(insertIndex, currPlayer);
 			}
+
+			tx.commit();
 		}
 		catch(Exception e)
 		{
@@ -215,6 +221,11 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 				Level.SEVERE,
 				"Error encountered trying to get all players:\n" + e.getMessage(),
 				e);
+
+			if( tx.isActive() )
+		    {
+		        tx.rollback();
+		    }
 
 		    throw new RuntimeException(e);
 		}
