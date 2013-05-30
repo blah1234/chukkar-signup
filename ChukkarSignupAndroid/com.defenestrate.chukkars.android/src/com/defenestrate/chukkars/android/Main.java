@@ -100,7 +100,15 @@ public class Main extends ViewPagerActivity
 		}
 	}
 
-	private void resetCachedData()
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+
+		//clear out cached data for players, their requested days and chukkars
+		resetCachedPlayerSignups();
+	}
+
+	private void resetAllCachedData()
 	{
 		//also erase the active days data
 		SharedPreferences settings = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, MODE_PRIVATE);
@@ -110,8 +118,12 @@ public class Main extends ViewPagerActivity
 
 	    //------------
 
-	    settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
-	    editor = settings.edit();
+	    resetCachedPlayerSignups();
+	}
+
+	private void resetCachedPlayerSignups() {
+		SharedPreferences settings = getSharedPreferences(SERVER_DATA_PREFS_NAME, MODE_PRIVATE);
+		SharedPreferences.Editor editor = settings.edit();
 	    editor.remove(CONTENT_KEY);
 	    editor.remove(LAST_MODIFIED_KEY);
 	    // Commit the edits!
@@ -229,7 +241,7 @@ public class Main extends ViewPagerActivity
 
 	    		if(prevResetDate != null)
 	    		{
-	    			resetCachedData();
+	    			resetAllCachedData();
 	    		}
 	    	}
 	    }
