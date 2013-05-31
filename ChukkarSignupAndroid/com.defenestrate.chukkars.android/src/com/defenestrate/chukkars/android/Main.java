@@ -33,7 +33,6 @@ import android.os.Message;
 import android.util.Log;
 
 import com.defenestrate.chukkars.android.entity.Day;
-import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 import com.defenestrate.chukkars.android.util.Constants;
 import com.defenestrate.chukkars.android.util.HttpUtil;
 import com.defenestrate.chukkars.android.util.PropertiesUtil;
@@ -255,10 +254,10 @@ public class Main extends ViewPagerActivity
 	    	if( (prevResetDate == null) || resetDate.after(prevResetDate) )
 	    	{
 	    		writeResetDate(result);
-	    		SignupDbAdapter db = new SignupDbAdapter(Main.this);
-	    		db.open();
-	    		db.deleteAllPlayers();
-	    		db.close();
+//	    		SignupDbAdapter db = new SignupDbAdapter(Main.this);
+//	    		db.open();
+//	    		db.deleteAllPlayers();
+//	    		db.close();
 
 	    		if(prevResetDate != null)
 	    		{
