@@ -5,15 +5,17 @@
     <string name="name_col_header">Name</string>
     <string name="chukkars_col_header">Chukkars</string>
     
-    <string name="load_dialog_message">Loading. Please wait...</string>
+    <string name="load_dialog_message">Loading. Please wait&#8230;</string>
     
     <string name="tab_title">({0} game chukkars)</string>
     
     <string name="menu_add">Sign up</string>
     <string name="menu_edit">Make a change</string>
+    <string name="options">Options</string>
+    <string name="refresh">Refresh</string>
     <string name="button_save">Save</string>
     <string name="button_cancel">Cancel</string>
-    <string name="edit_chukkars_warning">"You''ve previously only created or edited:\n{0}\nDon''t be evil..."</string>
+    <string name="edit_chukkars_warning">"You''ve previously only created or edited:\n{0}\nDon''t be evil&#8230;"</string>
     
     <string name="server_connect_error">Unable to connect to server. Please try again later when network or wifi reception is better.</string>
     <string name="unexpected_json_error">Unexpected response format from server. Most likely a careless bug. Contact Shawn.</string>
