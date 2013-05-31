@@ -198,9 +198,9 @@ public class SignupActivity extends Activity implements Constants
         // Handle item selection
         switch( item.getItemId() )
         {
-        case R.id.new_player:
-            showDialog(R.id.signup_add_dialog);
-            return true;
+//        case R.id.new_player:
+//            showDialog(R.id.signup_add_dialog);
+//            return true;
         default:
             return super.onOptionsItemSelected(item);
         }
