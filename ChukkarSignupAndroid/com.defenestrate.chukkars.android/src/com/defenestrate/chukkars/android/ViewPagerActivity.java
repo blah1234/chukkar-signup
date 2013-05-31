@@ -56,7 +56,7 @@ public class ViewPagerActivity extends ChukkarsActivity implements ViewPager.OnP
     	mOnPageChangeLstnrs = new LinkedHashSet<ViewPager.OnPageChangeListener>();
     }
 
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,11 +95,6 @@ public class ViewPagerActivity extends ChukkarsActivity implements ViewPager.OnP
 				}
 			}
 		});
-    }
-
-    @Override
-    protected void onResume() {
-    	super.onResume();
     }
 
 	public void showInitialIndicator() {
