@@ -12,6 +12,8 @@ import org.apache.http.HttpResponse;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import com.defenestrate.chukkars.android.exception.SignupClosedException;
 
@@ -79,5 +81,20 @@ public class HttpUtil implements Constants {
 	    	}
 	    	catch(IOException e) {}
 	    }
+	}
+
+	/**
+	 * Indicates if a data connection is available.
+	 * @param context
+	 * @return <code>true</code> if a data connection is available; <code>false</code> otherwise
+	 */
+	static public boolean hasDataConnection(Context context) {
+		boolean connected = false;
+		final ConnectivityManager connMgr = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		final NetworkInfo netInfo = connMgr.getActiveNetworkInfo();
+		if (netInfo != null) {
+			connected = netInfo.isConnected();
+		}
+        return connected;
 	}
 }
