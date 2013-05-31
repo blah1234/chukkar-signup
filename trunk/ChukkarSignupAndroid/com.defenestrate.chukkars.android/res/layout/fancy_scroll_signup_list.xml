@@ -3,16 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background"
 >
-    <LinearLayout
-        android:id="@+id/data_error_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:visibility="gone" 
-        />
-    
     <include layout="@layout/subtitle" />
 
     <FrameLayout
@@ -24,6 +15,7 @@
             android:id="@+id/android:list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:choiceMode="singleChoice"
             style="@style/List"
         />
     </FrameLayout>
