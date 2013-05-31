@@ -6,21 +6,14 @@
     android:layout_height="match_parent"
     android:background="@color/background"
 >
-    <LinearLayout
-        android:id="@+id/empty_container"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-		android:layout_alignParentTop="true"
-        />
-
     <android.support.v4.view.ViewPager
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/empty_container"
+        android:layout_alignParentTop="true"
     />
     
-    <com.defenestrate.chukkars.android.view.PageIndexer
+    <com.defenestrate.chukkars.android.widget.PageIndexer
         android:id="@+id/view_pager_indexer"
         android:layout_height="@dimen/view_pager_indexer_height"
         android:layout_width="match_parent"
