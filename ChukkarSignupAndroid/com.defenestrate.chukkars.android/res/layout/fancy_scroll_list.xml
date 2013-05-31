@@ -10,13 +10,6 @@ Set the top margin to be the height of the action bar so that it doesn't overlap
     android:orientation="vertical"
     android:background="@color/background"
 >
-	<LinearLayout 
-	    android:id="@+id/data_error_container"
-	    android:layout_height="match_parent"
-	    android:layout_width="match_parent"
-	    android:visibility="gone"
-	/>         
-	
     <include layout="@layout/subtitle" />
 
     <FrameLayout
@@ -24,7 +17,7 @@ Set the top margin to be the height of the action bar so that it doesn't overlap
         android:layout_width="match_parent"
         android:layout_height="match_parent"
     >
-        <com.samsung.music.view.FancyScrollListView
+        <ListView
             android:id="@+id/android:list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
