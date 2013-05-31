@@ -31,6 +31,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.util.Constants;
@@ -475,5 +478,26 @@ public class Main extends ViewPagerActivity
 
 			throw e;
 	    }
+	}
+
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.options_menu, menu);
+	    return true;
+    }
+
+	@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.refresh:
+			mHasNewData = true;
+			resetAllCachedData();
+			initPages( HttpUtil.hasDataConnection(this) );
+			return true;
+
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 }
