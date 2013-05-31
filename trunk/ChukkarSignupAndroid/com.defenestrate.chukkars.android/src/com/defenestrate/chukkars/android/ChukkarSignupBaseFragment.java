@@ -2,8 +2,6 @@ package com.defenestrate.chukkars.android;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +10,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.defenestrate.chukkars.android.util.HttpUtil;
 
 /**
  * Base activity for a fragment in the app.
@@ -72,19 +72,8 @@ public abstract class ChukkarSignupBaseFragment extends Fragment {
 	}
 
 	private boolean hasDataConnection() {
-		// If the properties file has the flag that says that we support wifi, then use the
-		// more general test for connectivity.
-		// If no flag specified in properties file, then use Telephony Manager which doesn't
-		// require a special permission.
     	Context context = getActivity();
-
-    	boolean connected = false;
-		final ConnectivityManager connMgr = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		final NetworkInfo netInfo = connMgr.getActiveNetworkInfo();
-		if (netInfo != null) {
-			connected = netInfo.isConnected();
-		}
-        return connected;
+        return HttpUtil.hasDataConnection(context);
 	}
 
 	@Override
