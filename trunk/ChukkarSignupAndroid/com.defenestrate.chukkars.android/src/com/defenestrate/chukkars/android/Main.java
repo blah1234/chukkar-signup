@@ -23,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ import android.util.Log;
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 import com.defenestrate.chukkars.android.util.Constants;
+import com.defenestrate.chukkars.android.util.HttpUtil;
 import com.defenestrate.chukkars.android.util.PropertiesUtil;
 
 
@@ -88,15 +90,34 @@ public class Main extends ViewPagerActivity
 	protected void onStart() {
 		super.onStart();
 
-		if(mHasNewData) {
-			//remove all pages. Next time activity starts up, we will requery
-			//or use the cached server data, as appropriate
-		    removeAllPages();
+		initPages( HttpUtil.hasDataConnection(this) );
+	}
 
-			//start the data load process
-	        loadActiveDaysAsync();
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+
+		if( intent.hasExtra(HAS_NETWORK_CONNECTIVITY_KEY) ) {
+			initPages( intent.getBooleanExtra(HAS_NETWORK_CONNECTIVITY_KEY, true) );
+		}
+	}
+
+	private void initPages(boolean hasDataConnection) {
+		if(hasDataConnection) {
+			if(mHasNewData) {
+				//remove all pages. Next time activity starts up, we will requery
+				//or use the cached server data, as appropriate
+			    removeAllPages();
+
+				//start the data load process
+		        loadActiveDaysAsync();
+			} else {
+				mHasNewData = false;
+			}
 		} else {
-			mHasNewData = false;
+			removeAllPages();
+			addPage(NoConnectionFragment.class, null);
+			mHasNewData = true;
 		}
 	}
 
