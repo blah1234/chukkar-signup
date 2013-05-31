@@ -54,6 +54,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -63,7 +64,6 @@ import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.exception.SignupClosedException;
 import com.defenestrate.chukkars.android.persistence.SignupDbAdapter;
 import com.defenestrate.chukkars.android.util.Constants;
-import com.defenestrate.chukkars.android.widget.NumberPicker;
 
 public class SignupActivity extends Activity implements Constants
 {
@@ -314,7 +314,7 @@ public class SignupActivity extends Activity implements Constants
 
     			if(_selectedDay != null)
     			{
-    				addPlayer( _selectedDay, nameWidget.getText().toString(), numChukkarsWidget.getCurrent() );
+    				addPlayer( _selectedDay, nameWidget.getText().toString(), numChukkarsWidget.getValue() );
     			}
     			else
     			{
@@ -384,7 +384,7 @@ public class SignupActivity extends Activity implements Constants
 
     			NumberPicker numChukkarsWidget = (NumberPicker)layout.findViewById(R.id.chukkars_picker);
 
-				editNumChukkars( playerId, numChukkarsWidget.getCurrent() );
+				editNumChukkars( playerId, numChukkarsWidget.getValue() );
     		}
     	});
 
@@ -470,9 +470,10 @@ public class SignupActivity extends Activity implements Constants
     	nameWidget.setTag( R.id.player_id_tag, args.getString(PLAYER_ID_KEY) );
 
     	NumberPicker numPick = (NumberPicker)dialog.findViewById(R.id.chukkars_picker);
-    	numPick.setRange(0, 10);
+    	numPick.setMinValue(0);
+    	numPick.setMaxValue(10);
 
-    	numPick.setCurrent( args.getInt(PLAYER_NUM_CHUKKARS_KEY) );
+    	numPick.setValue( args.getInt(PLAYER_NUM_CHUKKARS_KEY) );
 
     	numPick.requestFocus();
     }
@@ -483,8 +484,9 @@ public class SignupActivity extends Activity implements Constants
     	nameEdit.setText("");
 
     	NumberPicker numPick = (NumberPicker)dialog.findViewById(R.id.chukkars_picker);
-    	numPick.setRange(0, 10);
-    	numPick.setCurrent(2);
+    	numPick.setMinValue(0);
+    	numPick.setMaxValue(10);
+    	numPick.setValue(2);
 
     	nameEdit.requestFocus();
     }
