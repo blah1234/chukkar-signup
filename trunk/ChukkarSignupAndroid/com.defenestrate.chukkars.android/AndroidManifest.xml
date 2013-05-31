@@ -27,5 +27,11 @@
               android:screenOrientation="portrait"
               android:theme="@style/AppTheme"
         />
+        
+        <receiver android:name=".receiver.NetworkStateReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
