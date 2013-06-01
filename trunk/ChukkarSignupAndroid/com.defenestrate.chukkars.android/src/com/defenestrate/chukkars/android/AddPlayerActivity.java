@@ -34,6 +34,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -263,6 +265,9 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 	            case MotionEvent.ACTION_UP:
 	                v.setPressed(false);
+
+	                Animation a = AnimationUtils.loadAnimation(AddPlayerActivity.this, R.anim.bounce);
+	                mChukkarsLabel.startAnimation(a);
 
 	                // ProgressBar doesn't know to repaint the thumb drawable
 	                // in its inactive state when the touch stops (because the
