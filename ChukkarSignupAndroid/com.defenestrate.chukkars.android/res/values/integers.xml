@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="chukkar_slider_track_inner_radius_ratio">3</integer>
+    
+    <integer name="short_vibrate_time">15</integer>
+    <integer name="medium_vibrate_time">55</integer>
+    <integer name="long_vibrate_time">100</integer>
 </resources>

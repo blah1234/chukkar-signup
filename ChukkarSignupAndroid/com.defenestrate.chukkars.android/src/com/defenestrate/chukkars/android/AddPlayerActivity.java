@@ -14,6 +14,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Typeface;
@@ -23,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -67,6 +69,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 	private int mInitNumChukkars = DEFAULT_INIT_NUM_CHUKKARS;
 	private boolean mIsCreateNewPlayer;
 	private String mEditPlayerId;
+	private Vibrator mVibrator;
 
 	static private int sSysStatusBarHeight = -1;
 
@@ -104,6 +107,8 @@ public class AddPlayerActivity extends ChukkarsActivity
         super.onCreate(savedInstanceState);
 
         overridePendingTransition(R.anim.drop_in, R.anim.hold);
+
+        mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
 
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -422,6 +427,10 @@ public class AddPlayerActivity extends ChukkarsActivity
 		String hourStr = Integer.toString(hour % 12);
 
 		if( !mChukkarsLabel.getText().equals(hourStr) ) {
+			if( mVibrator.hasVibrator() ) {
+				mVibrator.vibrate( getResources().getInteger(R.integer.medium_vibrate_time) );
+			}
+
 			mChukkarsLabel.setText(hourStr);
 		}
 	}
