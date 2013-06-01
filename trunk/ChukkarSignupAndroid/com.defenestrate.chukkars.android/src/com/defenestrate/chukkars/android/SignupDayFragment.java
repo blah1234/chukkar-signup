@@ -586,6 +586,9 @@ public class SignupDayFragment extends FancyScrollListFragment
 		i.putExtra( COVER_ART_KEY, getAssignedCoverArtId() );
 		i.putExtra(TITLE_RES_KEY, R.string.menu_add);
 
+		//prevent 2 activities from being displayed if the "add button" is accidentally pressed twice
+		i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
 		startActivityForResult(i, R.id.get_server_data_request);
 	}
 
