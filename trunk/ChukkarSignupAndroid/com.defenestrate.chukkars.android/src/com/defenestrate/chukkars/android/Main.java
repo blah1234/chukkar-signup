@@ -22,9 +22,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,6 +38,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.defenestrate.chukkars.android.entity.Day;
+import com.defenestrate.chukkars.android.receiver.NetworkStateReceiver;
 import com.defenestrate.chukkars.android.util.Constants;
 import com.defenestrate.chukkars.android.util.HttpUtil;
 import com.defenestrate.chukkars.android.util.PropertiesUtil;
@@ -58,6 +61,8 @@ public class Main extends ViewPagerActivity
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setBroadcastReceiversEnabled(true);
 
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -129,6 +134,17 @@ public class Main extends ViewPagerActivity
 
 		//clear out cached data for players, their requested days and chukkars
 		resetCachedPlayerSignups();
+		setBroadcastReceiversEnabled(false);
+	}
+
+	private void setBroadcastReceiversEnabled(boolean isEnabled) {
+		int flag = isEnabled ?
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+		ComponentName component = new ComponentName(this, NetworkStateReceiver.class);
+
+		getPackageManager().setComponentEnabledSetting(
+			component, flag, PackageManager.DONT_KILL_APP);
 	}
 
 	private void resetAllCachedData()
