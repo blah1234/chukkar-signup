@@ -62,8 +62,6 @@ public class Main extends ViewPagerActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setBroadcastReceiversEnabled(true);
-
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
@@ -97,6 +95,7 @@ public class Main extends ViewPagerActivity
 	protected void onStart() {
 		super.onStart();
 
+		setBroadcastReceiversEnabled(true);
 		initPages( HttpUtil.hasDataConnection(this) );
 	}
 
@@ -129,12 +128,18 @@ public class Main extends ViewPagerActivity
 	}
 
 	@Override
+	protected void onStop() {
+		super.onStop();
+
+		setBroadcastReceiversEnabled(false);
+	}
+
+	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 
 		//clear out cached data for players, their requested days and chukkars
 		resetCachedPlayerSignups();
-		setBroadcastReceiversEnabled(false);
 	}
 
 	private void setBroadcastReceiversEnabled(boolean isEnabled) {
