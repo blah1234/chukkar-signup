@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- A list header row (first row, not part of the list content). -->
+
+<!--
+Use a FrameLayout to have the highlight background cover the entire row,
+while using a single TextView with a right composite drawable to show the 
+header's label and icon.
+ -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:focusable="true"
+    android:clickable="true"
+    android:background="@drawable/actionbar_btn_background"
+>
+	<TextView
+	    android:id="@+id/label"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:gravity="left"
+	    android:layout_gravity="center"
+	    android:alpha=".5"
+	    style="@style/Label.Medium.ListItem.Header"
+	/>
+</FrameLayout>

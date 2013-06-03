@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- The margin and background attribs are a trick to display horizontal dividers in a table layout -->
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/player_table_row"
+	
+	android:layout_marginBottom="1dip"
+	android:background="@drawable/signup_table_row"
+	android:focusable="true"
+	android:focusableInTouchMode="true"
+	
+	android:paddingTop="11dip"
+	android:paddingBottom="11dip">
+	
+	<TextView
+		android:id="@+id/player_id_col"
+    	android:text="" />
+	<TextView
+		android:id="@+id/player_time_col"
+    	android:text=""
+    	android:textColor="@android:color/darker_gray"
+    	android:textStyle="italic"
+        android:paddingLeft="3dip"
+        android:paddingRight="3dip" />
+	<TextView
+		android:id="@+id/player_name_col"
+    	android:text=""
+    	android:textColor="@android:color/white"
+    	android:textAppearance="@style/TableRowText"
+        android:paddingLeft="3dip"
+        android:paddingRight="3dip" />
+	<TextView
+		android:id="@+id/player_chukkars_col"
+    	android:text=""
+    	android:textColor="@android:color/white"
+    	android:textAppearance="@style/TableRowText"
+        android:gravity="right"
+        android:paddingLeft="3dip"
+        android:paddingRight="3dip" />
+</TableRow>
