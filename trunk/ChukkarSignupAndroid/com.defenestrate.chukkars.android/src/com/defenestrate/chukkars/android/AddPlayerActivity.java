@@ -489,7 +489,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 					//http post
 					HttpClient httpclient = new DefaultHttpClient();
-					HttpPost post = new HttpPost( PropertiesUtil.getURLProperty(getResources(), "add_player_url") );
+					HttpPost post = new HttpPost( PropertiesUtil.getURLProperty(getResources(), ADD_PLAYER_URL_KEY) );
 
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 					nameValuePairs.add( new BasicNameValuePair(PLAYER_REQUESTDAY_FIELD, selectedDayArg) );
@@ -564,7 +564,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 					//http post
 					HttpClient httpclient = new DefaultHttpClient();
-					HttpPost post = new HttpPost( PropertiesUtil.getURLProperty(getResources(), "edit_chukkars_url") );
+					HttpPost post = new HttpPost( PropertiesUtil.getURLProperty(getResources(), EDIT_CHUKKARS_URL_KEY) );
 
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 					nameValuePairs.add( new BasicNameValuePair(PLAYER_ID_FIELD, playerIdArg) );
