@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:background="@color/background"
+>
+<!-- make the backing linear layout clickable, so touch events aren't inadvertantly sent to the list below this floating selector -->
+    <FrameLayout
+        android:id="@+id/song_list_options"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+    >
+        <ImageView
+            android:id="@+id/cover_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="matrix"
+            android:layout_gravity="bottom"
+        />
+        
+        <FrameLayout 
+        	android:layout_width="match_parent"
+        	android:layout_height="wrap_content"
+        	android:layout_gravity="bottom"
+       	>
+            <include layout="@layout/signup_header_buttons" />
+        </FrameLayout>
+
+    </FrameLayout>
+	
+    <!-- TODO add shadow. -->
+    <include layout="@layout/floating_view_shadow"/>
+
+</LinearLayout>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<style name="AppTheme" parent="@android:Theme.Holo.Light"/>
+	 
+    <!-- Text style for the table header -->
+    <style name="TableHeaderText" parent="@android:style/TextAppearance.Small">
+        <item name="android:textStyle">italic</item>
+    </style>
+
+    <!-- Text style for the table rows -->
+    <style name="TableRowText" parent="@android:style/TextAppearance.Medium">
+    	<item name="android:textStyle">bold</item>
+    </style>
+    
+    
+    <style name="Label.Medium" parent="@android:TextAppearance.DeviceDefault.Medium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/label</item>
+    </style>
+    
+    <style name="Label.Medium.More" parent="@android:TextAppearance.DeviceDefault.Medium">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/label2</item>
+    </style>
+    
+    <style name="Label.Medium.ListItem">
+        <item name="android:textSize">21sp</item>
+        <item name="android:textColor">@color/label</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:minHeight">22dp</item>
+    </style>
+    
+    <style name="Label.Medium.Button">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:padding">8dp</item>
+    </style>
+    
+    <style name="Label.Medium.ListItem.Header" parent="@style/Label.Medium.ListItem">
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <style name="Label.Small" parent="@android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/label</item>
+    </style>
+    
+    <!-- Assume Label.Small.ListItem is for the secondary label, so we add the required margin above it. -->
+    <style name="Label.Small.ListItem">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/label2</item>
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:minHeight">17dp</item>
+        <item name="android:layout_marginTop">@dimen/list_item_margin_between_labels</item>
+    </style>
+    
+    <style name="Label.XLarge" parent="@android:TextAppearance.DeviceDefault.Large">
+        <item name="android:textSize">40sp</item>
+        <item name="android:textColor">@color/label</item>
+    </style>
+    
+    <style name="Label.Large" parent="@android:TextAppearance.DeviceDefault.Large">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@color/label</item>
+    </style>
+    
+    <style name="Label.Subtitle" parent="@style/Label.Medium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">marquee</item>
+    </style>
+    
+    <style name="networkError">
+        <item name="android:textSize">19sp</item>
+        <item name="android:textColor">#303030</item>
+    </style>
+    
+    <style name="List" parent="@android:style/Widget.DeviceDefault.Light.ListView">
+        <item name="android:cacheColorHint">@color/background</item>
+        <item name="android:divider">@drawable/divider</item>
+        <item name="android:dividerHeight">@dimen/divider_height</item>
+        <item name="android:fastScrollEnabled">true</item>
+        <item name="android:splitMotionEvents">false</item>
+    </style>
+
+</resources>

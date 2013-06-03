@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Shared layout among different list item layouts, such as My Music->Playlists. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <FrameLayout
+		android:id="@+id/icon_layout"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+    >
+
+		<ImageSwitcher
+		    android:id="@+id/icon"
+		    android:layout_width="@dimen/list_item_primary_icon_max_width"
+		    android:layout_height="@dimen/list_item_primary_icon_max_height"
+		    android:layout_marginRight="@dimen/list_item_margin_between_icon_and_labels"
+		    android:layout_gravity="center_vertical"
+		    android:visibility="gone"
+		/>
+	
+		<ImageView
+		    android:id="@+id/mini_icon"
+		    android:layout_width="@dimen/list_item_mini_icon_width"
+		    android:layout_height="@dimen/list_item_mini_icon_height"
+		    android:layout_gravity="bottom"
+		    android:visibility="gone"
+		/>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+    >
+        <TextView
+            android:id="@+id/label1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Label.Medium.ListItem"
+        />
+        <TextView
+            android:id="@+id/label2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Label.Small.ListItem"
+            android:visibility="gone"
+        />
+    </LinearLayout>
+
+</merge>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/menu_cancel"
+          android:icon="@drawable/btn_delete_normal"
+          android:title="@string/button_cancel"
+          android:showAsAction="always" 
+    />
+    
+    <item android:id="@+id/menu_save"
+          android:icon="@drawable/btn_check_normal"
+          android:title="@string/button_save"
+          android:showAsAction="always" 
+    />
+</menu>

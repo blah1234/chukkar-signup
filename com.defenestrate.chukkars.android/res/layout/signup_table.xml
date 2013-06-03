@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+	
+	<!-- The background attrib is a trick to display dividers in a table layout -->
+	<TableLayout 
+		android:id="@+id/player_display_table"
+		android:background="#20FFFFFF"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:stretchColumns="1,2,3"
+	    android:shrinkColumns="2"
+	    android:collapseColumns="0">
+	
+	    <TableRow android:id="@+id/player_table_header_row">
+	    	<TextView
+	            android:text="" />
+	        <TextView
+	            android:text="@string/time_col_header"
+	            android:textAppearance="@style/TableHeaderText"
+	            android:textColor="@android:color/white"
+	            android:background="@color/col_header_background"
+	            android:padding="3dip" />
+	        <TextView
+	            android:text="@string/name_col_header"
+	            android:textAppearance="@style/TableHeaderText"
+	            android:textColor="@android:color/white"
+	            android:background="@color/col_header_background"
+	            android:padding="3dip" />
+	        <TextView
+	            android:text="@string/chukkars_col_header"
+	            android:textAppearance="@style/TableHeaderText"
+	            android:textColor="@android:color/white"
+	            android:background="@color/col_header_background"
+	            android:gravity="right"
+	            android:padding="3dip" />
+	    </TableRow>
+	</TableLayout>
+</ScrollView>

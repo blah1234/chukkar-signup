@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Color state list for Search Clear button -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- disabled -->
+    <item android:state_enabled="false"
+       android:color="#FFD8D8D8"/>
+    <!-- pressed -->
+    <item android:state_pressed="true"
+       android:color="#FFFFFFFF"/>
+    <!-- focused -->
+    <item android:state_focused="true"
+       android:color="#FFEBEBEB"/>
+    <!-- selected -->
+    <item android:state_selected="true"
+       android:color="#FFFFFFFF"/>
+    <!-- default -->
+   <item android:color="#FFEBEBEB"/>
+</selector>
