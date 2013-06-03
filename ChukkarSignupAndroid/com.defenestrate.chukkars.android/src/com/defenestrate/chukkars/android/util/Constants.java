@@ -18,6 +18,14 @@ public interface Constants {
 	String TITLE_RES_KEY = "TITLE_RES_KEY";
 	String HAS_NETWORK_CONNECTIVITY_KEY = "HAS_NETWORK_CONNECTIVITY_KEY";
 
+	//keys for the server urls to query
+	String ADD_PLAYER_URL_KEY = "add_player_url";
+	String EDIT_CHUKKARS_URL_KEY = "edit_chukkars_url";
+	String QUERY_RESET_URL_KEY = "query_reset_url";
+	String GET_ACTIVE_DAYS_URL_KEY = "get_active_days_url";
+	String GET_PLAYERS_URL_KEY = "get_players_url";
+
+	//fields in the server-returned JSON reply
     String TOTALS_LIST_FIELD = "_totalsList";
     String PLAYERS_LIST_FIELD ="_playersList";
     String CURR_PLAYER_PERSISTED_FIELD = "_currPersisted";
