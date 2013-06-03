@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- Global background color. -->
+    <color name="background">#ffE6E6E6</color>
+    
+    <!-- The default color of a text label. -->
+    <color name="label">#FF303030</color>
+    
+	<color name="col_header_background">#2062B8</color>
+	
+	<!-- The start gradient color of an active (pressed) row. -->
+    <color name="list_row_active_start">#ff486c8e</color>
+
+    <!-- The end gradient color of an active (pressed) row. -->
+    <color name="list_row_active_end">#ff233342</color>
+    
+    <!-- The start gradient color of an focused (highlighted) row. -->
+    <color name="list_row_focus_start">#ff313131</color>
+
+    <!-- The end gradient color of an focused (highlighted) row. -->
+    <color name="list_row_focus_end">#ff313131</color>
+
+    <!-- Background color of Page index cue. opacity is 80% -->
+    <color name="page_index_cue_background">#ccffffff</color>	
+    
+    <!-- The default color of a secondary text label. -->
+    <color name="label2">#FF646464</color>
+    
+    <!-- Artist detail song list Label2 color -->
+    <color name="songs_header_buttons_lower_labels_background">#80111111</color>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <style name="CircleButtonDefaults">
+        <item name="width">@dimen/circle_button_width</item>
+        <item name="height">@dimen/circle_button_height</item>
+        <item name="textMiddle"></item>
+        <item name="textTop"></item>
+        <item name="textBottomLeft"></item>
+        <item name="textBottomRight"></item>
+        <item name="textStartAngleTop">180.0</item>
+        <item name="textStartAngleBottomLeft">180.0</item>
+        <item name="textStartAngleBottomRight">80.0</item>
+        <item name="textSweepAngleTop">180.0</item>
+        <item name="textSweepAngleBottomLeft">-100.0</item>
+        <item name="textSweepAngleBottomRight">-80.0</item>
+        <item name="textSizeMiddle">15.0sp</item>
+        <item name="textSizeTop">12.0sp</item>
+        <item name="textSizeBottomLeft">12.0sp</item>
+        <item name="textSizeBottomRight">12.0sp</item>
+        <item name="textColorMiddle">#FF999999</item>
+        <item name="textColorTop">#FFEEEEEE</item>
+        <item name="textColorBottomLeft">#FFAAAAAA</item>
+        <item name="textColorBottomRight">#FFEEEEEE</item>
+        <item name="isTextBoldMiddle">false</item>
+        <item name="isTextBoldTop">false</item>
+        <item name="isTextBoldBottomLeft">false</item>
+        <item name="isTextBoldBottomRight">true</item>
+        <item name="textOffsetMiddle">0.0dp</item>
+        <item name="textOffsetTop">3.0dp</item>
+        <item name="textOffsetBottomLeft">4.0dp</item>
+        <item name="textOffsetBottomRight">4.0dp</item>
+        <item name="textAlignMiddle">center</item>
+        <item name="textAlignTop">center</item>
+        <item name="textAlignBottomLeft">right</item>
+        <item name="textAlignBottomRight">left</item>
+    </style>
+</resources>

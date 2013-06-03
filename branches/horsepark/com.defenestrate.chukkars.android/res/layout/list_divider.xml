@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- List item layout to show a song. (Shared by multiple container layout xmls) -->
+<RelativeLayout xmlns:app="http://schemas.android.com/apk/res/com.samsung.music"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/relativeLayout1" >
+
+    <!-- app:split=" " to bold the first word. -->
+
+    <TextView
+        android:id="@+id/label1"
+        style="@style/Label.Medium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|center"
+        android:paddingLeft="@dimen/list_item_padding_left"
+        android:paddingTop="14dp"
+        android:layout_marginBottom="@dimen/list_item_radio_grid_padding_bottom"
+         />
+
+    
+    <TextView
+        android:id="@+id/label2"
+        style="@style/Label.Medium.More"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|bottom"
+        android:layout_alignParentRight="true"
+        android:layout_alignBaseline="@+id/label1"
+        android:drawablePadding="@dimen/list_item_radio_grid_padding_bottom"
+        android:paddingRight="@dimen/list_divider_padding"
+        android:paddingTop="14dp"
+        android:visibility="gone"
+         />
+
+    <ImageView
+        android:id="@+id/divider1"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/divider_height"
+        android:scaleType="fitXY"
+        android:src="@drawable/divider"
+        android:layout_below="@+id/label1" >
+    </ImageView>
+    
+    <TextView
+        android:id="@+id/below_divider_label"
+        style="@style/Label.Small.ListItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/list_item_padding_top"
+        android:paddingBottom="@dimen/last_list_item_padding_bottom"
+        android:paddingLeft="@dimen/list_item_padding_left"
+        android:paddingRight="@dimen/list_divider_padding"
+        android:layout_below="@+id/divider1"
+        android:visibility="gone"
+    />
+
+</RelativeLayout>

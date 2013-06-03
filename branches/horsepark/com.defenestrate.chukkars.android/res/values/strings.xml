@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HPPC Chukkars</string>
+    <string name="time_col_header">Time</string>
+    <string name="name_col_header">Name</string>
+    <string name="chukkars_col_header">Chukkars</string>
+    
+    <string name="load_dialog_message">Loading. Please wait&#8230;</string>
+    
+    <string name="tab_title">({0} game chukkars)</string>
+    
+    <string name="menu_add">Sign up</string>
+    <string name="menu_edit">Make a change</string>
+    <string name="options">More</string>
+    <string name="refresh">Refresh</string>
+    <string name="button_save">Save</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="edit_chukkars_warning">"You''ve previously only created or edited:\n{0}\nDon''t be evil&#8230;"</string>
+    
+    <string name="server_connect_error">Unable to connect to server. Please try again later when network or wifi reception is better.</string>
+    <string name="unexpected_json_error">Unexpected response format from server. Most likely a careless bug. Contact Shawn.</string>
+    <string name="open_data_file_error">Unable to open data file. Try uninstalling, then re-installing this app.</string>
+    <string name="incorrect_app_state_error">Application got itself in an incorrect state. Most likely a careless bug. Contact Shawn.</string>
+    
+    <string name="signup_closed">Too late! Signup is closed.</string>
+    <string name="blank_name">Name can\'t be blank.</string>
+    
+    <string name="error_no_data_connection">Unable to connect to the network.\nPlease check network settings\nand try again.</string>
+    <string name="loading">Loading&#8230;</string>
+    <string name="error_loading">This page cannot be displayed. Try again later.</string>
+    <string name="unable_to_display">Unable to display this page</string>
+    
+    <string name="empty_signup_message">No one signed up yet.\nBe the first.</string>
+    <string name="circle_button_top_text">Sign up for</string>
+    <string name="circle_button_bottom_text">Chukkars</string>
+    <string name="game_day_loading">Loading game day&#8230;</string>
+    <string name="game_chukkars_loading">Calculating total game chukkars&#8230;</string>
+    
+    <!-- Don't translate! -->
+    <string name="launch_app_http_host">horsepark.signup</string>
+</resources>
