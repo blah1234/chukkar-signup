@@ -104,7 +104,9 @@ public class Main extends ViewPagerActivity
 		super.onNewIntent(intent);
 
 		if( intent.hasExtra(HAS_NETWORK_CONNECTIVITY_KEY) ) {
-			initPages( intent.getBooleanExtra(HAS_NETWORK_CONNECTIVITY_KEY, true) );
+			refreshApp( intent.getBooleanExtra(HAS_NETWORK_CONNECTIVITY_KEY, true) );
+		} else if( getString(R.string.launch_app_http_host).equals(intent.getData().getHost()) ) {
+			refreshApp( HttpUtil.hasDataConnection(this) );
 		}
 	}
 
@@ -241,7 +243,7 @@ public class Main extends ViewPagerActivity
 		{
 			//http get
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), "query_reset_url") );
+			HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), QUERY_RESET_URL_KEY) );
 			HttpResponse response = httpclient.execute(get);
 
 			HttpEntity entity = response.getEntity();
@@ -417,7 +419,7 @@ public class Main extends ViewPagerActivity
 		{
 			//http get
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), "get_active_days_url") );
+			HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), GET_ACTIVE_DAYS_URL_KEY) );
 			HttpResponse response = httpclient.execute(get);
 
 			HttpEntity entity = response.getEntity();
@@ -512,13 +514,17 @@ public class Main extends ViewPagerActivity
     public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.refresh:
-			mHasNewData = true;
-			resetAllCachedData();
-			initPages( HttpUtil.hasDataConnection(this) );
+			refreshApp( HttpUtil.hasDataConnection(this) );
 			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void refreshApp(boolean hasDataConnection) {
+		mHasNewData = true;
+		resetAllCachedData();
+		initPages(hasDataConnection);
 	}
 }
