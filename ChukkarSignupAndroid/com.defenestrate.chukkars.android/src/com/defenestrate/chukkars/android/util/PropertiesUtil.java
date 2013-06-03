@@ -16,6 +16,26 @@ public class PropertiesUtil {
 
 
 	static public String getURLProperty(Resources res, String key) {
+		lazyInit(res);
+
+		if(mAppProps != null && mAppProps.containsKey(key)) {
+			return mAppProps.getProperty("base_url") + mAppProps.getProperty(key);
+		} else {
+			return null;
+		}
+	}
+
+	static public String getProperty(Resources res, String key) {
+		lazyInit(res);
+
+		if(mAppProps != null && mAppProps.containsKey(key)) {
+			return mAppProps.getProperty(key);
+		} else {
+			return null;
+		}
+	}
+
+	static private void lazyInit(Resources res) {
 		if(mAppProps == null) {
 			AssetManager assetMgr = res.getAssets();
 
@@ -27,12 +47,6 @@ public class PropertiesUtil {
 			} catch (IOException e) {
 			    Log.e(LOG_TAG, "Unable to load " + APP_PROPS_FILE + ": " + e.getMessage(), e);
 			}
-		}
-
-		if(mAppProps != null && mAppProps.containsKey(key)) {
-			return mAppProps.getProperty("base_url") + mAppProps.getProperty(key);
-		} else {
-			return null;
 		}
 	}
 }
