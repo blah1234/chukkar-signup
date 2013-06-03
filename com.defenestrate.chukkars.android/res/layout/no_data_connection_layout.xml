@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/no_data_connection"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+  	android:clickable="true"
+    android:background="@color/background">
+    <!-- to avoid deliver click event to hidden layout, we should consume click event, so define clickable as true  -->
+    
+    <View 
+	    android:id="@+id/middle_of_screen"
+	    android:layout_height="1dp"
+	    android:layout_width="wrap_content"
+	    android:layout_centerInParent="true"
+	    />
+    	
+	<TextView 
+		android:id="@+id/txt_no_data_connection"
+	    android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="16dp"
+		android:layout_marginRight="16dp"
+		android:layout_below="@id/middle_of_screen"
+		android:text="@string/error_no_data_connection"
+	 	style="@style/networkError"
+	 	android:gravity="center"
+	    />   
+
+    <ImageView 
+        android:id="@+id/img_no_data_connection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/no_data_connection"
+        android:layout_above="@id/middle_of_screen"
+        android:layout_centerHorizontal="true"	
+        />	
+
+</RelativeLayout>
+
