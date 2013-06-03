@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">HPPC Chukkars</string>
+    <string name="app_name">MPC Chukkars</string>
     <string name="time_col_header">Time</string>
     <string name="name_col_header">Name</string>
     <string name="chukkars_col_header">Chukkars</string>
@@ -37,5 +37,5 @@
     <string name="game_chukkars_loading">Calculating total game chukkars&#8230;</string>
     
     <!-- Don't translate! -->
-    <string name="launch_app_http_host">horsepark.signup</string>
+    <string name="launch_app_http_host">menlo.signup</string>
 </resources>
