@@ -265,7 +265,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 				{
 					//http get
 					HttpClient httpclient = new DefaultHttpClient();
-					HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), "get_players_url") );
+					HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), GET_PLAYERS_URL_KEY) );
 					HttpResponse response = httpclient.execute(get);
 
 					if( !isCancelled() ) {
