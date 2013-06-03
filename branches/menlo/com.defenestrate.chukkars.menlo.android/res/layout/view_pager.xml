@@ -13,7 +13,7 @@
         android:layout_alignParentTop="true"
     />
     
-    <com.defenestrate.chukkars.android.widget.PageIndexer
+    <com.defenestrate.chukkars.menlo.android.widget.PageIndexer
         android:id="@+id/view_pager_indexer"
         android:layout_height="@dimen/view_pager_indexer_height"
         android:layout_width="match_parent"

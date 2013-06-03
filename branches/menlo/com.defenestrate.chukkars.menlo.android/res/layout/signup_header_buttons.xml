@@ -114,7 +114,7 @@
         android:orientation="horizontal"
         android:padding="15dp" >
 
-        <com.defenestrate.chukkars.android.widget.CircleButton
+        <com.defenestrate.chukkars.menlo.android.widget.CircleButton
             android:id="@+id/circle"
             style="@style/CircleButtonDefaults"
             android:layout_width="wrap_content"
