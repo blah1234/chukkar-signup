@@ -47,6 +47,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.defenestrate.chukkars.android.SignupDayFragment.OnPlayerModificationListener.ModificationType;
 import com.defenestrate.chukkars.android.entity.Day;
 import com.defenestrate.chukkars.android.exception.SignupClosedException;
 import com.defenestrate.chukkars.android.util.Constants;
@@ -225,7 +226,25 @@ public class SignupDayFragment extends FancyScrollListFragment
 		return ret;
     }
 
-    @Override public void onDestroyView() {
+    @Override
+    public void onResume() {
+    	super.onResume();
+
+    	Bundle args = getArguments();
+
+    	if( args.getBoolean(SCROLL_TO_END_KEY, false) ) {
+    		mListView.post(new Runnable() {
+    			public void run() {
+    				mListView.setSelection(mListView.getCount() - 1);
+    			}
+    		});
+
+    		args.remove(SCROLL_TO_END_KEY);
+    	}
+    }
+
+    @Override
+    public void onDestroyView() {
     	super.onDestroyView();
 
     	mViewDestroyed = true;
@@ -624,7 +643,11 @@ public class SignupDayFragment extends FancyScrollListFragment
 				mCallback.onPlayerModificationCancel();
 			} else if(resultCode == Activity.RESULT_OK) {
 				Day selectedDay = (Day)data.getSerializableExtra(SELECTED_DAY_KEY);
-				mCallback.onPlayerModificationSave(selectedDay);
+				boolean isCreateNewPlayer = data.getBooleanExtra(IS_ADD_PLAYER_KEY, false);
+
+				mCallback.onPlayerModificationSave(
+					selectedDay,
+					isCreateNewPlayer ? ModificationType.PLAYER_ADDED : ModificationType.PLAYER_EDITED);
 			} else {
 				throw new IllegalArgumentException("result code (" + resultCode + ") not recognized for request R.id.get_server_data_request");
 			}
@@ -644,11 +667,17 @@ public class SignupDayFragment extends FancyScrollListFragment
 
 	//////////////////////////// INNER CLASSES /////////////////////////////////
 	public interface OnPlayerModificationListener {
+		public enum ModificationType {
+			PLAYER_ADDED,
+			PLAYER_EDITED
+		}
+
 		/**
 		 * Notifies the listener that a player modification has been saved
 		 * @param selectedDay Day that the modified player signed up for
+		 * @param modType the type of modification that took place
 		 */
-		void onPlayerModificationSave(Day selectedDay);
+		void onPlayerModificationSave(Day selectedDay, ModificationType modType);
 
 		/** Notifies the listener that a player modification has been canceled */
 		void onPlayerModificationCancel();
