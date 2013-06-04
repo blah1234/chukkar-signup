@@ -15,6 +15,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.defenestrate.chukkars.menlo.android.exception.PlayerNotFoundException;
 import com.defenestrate.chukkars.menlo.android.exception.SignupClosedException;
 
 public class HttpUtil implements Constants {
@@ -28,10 +29,13 @@ public class HttpUtil implements Constants {
 	 * Jan. 1, 1970, midnight GMT.
 	 * @throws SignupClosedException if the signup for the particular day
 	 * requested of the server is closed
+	 * @throws PlayerNotFoundException if request to the server was to edit a
+	 * player that no longer exists
 	 * @throws IOException if an error occurred while attempting to read the
 	 * returned server response
 	 */
-	static public long writeServerData(HttpResponse response, Context ctx) throws SignupClosedException, IOException
+	static public long writeServerData(HttpResponse response, Context ctx)
+		throws SignupClosedException, PlayerNotFoundException, IOException
 	{
 		InputStream is = null;
 
@@ -55,6 +59,10 @@ public class HttpUtil implements Constants {
 	    	if( SIGNUP_CLOSED.equals(result.trim()) )
 	    	{
 	    		throw new SignupClosedException();
+	    	}
+	    	else if( PLAYER_NOT_FOUND.equals(result.trim()) )
+	    	{
+	    		throw new PlayerNotFoundException();
 	    	}
 
 	    	//write json data to preferences

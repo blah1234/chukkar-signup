@@ -90,11 +90,26 @@ public class Main extends ViewPagerActivity
 		if(modType == ModificationType.PLAYER_ADDED) {
 			mScrollToEnd = true;
 		}
+
+		//onStart() will then load new data, page to the initialVisibleDay, and
+		//scroll signup list to the end, as appropriate
 	}
 
 	@Override
 	public void onPlayerModificationCancel() {
 		mHasNewData = false;
+
+		//onStart() will be called, but hasNewData will bypass loading of new data
+	}
+
+	@Override
+	public void onPlayerModificationCancelAndRequestRefresh(Day selectedDay) {
+		mHasNewData = true;
+		mInitialVisibleDay = selectedDay;
+
+		resetAllCachedData();
+
+		//onStart() will then load new data and page to the initialVisibleDay
 	}
 
 	@Override
