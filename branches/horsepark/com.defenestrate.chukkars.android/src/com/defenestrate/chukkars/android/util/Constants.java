@@ -17,6 +17,8 @@ public interface Constants {
 	String NUM_CHUKKARS_KEY = "NUM_CHUKKARS_KEY";
 	String TITLE_RES_KEY = "TITLE_RES_KEY";
 	String HAS_NETWORK_CONNECTIVITY_KEY = "HAS_NETWORK_CONNECTIVITY_KEY";
+	String SCROLL_TO_END_KEY = "SCROLL_TO_END_KEY";
+	String IS_ADD_PLAYER_KEY = "IS_ADD_PLAYER_KEY";
 
 	//keys for the server urls to query
 	String ADD_PLAYER_URL_KEY = "add_player_url";
