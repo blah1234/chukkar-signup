@@ -49,6 +49,7 @@ import android.widget.Toast;
 
 import com.defenestrate.chukkars.menlo.android.SignupDayFragment.OnPlayerModificationListener.ModificationType;
 import com.defenestrate.chukkars.menlo.android.entity.Day;
+import com.defenestrate.chukkars.menlo.android.exception.PlayerNotFoundException;
 import com.defenestrate.chukkars.menlo.android.exception.SignupClosedException;
 import com.defenestrate.chukkars.menlo.android.util.Constants;
 import com.defenestrate.chukkars.menlo.android.util.HttpUtil;
@@ -313,6 +314,16 @@ public class SignupDayFragment extends FancyScrollListFragment
 					//in case
 					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
 			    	msg.arg1 = R.string.signup_closed;
+					_errHandler.sendMessage(msg);
+
+					return null;
+				}
+				catch(PlayerNotFoundException e)
+				{
+					//will never happen, but show error toast on GUI thread just
+					//in case
+					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+			    	msg.arg1 = R.string.player_not_found;
 					_errHandler.sendMessage(msg);
 
 					return null;
@@ -640,7 +651,12 @@ public class SignupDayFragment extends FancyScrollListFragment
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if(requestCode == R.id.get_server_data_request) {
 			if(resultCode == Activity.RESULT_CANCELED) {
-				mCallback.onPlayerModificationCancel();
+				if(data == null) {
+					mCallback.onPlayerModificationCancel();
+				} else {
+					Day selectedDay = (Day)data.getSerializableExtra(SELECTED_DAY_KEY);
+					mCallback.onPlayerModificationCancelAndRequestRefresh(selectedDay);
+				}
 			} else if(resultCode == Activity.RESULT_OK) {
 				Day selectedDay = (Day)data.getSerializableExtra(SELECTED_DAY_KEY);
 				boolean isCreateNewPlayer = data.getBooleanExtra(IS_ADD_PLAYER_KEY, false);
@@ -674,12 +690,19 @@ public class SignupDayFragment extends FancyScrollListFragment
 
 		/**
 		 * Notifies the listener that a player modification has been saved
-		 * @param selectedDay Day that the modified player signed up for
+		 * @param selectedDay game Day that the modified player was signed up for
 		 * @param modType the type of modification that took place
 		 */
 		void onPlayerModificationSave(Day selectedDay, ModificationType modType);
 
 		/** Notifies the listener that a player modification has been canceled */
 		void onPlayerModificationCancel();
+
+		/**
+		 * Notifies the listener that a player modification has been canceled
+		 * and that the listener should refresh its state
+		 * @param selectedDay game Day that the modified player was signed up for
+		 */
+		void onPlayerModificationCancelAndRequestRefresh(Day selectedDay);
 	}
 }
