@@ -43,6 +43,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -63,7 +64,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
 	private static final String LOG_TAG = "SignupDayFragment";
-	static private final int MAX_NUM_COVER_ART = 5;
+	static private final int MAX_NUM_COVER_ART = 6;
 
 
 	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
@@ -193,6 +194,18 @@ public class SignupDayFragment extends FancyScrollListFragment
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     	View ret = super.onCreateView(inflater, container, savedInstanceState);
+
+    	ret.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+
+			@Override
+			public void onGlobalLayout() {
+				if(mListAdapter instanceof FancyScrollSignupDayListAdapter) {
+					//Needed in case fragment is restored from a previously saved
+					//state, where the floating view is visible
+					((FancyScrollSignupDayListAdapter)mListAdapter).initAndDisplayFloatingView();
+				}
+			}
+		});
 
     	SharedPreferences settings = getActivity().getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
         String data = settings.getString(CONTENT_KEY, null);

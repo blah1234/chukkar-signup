@@ -2,14 +2,10 @@ package com.defenestrate.chukkars.menlo.android.widget;
 
 import java.util.Set;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.defenestrate.chukkars.menlo.android.R;
-import com.defenestrate.chukkars.menlo.android.ViewPagerActivity;
 import com.defenestrate.chukkars.menlo.android.widget.FancyScrollListAdapter.FancyScrollListSubadapter.FancyScrollListSubadapterCallback;
 
 
@@ -120,7 +115,6 @@ abstract public class FancyScrollSignupDayListAdapter extends FancyScrollSingleL
     private Bundle mArgs;
     private Drawable mFetchedCoverArt;
     final private FancyScrollListSubadapterCallback mParent;
-    final private OnPageChangeListener mOnPageChangeLstnr;
     boolean mIsStaticHeaderInitialized = false;
     boolean mIsFloatingHeaderInitialized = false;
 
@@ -140,35 +134,6 @@ abstract public class FancyScrollSignupDayListAdapter extends FancyScrollSingleL
 
 		mArgs = (args != null) ? args : new Bundle();
 		mParent = parent;
-		final Activity mhActivity = mParent.getActivity();
-
-		if(mhActivity instanceof ViewPagerActivity) {
-    		mOnPageChangeLstnr = new ViewPager.SimpleOnPageChangeListener() {
-            	public void onPageSelected(int position) {
-            		Fragment selectedPage = ( (ViewPagerActivity)mhActivity ).getPage(position);
-
-            		if(selectedPage instanceof FancyScrollListSubadapterCallback) {
-	            		if( ((FancyScrollListSubadapterCallback)selectedPage).getDataId().equals(mParent.getDataId()) ) {
-	            			initFloatingCoverArt(mFetchedCoverArt);
-
-	            			//necessary for the floating view to get bounds on
-	            			//the header view in order to determine whether
-	            			//or not to display itself
-	            			if(getAttachedHeaderView() == null) {
-		            			initHeaderView( null, mParent.getListView() );
-	            			}
-
-	            			AbsListView view = mParent.getListView();
-    	            		displayFloatingView( mListContainer, view.getFirstVisiblePosition() );
-		        		}
-            		}
-            	}
-    		};
-
-            ( (ViewPagerActivity)mhActivity ).addOnPageChangeListener(mOnPageChangeLstnr);
-        } else {
-            mOnPageChangeLstnr = null;
-        }
 	}
 
 
@@ -216,19 +181,21 @@ abstract public class FancyScrollSignupDayListAdapter extends FancyScrollSingleL
         // Default does nothing
     }
 
-    /** {@inheritDoc} */
-    @Override public void onCreate() {
-    	super.onCreate();
-    }
+    /**
+     * Initializes view components and determines whether to display or hide the floating view
+     */
+    public void initAndDisplayFloatingView() {
+    	initFloatingCoverArt(mFetchedCoverArt);
 
-    /** {@inheritDoc} */
-    @Override public void onDestroy() {
-    	super.onDestroy();
+		//necessary for the floating view to get bounds on
+		//the header view in order to determine whether
+		//or not to display itself
+		if(getAttachedHeaderView() == null) {
+			initHeaderView( null, mParent.getListView() );
+		}
 
-    	if( (mOnPageChangeLstnr != null) &&
-    		(mParent.getActivity() instanceof ViewPagerActivity) ) {
-    		( (ViewPagerActivity)mParent.getActivity() ).removeOnPageChangeListener(mOnPageChangeLstnr);
-    	}
+		AbsListView view = mParent.getListView();
+		displayFloatingView( mListContainer, view.getFirstVisiblePosition() );
     }
 
 	/** {@inheritDoc} */
