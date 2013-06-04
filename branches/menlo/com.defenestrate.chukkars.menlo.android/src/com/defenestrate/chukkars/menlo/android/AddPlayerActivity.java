@@ -121,7 +121,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 
         mSelectedDay = (Day)getIntent().getSerializableExtra(SIGNUP_DAY_KEY);
 
-        int coverArtRes = getIntent().getIntExtra(COVER_ART_KEY, R.drawable.cover10);
+        int coverArtRes = getIntent().getIntExtra(COVER_ART_KEY, R.drawable.cover3);
         ImageView backgroundImage = (ImageView)findViewById(R.id.background);
         backgroundImage.setImageDrawable( getResources().getDrawable(coverArtRes) );
 
