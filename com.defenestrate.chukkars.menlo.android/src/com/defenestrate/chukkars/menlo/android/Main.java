@@ -55,6 +55,7 @@ public class Main extends ViewPagerActivity
 	private Handler mHandler;
 	private boolean mHasNewData;
 	private Day mInitialVisibleDay;
+	private boolean mScrollToEnd;
 
 
 	//////////////////////////////// METHODS ///////////////////////////////////
@@ -75,15 +76,20 @@ public class Main extends ViewPagerActivity
         };
 
         mHasNewData = true;
+        mScrollToEnd = false;
 
         // Show the page indexer.
         setUsePagerIndexer(true);
 	}
 
 	@Override
-	public void onPlayerModificationSave(Day selectedDay) {
+	public void onPlayerModificationSave(Day selectedDay, ModificationType modType) {
 		mHasNewData = true;
 		mInitialVisibleDay = selectedDay;
+
+		if(modType == ModificationType.PLAYER_ADDED) {
+			mScrollToEnd = true;
+		}
 	}
 
 	@Override
@@ -105,7 +111,7 @@ public class Main extends ViewPagerActivity
 
 		if( intent.hasExtra(HAS_NETWORK_CONNECTIVITY_KEY) ) {
 			refreshApp( intent.getBooleanExtra(HAS_NETWORK_CONNECTIVITY_KEY, true) );
-		} else if( getString(R.string.launch_app_http_host).equals(intent.getData().getHost()) ) {
+		} else if( (intent.getData() != null) && getString(R.string.launch_app_http_host).equals(intent.getData().getHost()) ) {
 			refreshApp( HttpUtil.hasDataConnection(this) );
 		}
 	}
@@ -208,12 +214,18 @@ public class Main extends ViewPagerActivity
 		    		for(int i=0, n=activeDaysList.size(); i<n; i++) {
 		    			Day currDay = activeDaysList.get(i);
 
+		    			Bundle args = new Bundle();
+
 		    			if(currDay == mInitialVisibleDay) {
 		    				selectedPosition = i;
 		    				mInitialVisibleDay = null;
+
+		    				if(mScrollToEnd) {
+		    					args.putBoolean(SCROLL_TO_END_KEY, true);
+		    					mScrollToEnd = false;
+		    				}
 		    			}
 
-		    			Bundle args = new Bundle();
 		    			args.putString( SignupDayFragment.SIGNUP_DAY_KEY, currDay.name() );
 		    			args.putInt(SignupDayFragment.PAGE_INDEX_KEY, i);
 
