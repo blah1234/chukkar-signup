@@ -619,6 +619,7 @@ public class AddPlayerActivity extends ChukkarsActivity
     	if(signupDay != null) {
     		Intent i = new Intent();
     		i.putExtra(SELECTED_DAY_KEY, signupDay);
+    		i.putExtra(IS_ADD_PLAYER_KEY, mIsCreateNewPlayer);
 	    	setResult(RESULT_OK, i);
 
 	    	finish();
