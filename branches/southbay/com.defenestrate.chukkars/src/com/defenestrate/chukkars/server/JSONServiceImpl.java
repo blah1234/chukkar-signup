@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.defenestrate.chukkars.server.entity.CronTask;
+import com.defenestrate.chukkars.server.exception.PlayerNotFoundException;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
 import com.google.gson.Gson;
@@ -31,6 +32,7 @@ public class JSONServiceImpl extends HttpServlet
 	//////////////////////////////// CONSTANTS /////////////////////////////////
 	private static final Logger LOG = Logger.getLogger( JSONServiceImpl.class.getName() );
 	private static final String SIGNUP_CLOSED = "!!!SIGNUP_CLOSED!!!";
+	private static final String PLAYER_NOT_FOUND = "!!!PLAYER_NOT_FOUND!!!";
 
 
 	/////////////////////////// HttpServlet METHODS ////////////////////////////
@@ -163,6 +165,31 @@ public class JSONServiceImpl extends HttpServlet
 
 			Player addedPlayer = PlayerServiceImpl.addPlayerImpl(name, numChukkars, requestDay);
 			List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
+
+			//this is for the bug where getExtent() in getPlayersImpl()
+			//occasionally leaves out the newly added player
+			if(addedPlayer != null) {
+				if( !playersList.contains(addedPlayer) ) {
+					//sort in ascending chronological order
+					Comparator<Player> dateComp = new Comparator<Player>()
+					{
+						@Override
+						public int compare(Player o1, Player o2)
+						{
+							return o1.getCreateDate().compareTo( o2.getCreateDate() );
+						}
+					};
+
+					int index = Collections.binarySearch(playersList, addedPlayer, dateComp);
+
+					if(index < 0) {
+						//index = (-(insertion point) - 1);
+						int insertIndex = (index + 1) * -1;
+						playersList.add(insertIndex, addedPlayer);
+					}
+				}
+			}
+
 			List<DayTotal> totalsList = calculateGameChukkars(playersList);
 
 			TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, addedPlayer);
@@ -214,28 +241,39 @@ public class JSONServiceImpl extends HttpServlet
 	public void editChukkars(HttpServletRequest req, HttpServletResponse resp)
 	{
 		Long playerId = new Long( req.getParameter("_id") );
-		Player playerToEdit = PlayerServiceImpl.getPlayerImpl(playerId);
-		Map<Day, Date> closeDateMap = LayoutConfigServiceImpl.getSignupClosedImpl();
-		boolean isSignupClosed;
+		String respStr = null;
 
-		if( closeDateMap.containsKey(playerToEdit.getRequestDay()) )
-		{
-			Date closeDate = closeDateMap.get( playerToEdit.getRequestDay() );
-			Date now = new Date();
-			isSignupClosed = now.after(closeDate);
+		try {
+			Player playerToEdit = PlayerServiceImpl.getPlayerImpl(playerId);
+			Map<Day, Date> closeDateMap = LayoutConfigServiceImpl.getSignupClosedImpl();
+			boolean isSignupClosed;
+
+			if( closeDateMap.containsKey(playerToEdit.getRequestDay()) )
+			{
+				Date closeDate = closeDateMap.get( playerToEdit.getRequestDay() );
+				Date now = new Date();
+				isSignupClosed = now.after(closeDate);
+			}
+			else
+			{
+				isSignupClosed = false;
+				LOG.log(
+					Level.SEVERE,
+					playerToEdit.getRequestDay() + " could not be found in the closeDateMap. This should never happen! closeDateMap:\n" + closeDateMap,
+					new Throwable().fillInStackTrace() );
+			}
+
+
+			if(isSignupClosed) {
+				respStr = SIGNUP_CLOSED;
+			}
+		} catch(PlayerNotFoundException e) {
+			respStr = PLAYER_NOT_FOUND;
 		}
-		else
-		{
-			isSignupClosed = false;
-			LOG.log(
-				Level.SEVERE,
-				playerToEdit.getRequestDay() + " could not be found in the closeDateMap. This should never happen! closeDateMap:\n" + closeDateMap,
-				new Throwable().fillInStackTrace() );
-		}
 
-		String respStr;
 
-		if(!isSignupClosed)
+
+		if(respStr == null)
 		{
 			Integer numChukkars = new Integer( req.getParameter("_numChukkars") );
 
@@ -248,10 +286,6 @@ public class JSONServiceImpl extends HttpServlet
 			Gson gson = new Gson();
 			String json = gson.toJson(responseObj);
 			respStr = json;
-		}
-		else
-		{
-			respStr = SIGNUP_CLOSED;
 		}
 
 		resp.setContentType("text/plain;charset=UTF-8");
