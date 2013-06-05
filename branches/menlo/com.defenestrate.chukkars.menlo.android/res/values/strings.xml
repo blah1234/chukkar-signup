@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MPC Chukkars</string>
-    <string name="time_col_header">Time</string>
     <string name="name_col_header">Name</string>
     <string name="chukkars_col_header">Chukkars</string>
-    
-    <string name="load_dialog_message">Loading. Please wait&#8230;</string>
     
     <string name="tab_title">({0} game chukkars)</string>
     
@@ -15,11 +12,9 @@
     <string name="refresh">Refresh</string>
     <string name="button_save">Save</string>
     <string name="button_cancel">Cancel</string>
-    <string name="edit_chukkars_warning">"You''ve previously only created or edited:\n{0}\nDon''t be evil&#8230;"</string>
     
     <string name="server_connect_error">Unable to connect to server. Please try again later when network or wifi reception is better.</string>
     <string name="unexpected_json_error">Unexpected response format from server. Most likely a careless bug. Contact Shawn.</string>
-    <string name="open_data_file_error">Unable to open data file. Try uninstalling, then re-installing this app.</string>
     <string name="incorrect_app_state_error">Application got itself in an incorrect state. Most likely a careless bug. Contact Shawn.</string>
     
     <string name="signup_closed">Too late! Signup is closed.</string>
