@@ -1,8 +1,8 @@
 How to browse local Java App Engine datastore = http://localhost:8888/_ah/admin/
 
 Steps to deploy a new instance:
-0) CronServiceImpl.java, lines 579-582 (search for TODO). Change to which ever condition is appropriate.
-0.5) CronServiceImpl.java, lines 173 & 478. Change what time email should say cutoff is.  
+0) CronServiceImpl.java, lines 645-658 (search for TODO). Change to which ever condition is appropriate.
+0.5) CronServiceImpl.java, lines 173 & 533. Change what time email should say cutoff is.  
 1) Set cron.xml in code before compiling and deploying.
 2) Use the appropriate properties in DisplayStrings.properties before compiling and deploying.
 3) Create the initial new admin
