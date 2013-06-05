@@ -3,6 +3,7 @@ package com.defenestrate.chukkars.android.util;
 public interface Constants {
 	String SERVER_DATA_PREFS_NAME = "all-players.json";
 	String SIGNUP_CLOSED = "!!!SIGNUP_CLOSED!!!";
+	String PLAYER_NOT_FOUND = "!!!PLAYER_NOT_FOUND!!!";
 
 	String PAGE_INDEX_KEY = "PAGE_INDEX_KEY";
 	String SIGNUP_DAY_KEY = "SIGNUP_DAY_KEY";
