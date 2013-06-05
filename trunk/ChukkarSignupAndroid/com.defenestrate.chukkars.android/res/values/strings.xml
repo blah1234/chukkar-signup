@@ -24,6 +24,7 @@
     
     <string name="signup_closed">Too late! Signup is closed.</string>
     <string name="blank_name">Name can\'t be blank.</string>
+    <string name="player_not_found">Player deleted already. Refreshing now&#8230;</string>
     
     <string name="error_no_data_connection">Unable to connect to the network.\nPlease check network settings\nand try again.</string>
     <string name="loading">Loading&#8230;</string>

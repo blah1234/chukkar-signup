@@ -44,6 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.defenestrate.chukkars.android.entity.Day;
+import com.defenestrate.chukkars.android.exception.PlayerNotFoundException;
 import com.defenestrate.chukkars.android.exception.SignupClosedException;
 import com.defenestrate.chukkars.android.util.Constants;
 import com.defenestrate.chukkars.android.util.HttpUtil;
@@ -96,6 +97,19 @@ public class AddPlayerActivity extends ChukkarsActivity
 
 	                	Toast toast = Toast.makeText(AddPlayerActivity.this, text, duration);
 	                	toast.show();
+
+	                	if(msg.arg1 == R.string.player_not_found) {
+	                		Intent i = null;
+
+	                		if(msg.obj != null) {
+	                			Day signupDay = Day.valueOf( (String)msg.obj );
+
+	                			i = new Intent();
+	                			i.putExtra(SELECTED_DAY_KEY, signupDay);
+	                		}
+
+	                		cancel(i);
+	                	}
 	                }
             	}
             }
@@ -325,8 +339,7 @@ public class AddPlayerActivity extends ChukkarsActivity
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
         case R.id.menu_cancel:
-        	setResult(RESULT_CANCELED);
-            finish();
+        	cancel();
             return true;
 
         case R.id.menu_save:
@@ -349,6 +362,20 @@ public class AddPlayerActivity extends ChukkarsActivity
         default:
             return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void cancel() {
+		cancel(null);
+	}
+
+	private void cancel(Intent i) {
+		if(i == null) {
+			setResult(RESULT_CANCELED);
+		} else {
+			setResult(RESULT_CANCELED, i);
+		}
+
+        finish();
 	}
 
 	private void setInitialThumbPosition() {
@@ -481,9 +508,10 @@ public class AddPlayerActivity extends ChukkarsActivity
 		    @Override
 		    protected Day doInBackground(String... params)
 		    {
+		    	String selectedDayArg = params[0];
+
 				try
 				{
-					String selectedDayArg = params[0];
 					String nameArg = params[1];
 					String numChukkarsArg = params[2];
 
@@ -510,6 +538,17 @@ public class AddPlayerActivity extends ChukkarsActivity
 					//show error toast on GUI thread
 					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
 			    	msg.arg1 = R.string.signup_closed;
+					_errHandler.sendMessage(msg);
+
+					return null;
+				}
+				catch(PlayerNotFoundException e)
+				{
+					//will never happen, but show error toast on GUI thread just
+					//in case
+					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+			    	msg.arg1 = R.string.player_not_found;
+			    	msg.obj = selectedDayArg;
 					_errHandler.sendMessage(msg);
 
 					return null;
@@ -556,9 +595,10 @@ public class AddPlayerActivity extends ChukkarsActivity
 		    @Override
 		    protected Day doInBackground(String... params)
 		    {
+		    	String selectedDayArg = params[0];
+
 				try
 				{
-					String selectedDayArg = params[0];
 					String playerIdArg = params[1];
 					String numChukkarsArg = params[2];
 
@@ -584,6 +624,16 @@ public class AddPlayerActivity extends ChukkarsActivity
 					//show error toast on GUI thread
 					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
 			    	msg.arg1 = R.string.signup_closed;
+					_errHandler.sendMessage(msg);
+
+					return null;
+				}
+				catch(PlayerNotFoundException e)
+				{
+					//show error toast on GUI thread
+					Message msg = _errHandler.obtainMessage(R.id.message_what_info);
+			    	msg.arg1 = R.string.player_not_found;
+			    	msg.obj = selectedDayArg;
 					_errHandler.sendMessage(msg);
 
 					return null;
