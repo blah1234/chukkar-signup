@@ -66,7 +66,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
 	private static final String LOG_TAG = "SignupDayFragment";
-	static private final int MAX_NUM_COVER_ART = 12;
+	static private final int MAX_NUM_COVER_ART = 13;
 
 
 	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
