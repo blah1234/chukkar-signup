@@ -39,6 +39,12 @@ import com.defenestrate.chukkars.shared.Player;
 public class CronServiceImpl extends HttpServlet
 {
 	//////////////////////////////// CONSTANTS /////////////////////////////////
+	private static final String CUTOFF_DAY_OVERRIDE = "cutoff_day_override";
+	private static final String[] REQ_AND_RESP_PARAM_METHODS = {
+		"sendSignupReminderEmail",
+		"sendExportSignupEmail"
+	};
+
 	private static final Logger LOG = Logger.getLogger( CronServiceImpl.class.getName() );
 
 
@@ -55,11 +61,31 @@ public class CronServiceImpl extends HttpServlet
 
 		try
 		{
-			Method invokeMethod = this.getClass().getMethod(
-				path,
-				HttpServletResponse.class);
+			boolean isRequestRequired = false;
 
-			invokeMethod.invoke(this, resp);
+			for(String methodName : REQ_AND_RESP_PARAM_METHODS) {
+				if( methodName.equals(path) ) {
+					isRequestRequired = true;
+					break;
+				}
+			}
+
+			Method invokeMethod;
+
+			if(!isRequestRequired) {
+				invokeMethod = this.getClass().getMethod(
+					path,
+					HttpServletResponse.class);
+
+				invokeMethod.invoke(this, resp);
+			} else {
+				invokeMethod = this.getClass().getMethod(
+					path,
+					HttpServletRequest.class,
+					HttpServletResponse.class);
+
+				invokeMethod.invoke(this, req, resp);
+			}
 		}
 		catch(NoSuchMethodException e)
 		{
@@ -516,13 +542,22 @@ public class CronServiceImpl extends HttpServlet
 		return possibleGameDay.isEnabled();
 	}
 
-	public void sendSignupReminderEmail(HttpServletResponse resp) throws ServletException
+	public void sendSignupReminderEmail(HttpServletRequest req, HttpServletResponse resp) throws ServletException
 	{
 		//Determine if today is the cutoff day
 		boolean isCutoff = isTodayCutoffDay();
+
+		//Determine if cutoff override is in params
+		String[] values = req.getParameterValues(CUTOFF_DAY_OVERRIDE);
+		boolean isCutoffOverride = false;
+
+		if( (values != null) && (values.length > 0) ) {
+			isCutoffOverride = Boolean.parseBoolean( values[0] );
+		}
+
 		MessageAdmin data = null;
 
-		if(isCutoff)
+		if(isCutoff || isCutoffOverride)
 		{
 			data = getEnabledMessageAdmin();
 
@@ -548,7 +583,7 @@ public class CronServiceImpl extends HttpServlet
 			{
 				msg = "Signup reminder email successfully sent.";
 			}
-			else if(isCutoff)
+			else if(isCutoff || isCutoffOverride)
 			{
 				msg = "Weekly emails are not enabled. No email sent.";
 			}
@@ -581,14 +616,23 @@ public class CronServiceImpl extends HttpServlet
 		}
 	}
 
-	public void sendExportSignupEmail(HttpServletResponse resp) throws ServletException
+	public void sendExportSignupEmail(HttpServletRequest req, HttpServletResponse resp) throws ServletException
 	{
 		//Determine if today is the cutoff day
 		boolean isCutoff = isTodayCutoffDay();
+
+		//Determine if cutoff override is in params
+		String[] values = req.getParameterValues(CUTOFF_DAY_OVERRIDE);
+		boolean isCutoffOverride = false;
+
+		if( (values != null) && (values.length > 0) ) {
+			isCutoffOverride = Boolean.parseBoolean( values[0] );
+		}
+
 		MessageAdmin data = null;
 		String managerEmails = null;
 
-		if(isCutoff)
+		if(isCutoff || isCutoffOverride)
 		{
 			data = getEnabledMessageAdmin();
 
@@ -728,7 +772,7 @@ public class CronServiceImpl extends HttpServlet
 			{
 				msg = "Signup export email successfully sent to " + managerEmails;
 			}
-			else if(isCutoff)
+			else if(isCutoff || isCutoffOverride)
 			{
 				msg = "Weekly emails are not enabled. No email sent.";
 			}
