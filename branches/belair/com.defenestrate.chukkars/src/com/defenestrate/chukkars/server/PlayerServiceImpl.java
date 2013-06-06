@@ -9,10 +9,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.Extent;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Transaction;
 
 import com.defenestrate.chukkars.client.PlayerService;
+import com.defenestrate.chukkars.server.exception.PlayerNotFoundException;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -50,6 +52,7 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 
 			currPlayer = new Player(name, numChukkars, requestDay);
 			pm.makePersistent(currPlayer);
+			pm.flush();
 
 			tx.commit();
 		}
@@ -182,9 +185,12 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 
 		List<Player> retList = new ArrayList<Player>();
+		Transaction tx = pm.currentTransaction();
 
 		try
 		{
+			tx.begin();
+
 			Extent<Player> e = pm.getExtent(Player.class);
 			Iterator<Player> iter = e.iterator();
 
@@ -208,6 +214,8 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 				int insertIndex = (index + 1) * -1;
 				retList.add(insertIndex, currPlayer);
 			}
+
+			tx.commit();
 		}
 		catch(Exception e)
 		{
@@ -215,6 +223,11 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 				Level.SEVERE,
 				"Error encountered trying to get all players:\n" + e.getMessage(),
 				e);
+
+			if( tx.isActive() )
+		    {
+		        tx.rollback();
+		    }
 
 		    throw new RuntimeException(e);
 		}
@@ -226,7 +239,7 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 		return retList;
 	}
 
-	static protected Player getPlayerImpl(Long playerId)
+	static protected Player getPlayerImpl(Long playerId) throws PlayerNotFoundException
 	{
 		PersistenceManager pm = PersistenceManagerHelper.getPersistenceManager();
 
@@ -239,18 +252,22 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 
 		    retPlayer = pm.getObjectById(Player.class, playerId);
 
-			if(retPlayer == null)
-			{
-				throw new IllegalArgumentException("Player not found with id = " + playerId);
-			}
-
 		    tx.commit();
+		}
+		catch(JDOObjectNotFoundException e)
+		{
+			if( tx.isActive() )
+		    {
+		        tx.rollback();
+		    }
+
+			throw new PlayerNotFoundException(playerId);
 		}
 		catch(Exception e)
 		{
 			LOG.log(
 				Level.SEVERE,
-				"Error encountered trying to retrievethe player with id = " + playerId + ":\n" + e.getMessage(),
+				"Error encountered trying to retrieve the player with id = " + playerId + ":\n" + e.getMessage(),
 				e);
 
 		    if( tx.isActive() )
@@ -265,6 +282,14 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 			pm.close();
 		}
 
-		return retPlayer;
+
+		if(retPlayer != null)
+		{
+			return retPlayer;
+		}
+		else
+		{
+			throw new PlayerNotFoundException(playerId);
+		}
 	}
 }
