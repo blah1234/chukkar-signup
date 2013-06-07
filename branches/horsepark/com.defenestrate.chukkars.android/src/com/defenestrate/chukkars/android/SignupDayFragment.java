@@ -27,6 +27,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -85,6 +86,7 @@ public class SignupDayFragment extends FancyScrollListFragment
     private View mPrevSelectedView;
     private OnPageChangeListener mOnPageChangeLstnr;
     private PlayerSignupData mSelectedPlayer;
+    private Resources mRes;
 
     static private final Random mRand = new Random();
     static private final Set<Integer> sUsedCoverArtIds = new TreeSet<Integer>();
@@ -99,6 +101,8 @@ public class SignupDayFragment extends FancyScrollListFragment
 	@Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
+        mRes = activity.getResources();
 
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
@@ -139,11 +143,11 @@ public class SignupDayFragment extends FancyScrollListFragment
                     if( (msg.what == R.id.message_what_error) && (msg.arg1 != 0) )
                     {
                 		ErrorToast.show( getActivity(),
-                						 getResources().getString(msg.arg1) );
+                						 mRes.getString(msg.arg1) );
                     }
                     else if( (msg.what == R.id.message_what_info) && (msg.arg1 != 0) )
                     {
-                    	CharSequence text = getResources().getString(msg.arg1);
+                    	CharSequence text = mRes.getString(msg.arg1);
                     	int duration = Toast.LENGTH_LONG;
 
                     	Toast toast = Toast.makeText(getActivity(), text, duration);
@@ -298,7 +302,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 				{
 					//http get
 					HttpClient httpclient = new DefaultHttpClient();
-					HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(getResources(), GET_PLAYERS_URL_KEY) );
+					HttpGet get = new HttpGet( PropertiesUtil.getURLProperty(mRes, GET_PLAYERS_URL_KEY) );
 					HttpResponse response = httpclient.execute(get);
 
 					if( !isCancelled() ) {
@@ -501,7 +505,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 
     private Drawable getAssignedCoverArt() {
     	int id = getAssignedCoverArtId();
-    	return getResources().getDrawable(id);
+    	return mRes.getDrawable(id);
     }
 
     private int getAssignedCoverArtId() {
