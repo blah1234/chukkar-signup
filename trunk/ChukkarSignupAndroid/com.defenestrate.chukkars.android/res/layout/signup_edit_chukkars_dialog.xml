@@ -43,7 +43,7 @@
 			              android:layout_width="wrap_content"
 			              android:layout_height="wrap_content"
 			              android:text="Chukkars:"/>
-			    <com.defenestrate.chukkars.android.widget.NumberPicker android:id="@+id/chukkars_picker"
+			    <NumberPicker android:id="@+id/chukkars_picker"
 			    		  android:layout_width="wrap_content"
 						  android:layout_height="wrap_content"/>
 			</LinearLayout>
