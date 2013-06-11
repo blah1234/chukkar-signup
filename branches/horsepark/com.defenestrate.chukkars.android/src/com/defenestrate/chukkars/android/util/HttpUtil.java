@@ -20,6 +20,11 @@ import com.defenestrate.chukkars.android.exception.SignupClosedException;
 
 public class HttpUtil implements Constants {
 
+	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
+	static private final Object mLockObj = new Object();
+
+
+	//////////////////////////////// METHODS ///////////////////////////////////
 	/**
 	 * Writes to persisted preferences the JSON data returned by a server call
 	 * @param response JSON data returned by a server call
@@ -65,18 +70,22 @@ public class HttpUtil implements Constants {
 	    		throw new PlayerNotFoundException();
 	    	}
 
-	    	//write json data to preferences
-			SharedPreferences settings = ctx.getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
-		    SharedPreferences.Editor editor = settings.edit();
-		    editor.putString(CONTENT_KEY, result);
+	    	//synchronized because 2 pages in the main view pager can load data
+	    	//and call this method on different background threads
+	    	synchronized (mLockObj) {
+		    	//write json data to preferences
+				SharedPreferences settings = ctx.getSharedPreferences(SERVER_DATA_PREFS_NAME, Context.MODE_PRIVATE);
+			    SharedPreferences.Editor editor = settings.edit();
+			    editor.putString(CONTENT_KEY, result);
 
-		    long dataLastModified = new Date().getTime();
-		    editor.putLong(LAST_MODIFIED_KEY, dataLastModified);
+			    long dataLastModified = new Date().getTime();
+			    editor.putLong(LAST_MODIFIED_KEY, dataLastModified);
 
-		    // Commit the edits!
-		    editor.commit();
+			    // Commit the edits!
+			    editor.commit();
 
-		    return dataLastModified;
+			    return dataLastModified;
+	    	}
 		}
 	    finally
 	    {
