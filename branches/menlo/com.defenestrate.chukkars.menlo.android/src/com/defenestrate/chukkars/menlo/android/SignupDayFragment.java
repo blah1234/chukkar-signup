@@ -1,7 +1,6 @@
 package com.defenestrate.chukkars.menlo.android;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -10,10 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
-import java.util.Set;
 import java.util.TimeZone;
-import java.util.TreeSet;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -53,6 +49,8 @@ import com.defenestrate.chukkars.menlo.android.entity.Day;
 import com.defenestrate.chukkars.menlo.android.exception.PlayerNotFoundException;
 import com.defenestrate.chukkars.menlo.android.exception.SignupClosedException;
 import com.defenestrate.chukkars.menlo.android.util.Constants;
+import com.defenestrate.chukkars.menlo.android.util.CoverArtUtil;
+import com.defenestrate.chukkars.menlo.android.util.CoverArtUtil.CoverArtData;
 import com.defenestrate.chukkars.menlo.android.util.HttpUtil;
 import com.defenestrate.chukkars.menlo.android.util.PlayerSignupData;
 import com.defenestrate.chukkars.menlo.android.util.PropertiesUtil;
@@ -67,7 +65,6 @@ public class SignupDayFragment extends FancyScrollListFragment
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
 	private static final String LOG_TAG = "SignupDayFragment";
-	static private final int MAX_NUM_COVER_ART = 13;
 
 
 	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
@@ -87,9 +84,6 @@ public class SignupDayFragment extends FancyScrollListFragment
     private OnPageChangeListener mOnPageChangeLstnr;
     private PlayerSignupData mSelectedPlayer;
     private Resources mRes;
-
-    static private final Random mRand = new Random();
-    static private final Set<Integer> sUsedCoverArtIds = new TreeSet<Integer>();
 
 
 	//////////////////////////////// METHODS ///////////////////////////////////
@@ -264,7 +258,7 @@ public class SignupDayFragment extends FancyScrollListFragment
     		( (ViewPagerActivity)getActivity() ).removeOnPageChangeListener(mOnPageChangeLstnr);
     	}
 
-    	sUsedCoverArtIds.remove(mCoverArtId);
+    	CoverArtUtil.freeCoverArtId(mCoverArtId);
     }
 
     private void loadPlayers(String data, int pageIndex)
@@ -491,66 +485,6 @@ public class SignupDayFragment extends FancyScrollListFragment
 	    }
     }
 
-    private Drawable getRandomCoverArt() {
-    	mCoverArtId = getRandomWithExclusion(
-    		mRand,
-    		1,
-    		MAX_NUM_COVER_ART,
-    		sUsedCoverArtIds.toArray(new Integer[sUsedCoverArtIds.size()]) );
-
-		sUsedCoverArtIds.add(mCoverArtId);
-
-		return getAssignedCoverArt();
-    }
-
-    private Drawable getAssignedCoverArt() {
-    	int id = getAssignedCoverArtId();
-    	return mRes.getDrawable(id);
-    }
-
-    private int getAssignedCoverArtId() {
-    	String fieldName = "cover" + mCoverArtId;
-		int id;
-
-		try {
-			Field coverArtField = R.drawable.class.getField(fieldName);
-			id = coverArtField.getInt(null);
-		} catch (NoSuchFieldException e) {
-			//should never happen
-			Log.e(LOG_TAG, e.getMessage(), e);
-			id = R.drawable.cover1;
-		} catch (IllegalArgumentException e) {
-			//should never happen because the field is static
-			Log.e(LOG_TAG, e.getMessage(), e);
-			id = R.drawable.cover1;
-		} catch (IllegalAccessException e) {
-			//should never happen because the field is public
-			Log.e(LOG_TAG, e.getMessage(), e);
-			id = R.drawable.cover1;
-		}
-
-		return id;
-    }
-
-    /**
-     * Generates a random number (int) between start and end (both inclusive) and
-     * does not return any number which is contained in the array exclude. All
-     * other numbers occur with equal probability. Note, that the following
-     * constrains must hold: exclude is sorted in ascending order and all numbers
-     * are within the range provided and all of them are mutually exclusive.
-     */
-    private int getRandomWithExclusion(Random rnd, int start, int end, Integer... exclude) {
-        int random = start + rnd.nextInt(end - start + 1 - exclude.length);
-        for (int ex : exclude) {
-            if (random < ex) {
-                break;
-            }
-            random++;
-        }
-
-        return random;
-    }
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
     	super.onActivityCreated(savedInstanceState);
@@ -596,9 +530,12 @@ public class SignupDayFragment extends FancyScrollListFragment
 			@Override
 		    protected Drawable getCoverArt() {
 				if(mCoverArtId != -1) {
-					return getAssignedCoverArt();
+					return CoverArtUtil.getAssignedCoverArt(mRes, mCoverArtId);
 				} else {
-					return getRandomCoverArt();
+					CoverArtData data = CoverArtUtil.getRandomCoverArt(mRes);
+					mCoverArtId = data.mCoverArtId;
+
+					return data.mCoverArtDrawable;
 				}
 		    }
 
@@ -630,7 +567,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 	private void launchAddPlayerPage() {
 		Intent i = new Intent(getActivity(), AddPlayerActivity.class);
 		i.putExtra(SIGNUP_DAY_KEY, _selectedDay);
-		i.putExtra( COVER_ART_KEY, getAssignedCoverArtId() );
+		i.putExtra( COVER_ART_KEY, CoverArtUtil.getAssignedCoverArtResourceId(mCoverArtId) );
 		i.putExtra(TITLE_RES_KEY, R.string.menu_add);
 
 		//prevent 2 activities from being displayed if the "add button" is accidentally pressed twice
@@ -642,7 +579,7 @@ public class SignupDayFragment extends FancyScrollListFragment
 	private void launchEditPlayerPage() {
 		Intent i = new Intent(getActivity(), AddPlayerActivity.class);
 		i.putExtra(SIGNUP_DAY_KEY, _selectedDay);
-		i.putExtra( COVER_ART_KEY, getAssignedCoverArtId() );
+		i.putExtra( COVER_ART_KEY, CoverArtUtil.getAssignedCoverArtResourceId(mCoverArtId) );
 		i.putExtra(PLAYER_ID_KEY, mSelectedPlayer.mPlayerId);
 		i.putExtra(PLAYER_NAME_KEY, mSelectedPlayer.mName);
 		i.putExtra(NUM_CHUKKARS_KEY, mSelectedPlayer.mNumChukkars);
