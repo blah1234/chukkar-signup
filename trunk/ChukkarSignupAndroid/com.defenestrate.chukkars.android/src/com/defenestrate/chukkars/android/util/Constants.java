@@ -1,9 +1,8 @@
 package com.defenestrate.chukkars.android.util;
 
 public interface Constants {
+	String STARTUP_CONFIG_PREFS_NAME = "startup-config";
 	String SERVER_DATA_PREFS_NAME = "all-players.json";
-	String SIGNUP_CLOSED = "!!!SIGNUP_CLOSED!!!";
-	String PLAYER_NOT_FOUND = "!!!PLAYER_NOT_FOUND!!!";
 
 	String PAGE_INDEX_KEY = "PAGE_INDEX_KEY";
 	String SIGNUP_DAY_KEY = "SIGNUP_DAY_KEY";
@@ -20,6 +19,9 @@ public interface Constants {
 	String HAS_NETWORK_CONNECTIVITY_KEY = "HAS_NETWORK_CONNECTIVITY_KEY";
 	String SCROLL_TO_END_KEY = "SCROLL_TO_END_KEY";
 	String IS_ADD_PLAYER_KEY = "IS_ADD_PLAYER_KEY";
+	String GCM_REG_ID_KEY = "GCM_REG_ID_KEY";
+	String APP_VER_NAME_KEY = "APP_VER_NAME_KEY";
+	String APP_VER_CODE_KEY = "APP_VER_CODE_KEY";
 
 	//keys for the server urls to query
 	String ADD_PLAYER_URL_KEY = "add_player_url";
@@ -27,6 +29,8 @@ public interface Constants {
 	String QUERY_RESET_URL_KEY = "query_reset_url";
 	String GET_ACTIVE_DAYS_URL_KEY = "get_active_days_url";
 	String GET_PLAYERS_URL_KEY = "get_players_url";
+	String GCM_REGISTER_URL = "gcm_register_url";
+	String GCM_UNREGISTER_URL = "gcm_unregister_url";
 
 	//fields in the server-returned JSON reply
     String TOTALS_LIST_FIELD = "_totalsList";
@@ -39,4 +43,14 @@ public interface Constants {
     String PLAYER_NUMCHUKKARS_FIELD = "_numChukkars";
     String PLAYER_CREATEDATE_FIELD = "_createDate";
     String PLAYER_REQUESTDAY_FIELD = "_requestDay";
+
+    //possible error values returned in server response string
+    String SIGNUP_CLOSED = "!!!SIGNUP_CLOSED!!!";
+	String PLAYER_NOT_FOUND = "!!!PLAYER_NOT_FOUND!!!";
+
+
+	//Google Cloud Messaging
+	String GCM_SENDER_ID = "738566066161";
+
+	String GCM_REG_ID_PARAMETER = "regId";
 }
