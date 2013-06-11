@@ -100,6 +100,7 @@ public class PlayerServiceImpl extends RemoteServiceServlet
 			if(editPlayer != null)
 			{
 				editPlayer.setChukkarCount(numChukkars);
+				pm.flush();
 			}
 			else
 			{
