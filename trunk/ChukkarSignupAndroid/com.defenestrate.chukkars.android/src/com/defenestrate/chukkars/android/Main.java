@@ -22,11 +22,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,17 +41,22 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.defenestrate.chukkars.android.entity.Day;
+import com.defenestrate.chukkars.android.exception.CrashReportExceptionHandler;
 import com.defenestrate.chukkars.android.receiver.NetworkStateReceiver;
+import com.defenestrate.chukkars.android.receiver.ServerPushReceiver;
 import com.defenestrate.chukkars.android.util.Constants;
 import com.defenestrate.chukkars.android.util.HttpUtil;
 import com.defenestrate.chukkars.android.util.PropertiesUtil;
+import com.defenestrate.chukkars.android.util.gcm.ServerUtilities;
+import com.google.android.gcm.GCMRegistrar;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 
 public class Main extends ViewPagerActivity
 				  implements SignupDayFragment.OnPlayerModificationListener, Constants {
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
-	static private final String STARTUP_CONFIG_PREFS_NAME = "startup-config";
+	static private final String LOG_TAG = Main.class.getSimpleName();
 
 
 	/////////////////////////// MEMBER VARIABLES ///////////////////////////////
@@ -56,12 +64,18 @@ public class Main extends ViewPagerActivity
 	private boolean mHasNewData;
 	private Day mInitialVisibleDay;
 	private boolean mScrollToEnd;
+	private String mGCMRegId;
+	private AsyncTask<Void, Void, Void> mRegisterTask;
 
 
 	//////////////////////////////// METHODS ///////////////////////////////////
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Thread mainUI = Looper.getMainLooper().getThread();
+        mainUI.setUncaughtExceptionHandler(
+        	new CrashReportExceptionHandler(this, Thread.getDefaultUncaughtExceptionHandler()) );
 
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -78,8 +92,88 @@ public class Main extends ViewPagerActivity
         mHasNewData = true;
         mScrollToEnd = false;
 
+        backgroundRegisterGoogleCloudMessaging();
+
         // Show the page indexer.
         setUsePagerIndexer(true);
+	}
+
+	private void backgroundRegisterGoogleCloudMessaging() {
+	    mRegisterTask = new AsyncTask<Void, Void, Void>() {
+
+	    	@Override
+			protected void onPreExecute() {
+	    		// Make sure the app is registered with GCM and with the server
+	            SharedPreferences prefs = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
+
+	            //When an application is updated, it should invalidate its existing
+	            //registration ID, as it is not guaranteed to work with the new version.
+	            //http://developer.android.com/google/gcm/adv.html#reg-state
+				try {
+					PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+					int currVerCode = pInfo.versionCode;
+					String currVerName = pInfo.versionName;
+		            int prevVerCode = prefs.getInt(APP_VER_CODE_KEY, -1);
+		            String prevVerName = prefs.getString(APP_VER_NAME_KEY, null);
+
+		            if( (currVerCode != prevVerCode) || !currVerName.equals(prevVerName) ) {
+		            	SharedPreferences.Editor editor = prefs.edit();
+		            	editor.putInt(APP_VER_CODE_KEY, currVerCode);
+		            	editor.putString(APP_VER_NAME_KEY, currVerName);
+		                editor.remove(GCM_REG_ID_KEY);
+		                editor.commit();
+		            }
+				} catch (NameNotFoundException e) {
+					//should never happen
+					Log.e(LOG_TAG, "Name not found when attempting to get package info: " + e.getMessage(), e);
+				}
+
+	            mGCMRegId = prefs.getString(GCM_REG_ID_KEY, null);
+			}
+
+	        @Override
+	        protected Void doInBackground(Void... params) {
+	            try {
+	            	GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(Main.this);
+
+	            	// If there is no registration ID, the app isn't registered with --> GCM service <--
+	                if( mGCMRegId == null && !isCancelled() ) {
+	                	GCMRegistrar.setRegisteredOnServer(Main.this, false);
+
+		                mGCMRegId = gcm.register(GCM_SENDER_ID);
+
+		                // Save the regid for future use - no need to register with the --> GCM service <-- again.
+		                SharedPreferences prefs = getSharedPreferences(STARTUP_CONFIG_PREFS_NAME, Context.MODE_PRIVATE);
+		                SharedPreferences.Editor editor = prefs.edit();
+		                editor.putString(GCM_REG_ID_KEY, mGCMRegId);
+		                editor.commit();
+	                }
+
+	                //Send the registration ID to --> our app server <-- over HTTP,
+	                // so it can use GCM/HTTP or CCS to send messages to device.
+	                if( !isCancelled() && !GCMRegistrar.isRegisteredOnServer(Main.this) ) {
+		                boolean isRegistered = ServerUtilities.register(Main.this, mGCMRegId);
+
+		                if(!isRegistered) {
+			                Log.w(LOG_TAG,
+			                	"GCM registration ID failed to register with chukkar signup server. Will try again on app restart.",
+			                	new Throwable().fillInStackTrace() );
+		                }
+	                }
+	            } catch(IOException ex) {
+	            	Log.e(LOG_TAG, "Failed to register with Google Cloud Messaging: " + ex.getMessage(), ex);
+	            }
+
+				return null;
+	        }
+
+	        @Override
+            protected void onPostExecute(Void result) {
+                mRegisterTask = null;
+            }
+	    };
+
+	    mRegisterTask.execute(null, null, null);
 	}
 
 	@Override
@@ -118,6 +212,18 @@ public class Main extends ViewPagerActivity
 
 		setBroadcastReceiversEnabled(true);
 		initPages( HttpUtil.hasDataConnection(this) );
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		cancelAnyNotifications();
+	}
+
+	private void cancelAnyNotifications() {
+		NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		nm.cancel(ServerPushReceiver.NOTIFICATION_TAG, ServerPushReceiver.NOTIFICATION_ID);
 	}
 
 	@Override
@@ -160,6 +266,11 @@ public class Main extends ViewPagerActivity
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+
+		if (mRegisterTask != null) {
+            mRegisterTask.cancel(false);
+            mRegisterTask = null;
+        }
 
 		//clear out cached data for players, their requested days and chukkars
 		resetCachedPlayerSignups();
