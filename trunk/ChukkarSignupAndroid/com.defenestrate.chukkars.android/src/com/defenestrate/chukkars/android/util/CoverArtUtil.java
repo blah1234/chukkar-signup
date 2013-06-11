@@ -14,7 +14,7 @@ import com.defenestrate.chukkars.android.R;
 public class CoverArtUtil {
 
 	/////////////////////////////// CONSTANTS //////////////////////////////////
-	static private final int MAX_NUM_COVER_ART = 13;
+	static private final int MAX_NUM_COVER_ART = 12;
 	static private final String LOG_TAG = CoverArtUtil.class.getSimpleName();
 
 
