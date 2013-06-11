@@ -32,9 +32,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 
 import com.defenestrate.chukkars.server.entity.CronTask;
+import com.defenestrate.chukkars.server.entity.DeviceDatastore;
 import com.defenestrate.chukkars.server.entity.MessageAdmin;
+import com.defenestrate.chukkars.server.gcm.SendMessageServlet;
+import com.defenestrate.chukkars.server.gcm.SendMessageServlet.MessageType;
 import com.defenestrate.chukkars.shared.Day;
 import com.defenestrate.chukkars.shared.Player;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 
 public class CronServiceImpl extends HttpServlet
 {
@@ -458,6 +464,10 @@ public class CronServiceImpl extends HttpServlet
 			String msgBody = data.getSignupNoticeMessage();
 			ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
 			EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup for the upcoming week", msgBody, data, false);
+
+			//------------------
+
+			sendAndroidNotification(MessageType.SIGNUP_NOTICE);
 		}
 
 		//------------------
@@ -566,6 +576,10 @@ public class CronServiceImpl extends HttpServlet
 				String msgBody = data.getSignupReminderMessage();
 				ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
 				EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 12 noon", msgBody, data, false);
+
+				//----------------
+
+				sendAndroidNotification(MessageType.SIGNUP_REMINDER);
 			}
 		}
 
@@ -612,6 +626,82 @@ public class CronServiceImpl extends HttpServlet
 			if(charWriter != null)
 			{
 				charWriter.close();
+			}
+		}
+	}
+
+	private void sendAndroidNotification(MessageType msgType) {
+		List<String> devices = DeviceDatastore.getDevices();
+
+		if( !devices.isEmpty() ) {
+			Queue queue = QueueFactory.getQueue(SendMessageServlet.GCM_QUEUE_NAME);
+			// NOTE: check below is for demonstration purposes; a real
+			// application could always send a multicast, even for just one recipient
+			if (devices.size() == 1) {
+				String device = devices.get(0);
+
+				// send a single message using plain post
+				TaskOptions opts = TaskOptions.Builder.withUrl(SendMessageServlet.SEND_URL)
+					.param(SendMessageServlet.PARAMETER_DEVICE, device)
+					.param(SendMessageServlet.PARAMETER_COLLAPSE_KEY, SendMessageServlet.COLLAPSE_KEY_VALUE)
+					.method(TaskOptions.Method.POST);
+
+				if(msgType == MessageType.SIGNUP_NOTICE) {
+					opts.param(SendMessageServlet.PARAMETER_MESSAGE_TYPE, MessageType.SIGNUP_NOTICE.toString());
+					opts.param(SendMessageServlet.PARAMETER_REMINDER_DAY_OF_WEEK, Integer.toString(Calendar.TUESDAY));
+				} else if(msgType == MessageType.SIGNUP_REMINDER) {
+					opts.param(SendMessageServlet.PARAMETER_MESSAGE_TYPE, MessageType.SIGNUP_REMINDER.toString());
+				}
+
+				queue.add(opts);
+			} else {
+				// send a multicast message using JSON
+				// must split in chunks of 1000 devices (GCM limit)
+				int total = devices.size();
+				List<String> partialDevices = new ArrayList<String>(total);
+				int counter = 0;
+				int tasks = 0;
+
+				for (String device : devices) {
+					counter++;
+					partialDevices.add(device);
+					int partialSize = partialDevices.size();
+
+					if(partialSize == DeviceDatastore.MULTICAST_SIZE || counter == total) {
+						String multicastKey = DeviceDatastore.createMulticast(partialDevices);
+
+						LOG.fine("Queuing " + partialSize + " devices on multicast " + multicastKey);
+
+						TaskOptions taskOptions = TaskOptions.Builder.withUrl(SendMessageServlet.SEND_URL)
+							.param(SendMessageServlet.PARAMETER_MULTICAST, multicastKey)
+							.param(SendMessageServlet.PARAMETER_COLLAPSE_KEY, SendMessageServlet.COLLAPSE_KEY_VALUE)
+							.method(TaskOptions.Method.POST);
+
+						if(msgType == MessageType.SIGNUP_NOTICE) {
+							taskOptions.param(SendMessageServlet.PARAMETER_MESSAGE_TYPE, MessageType.SIGNUP_NOTICE.toString());
+
+							Day[] allDays = Day.getAll();
+							Day firstGameDay = null;
+
+							for(Day currDay : allDays) {
+								if( currDay.isEnabled() ) {
+									firstGameDay = currDay;
+									break;
+								}
+							}
+
+							if(firstGameDay != null) {
+								taskOptions.param(SendMessageServlet.PARAMETER_REMINDER_DAY_OF_WEEK, Integer.toString(firstGameDay.toJavaUtilCalendarDay()));
+							}
+						} else if(msgType == MessageType.SIGNUP_REMINDER) {
+							taskOptions.param(SendMessageServlet.PARAMETER_MESSAGE_TYPE, MessageType.SIGNUP_REMINDER.toString());
+						}
+
+						queue.add(taskOptions);
+						partialDevices.clear();
+						tasks++;
+					}
+				}
 			}
 		}
 	}

@@ -17,6 +17,10 @@ Steps 4 - 6 are now taken care of by the new "Game Days" configuration DnD panel
 7) Add email settings.
 8) make sure to add admin sender email to https://appengine.google.com/permissions?app_id=s~<app_id>
 
+### Google Cloud Messaging
+9) ApiKeyInitializer.java, set the correct API_KEY_VALUE
+
+
 
 ### Usage:
 - /signup/cron/sendSignupReminderEmail and /signup/cron/sendExportSignupEmail have a query param:

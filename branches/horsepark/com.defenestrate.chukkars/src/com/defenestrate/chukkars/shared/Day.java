@@ -1,5 +1,7 @@
 package com.defenestrate.chukkars.shared;
 
+import java.util.Calendar;
+
 
 public enum Day
 {
@@ -148,6 +150,28 @@ public enum Day
 			return SATURDAY;
 		default:
 			throw new IllegalArgumentException(_numRepresentation + " is not a valid number representation for the current list of defined Days.");
+		}
+	}
+
+	public int toJavaUtilCalendarDay() {
+		switch(this)
+		{
+		case MONDAY:
+			return Calendar.MONDAY;
+		case TUESDAY:
+			return Calendar.TUESDAY;
+		case WEDNESDAY:
+			return Calendar.WEDNESDAY;
+		case THURSDAY:
+			return Calendar.THURSDAY;
+		case FRIDAY:
+			return Calendar.FRIDAY;
+		case SATURDAY:
+			return Calendar.SATURDAY;
+		case SUNDAY:
+			return Calendar.SUNDAY;
+		default:
+			throw new IllegalArgumentException(this + " has not been defined yet in the current list of Days.");
 		}
 	}
 }
