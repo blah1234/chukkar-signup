@@ -11,6 +11,12 @@
     </listener-class>
   </listener>
   
+  <listener>
+    <listener-class>
+      com.defenestrate.chukkars.server.listener.ApiKeyInitializer
+    </listener-class>
+  </listener>
+  
   
   <!-- Servlets -->
   <servlet>
@@ -119,6 +125,77 @@
     	<role-name>admin</role-name>
 	</auth-constraint>
   </security-constraint>
+  
+  
+  
+  
+  <!-- Google Cloud Messaging servlets -->
+  
+  <servlet>
+    <servlet-name>RegisterServlet</servlet-name>
+    <servlet-class>
+      com.defenestrate.chukkars.server.gcm.RegisterServlet
+    </servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>RegisterServlet</servlet-name>
+    <url-pattern>/gcm/register</url-pattern>
+  </servlet-mapping>
+
+  
+  <servlet>
+    <servlet-name>UnregisterServlet</servlet-name>
+    <servlet-class>
+      com.defenestrate.chukkars.server.gcm.UnregisterServlet
+    </servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>UnregisterServlet</servlet-name>
+    <url-pattern>/gcm/unregister</url-pattern>
+  </servlet-mapping>
+
+  
+  <servlet>
+    <servlet-name>SendMessageServlet</servlet-name>
+    <servlet-class>
+      com.defenestrate.chukkars.server.gcm.SendMessageServlet
+    </servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>SendMessageServlet</servlet-name>
+    <url-pattern>/gcm/send</url-pattern>
+  </servlet-mapping>
+  
+  
+  <servlet>
+    <servlet-name>SendAllMessagesServlet</servlet-name>
+    <servlet-class>
+      com.defenestrate.chukkars.server.gcm.SendAllMessagesServlet
+    </servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>SendAllMessagesServlet</servlet-name>
+    <url-pattern>/gcm/test</url-pattern>
+  </servlet-mapping>
+  
+  <security-constraint>
+    <web-resource-collection>
+        <url-pattern>/gcm/test</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>admin</role-name>
+    </auth-constraint>
+  </security-constraint>
+  
+  
   
   
   <!-- Default page to serve -->
