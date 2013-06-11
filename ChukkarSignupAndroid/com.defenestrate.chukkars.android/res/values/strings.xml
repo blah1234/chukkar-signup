@@ -37,6 +37,11 @@
     <string name="game_day_loading">Loading game day&#8230;</string>
     <string name="game_chukkars_loading">Calculating total game chukkars&#8230;</string>
     
+    <string name="signup_notice_title">HPPC signup this week</string>
+    <string name="signup_notice_message">Sign-up is open for {0} onwards</string>
+    <string name="signup_reminder_title">HPPC signup by 12 noon</string>
+    <string name="signup_reminder_message">Sign up for tomorrow\'s chukkars</string>
+    
     <!-- Don't translate! -->
     <string name="launch_app_http_host">horsepark.signup</string>
 </resources>
