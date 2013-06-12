@@ -167,7 +167,7 @@ public class JSONServiceImpl extends HttpServlet
 			List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
 
 			//this is for the bug where getExtent() in getPlayersImpl()
-			//occasionally leaves out the newly added player
+			//occasionally has stale data (i.e., leaves out the newly added player)
 			if(addedPlayer != null) {
 				if( !playersList.contains(addedPlayer) ) {
 					//sort in ascending chronological order
@@ -279,6 +279,25 @@ public class JSONServiceImpl extends HttpServlet
 
 			Player editedPlayer = PlayerServiceImpl.editChukkarsImpl(playerId, numChukkars);
 			List<Player> playersList = PlayerServiceImpl.getPlayersImpl();
+
+			//this is for the bug where getExtent() in getPlayersImpl()
+			//occasionally has stale data (i.e., doesn't have the newly edited chukkar count)
+			if(editedPlayer != null) {
+				Player stalePlayer = null;
+
+				for(Player currPlayer : playersList) {
+					if( currPlayer.getId().equals(editedPlayer.getId()) &&
+						!currPlayer.getChukkarCount().equals(editedPlayer.getChukkarCount()) ) {
+						stalePlayer = currPlayer;
+						break;
+					}
+				}
+
+				if(stalePlayer != null) {
+					stalePlayer.setChukkarCount( editedPlayer.getChukkarCount() );
+				}
+			}
+
 			List<DayTotal> totalsList = calculateGameChukkars(playersList);
 
 			TotalsAndPlayers responseObj = new TotalsAndPlayers(totalsList, playersList, editedPlayer);
