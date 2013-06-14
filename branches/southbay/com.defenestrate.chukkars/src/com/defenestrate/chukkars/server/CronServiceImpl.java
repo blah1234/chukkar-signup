@@ -712,36 +712,71 @@ public class CronServiceImpl extends HttpServlet
 
 
 				StringBuffer buf = new StringBuffer();
+				buf.append("<head>");
+				buf.append("<style type=\"text/css\">");
+				buf.append("table.mystyle {");
+				buf.append("border-width: 0 0 1px 1px;");
+				buf.append("border-spacing: 0;");
+				buf.append("border-collapse: collapse;");
+				buf.append("border-style: solid;}");
+				buf.append(".mystyle td, .mystyle th {");
+				buf.append("margin: 0;");
+				buf.append("padding: 4px;");
+				buf.append("border-width: 1px 1px 0 0;");
+				buf.append("border-style: solid;}");
+				buf.append("</style></head>");
+				buf.append("<body>");
 
 				for( Day currDay : dayToPlayers.keySet() )
 				{
+					buf.append("<h2>");
 					buf.append(currDay);
-					buf.append(":\n");
+					buf.append(":</h2>");
 
 					List<Player> valList = dayToPlayers.get(currDay);
 					ChukkarCount counts = calculateGameChukkars(valList);
 
-					buf.append("# Chukkars Total: ");
+					buf.append("<table>");
+					buf.append("<tr>");
+					buf.append("<th align=\"left\"># Chukkars Total:</th>");
+					buf.append("<td align=\"left\">");
 					buf.append(counts._numTotalChukkars);
-					buf.append("\n");
-					buf.append("# Game Chukkars: ");
+					buf.append("</td></tr>");
+
+					buf.append("<tr align=\"left\">");
+					buf.append("<th># Game Chukkars:</th>");
+					buf.append("<td align=\"left\">");
 					buf.append(counts._numGameChukkars);
-					buf.append("\n\n");
+					buf.append("</td></tr></table>");
+					buf.append("\n");
+
+					buf.append("<table class=\"mystyle\">");
 
 					for(Player currPlayer : valList)
 					{
+						buf.append("<tr>");
+
+						buf.append("<td align=\"left\">");
 						buf.append( currPlayer.getName() );
-						buf.append("\t");
+						buf.append("</td>");
+
+						buf.append("<td align=\"right\">");
 						buf.append( currPlayer.getChukkarCount() );
-						buf.append("\n");
+						buf.append("</td>");
+
+						buf.append("</tr>");
 					}
 
-					buf.append("\n\n\n");
+					buf.append("</table>");
+
+					buf.append("\n<hr>\n");
 				}
 
 				if(buf.length() == 0) {
 					buf.append("Nobody signed up for " + Day.valueOf((nowDay.getNumber() % 7) + 1) + " through the end of the week!");
 				}
+
+				buf.append("</body>");
 
 				DateFormat outFormatter = new SimpleDateFormat("EEE, M/d h:mm a");
 	            outFormatter.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
