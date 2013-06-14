@@ -43,14 +43,14 @@ public class EmailServiceImpl extends RemoteServiceServlet
             Message msg = new MimeMessage(session);
             msg.setFrom( new InternetAddress(data.getAdmin().getEmailAddress(), data.getAdmin().getNickname()) );
 
-            if(useClubListAddressAsReplyTo) 
+            if(useClubListAddressAsReplyTo)
             {
             		msg.setReplyTo( new Address[] {new InternetAddress(data.getRecipientEmailAddress())} );
             }
 
             msg.addRecipient( Message.RecipientType.TO, new InternetAddress(recipientAddress) );
             msg.setSubject(subject);
-            msg.setText(msgBody);
+            msg.setContent(msgBody.replace("\n", "<br>"), "text/html");
             Transport.send(msg);
         }
         catch(AddressException e)
