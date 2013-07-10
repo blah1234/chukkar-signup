@@ -26,7 +26,7 @@
   <cron>
     <url>/signup/cron/sendExportSignupEmail</url>
     <description>Sends a weekly export of the player signups to the club manager</description>
-    <schedule>every day 19:30</schedule>
+    <schedule>every day 17:30</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   

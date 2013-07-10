@@ -196,7 +196,7 @@ public class CronServiceImpl extends HttpServlet
         					cal.add(Calendar.DAY_OF_WEEK, 1);
         				} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
 
-        				cal.set(Calendar.HOUR_OF_DAY, 19);	 //7pm
+        				cal.set(Calendar.HOUR_OF_DAY, 17);	 //5pm
         				cal.set(Calendar.MINUTE, 30);
 
         				logTask( CronTask.CLOSE_SIGNUP + currDay.getNumber(), cal.getTime() );
@@ -565,7 +565,7 @@ public class CronServiceImpl extends HttpServlet
 			{
 				String msgBody = data.getSignupReminderMessage();
 				ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-				EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 7pm", msgBody, data, false);
+				EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 5pm", msgBody, data, false);
 			}
 		}
 
