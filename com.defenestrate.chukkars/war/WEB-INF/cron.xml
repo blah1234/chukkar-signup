@@ -12,7 +12,7 @@
   <cron>
     <url>/signup/cron/sendSignupNoticeEmail</url>
     <description>Sends a weekly email reminding players to signup for chukkars</description>
-    <schedule>every monday 09:00</schedule>
+    <schedule>every tuesday 09:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   
