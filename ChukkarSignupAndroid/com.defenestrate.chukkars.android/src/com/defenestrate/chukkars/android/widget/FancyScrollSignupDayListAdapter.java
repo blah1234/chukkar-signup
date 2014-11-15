@@ -1,7 +1,5 @@
 package com.defenestrate.chukkars.android.widget;
 
-import java.util.Set;
-
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
@@ -19,6 +17,8 @@ import android.widget.TextView;
 
 import com.defenestrate.chukkars.android.R;
 import com.defenestrate.chukkars.android.widget.FancyScrollListAdapter.FancyScrollListSubadapter.FancyScrollListSubadapterCallback;
+
+import java.util.Set;
 
 
 /**
@@ -71,17 +71,8 @@ abstract public class FancyScrollSignupDayListAdapter extends FancyScrollSingleL
     /** The key to use for retrieving the text string from a Bundle for the bottom right circle button label in the song header */
     public static final String CIRCLE_BUTTON_BOTTOM_RIGHT_STRING = "CIRCLE_BUTTON_BOTTOM_RIGHT_STRING";
 
-    /** The key to use for retrieving the text string from a Bundle for the top circle button label in the song header */
-    public static final String CIRCLE_BUTTON_TOP_STRING = "CIRCLE_BUTTON_TOP_STRING";
-
-    /** The key to use for retrieving the text string from a Bundle for the bottom circle button label in the song header */
-    public static final String CIRCLE_BUTTON_BOTTOM_STRING = "CIRCLE_BUTTON_BOTTOM_STRING";
-
     /** The key to use for retrieving the text string from a Bundle for the middle circle button label in the song header */
     public static final String CIRCLE_BUTTON_MIDDLE_STRING = "CIRCLE_BUTTON_MIDDLE_STRING";
-
-    /** The key to use for retrieving the drawable id (int) from a Bundle for the circle button background in the song header */
-    public static final String CIRCLE_BUTTON_BACKGROUND_ID = "CIRCLE_BUTTON_BACKGROUND_ID";
 
     /** The key to use for retrieving the value (float) from a Bundle for the song header circle button bottom left text sweep angle */
     public static final String CIRCLE_BUTTON_BOTTOM_LEFT_TEXT_SWEEP_ANGLE_FLOAT = "CIRCLE_BUTTON_BOTTOM_LEFT_TEXT_SWEEP_ANGLE_FLOAT";
@@ -416,15 +407,13 @@ abstract public class FancyScrollSignupDayListAdapter extends FancyScrollSingleL
             boolean hasCircleButton = false;
             StringBuilder description = new StringBuilder();
             // Circle button null text is OK; same as empty string
-            String text = mArgs.getString(CIRCLE_BUTTON_TOP_STRING);
+            String text = circleButton.getTextTop();
             if(text != null) {
-                circleButton.setTextTop(text);
                 hasCircleButton = true;
                 description.append(text + " ");
             }
-            text = mArgs.getString(CIRCLE_BUTTON_BOTTOM_STRING); //MHIV-510
+            text = circleButton.getTextLower();
             if(text != null) {
-                circleButton.setTextLower(text);
                 hasCircleButton = true;
                 description.append(text + " ");
             }
@@ -451,9 +440,7 @@ abstract public class FancyScrollSignupDayListAdapter extends FancyScrollSingleL
             }
 
             // Circle button drawable
-            final int circleBgId = mArgs.getInt(CIRCLE_BUTTON_BACKGROUND_ID, -1);
-            if (circleBgId != -1) {
-                circleButton.setBackgroundResource(circleBgId);
+            if (circleButton.getBackground() != null) {
                 circleButton.getBackground().setAlpha(150);
                 hasCircleButton = true;
             }

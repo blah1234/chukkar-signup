@@ -3,12 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
 >
-    <ImageView
+    <com.defenestrate.chukkars.android.widget.AspectRatioImageView
         android:id="@+id/cover_art"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:scaleType="centerInside"
         android:adjustViewBounds="true"
     />
     
