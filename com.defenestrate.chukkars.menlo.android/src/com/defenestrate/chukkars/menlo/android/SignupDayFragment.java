@@ -1,24 +1,5 @@
 package com.defenestrate.chukkars.menlo.android;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -58,6 +39,25 @@ import com.defenestrate.chukkars.menlo.android.widget.FancyScrollListAdapter.Fan
 import com.defenestrate.chukkars.menlo.android.widget.FancyScrollListAdapter.FancyScrollListSubadapter.FancyScrollListSubadapterCallback;
 import com.defenestrate.chukkars.menlo.android.widget.FancyScrollSignupDayListAdapter;
 import com.defenestrate.chukkars.menlo.android.widget.SignupDayListSubadapter;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 
 public class SignupDayFragment extends FancyScrollListFragment
@@ -233,7 +233,8 @@ public class SignupDayFragment extends FancyScrollListFragment
 
     	if( args.getBoolean(SCROLL_TO_END_KEY, false) ) {
     		mListView.post(new Runnable() {
-    			public void run() {
+    			@Override
+				public void run() {
     				mListView.setSelection(mListView.getCount() - 1);
     			}
     		});
@@ -497,10 +498,6 @@ public class SignupDayFragment extends FancyScrollListFragment
 		//set params for the fancy scroll adapter
 		final Bundle args = new Bundle();
 		//calculating values for Add Player button
-		args.putInt(FancyScrollSignupDayListAdapter.CIRCLE_BUTTON_BACKGROUND_ID, R.drawable.circle_button_add_player);
-        args.putString( FancyScrollSignupDayListAdapter.CIRCLE_BUTTON_TOP_STRING, getString(R.string.circle_button_top_text) );
-        args.putString( FancyScrollSignupDayListAdapter.CIRCLE_BUTTON_BOTTOM_STRING, getString(R.string.circle_button_bottom_text) );
-
         args.putString( FancyScrollSignupDayListAdapter.LOWER_LABEL_1_STRING, getString(R.string.game_day_loading) );
         args.putString( FancyScrollSignupDayListAdapter.LOWER_LABEL_2_STRING, getString(R.string.game_chukkars_loading) );
 

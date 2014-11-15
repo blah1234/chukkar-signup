@@ -1,4 +1,5 @@
-<merge xmlns:android="http://schemas.android.com/apk/res/android" >
+<merge xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:circlebutton="http://schemas.android.com/apk/res/com.defenestrate.chukkars.menlo.android" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -119,7 +120,13 @@
             style="@style/CircleButtonDefaults"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/circle_button_add_player" />
+            android:background="@drawable/circle_button_add_player"
+            circlebutton:textTop="@string/circle_button_top_text"
+            circlebutton:textSizeTop="13.5dp"
+            circlebutton:textOffsetTop=".5dp"
+            circlebutton:textLower="@string/circle_button_bottom_text"
+            circlebutton:textSizeLower="13.5dp"
+            circlebutton:textOffsetLower="5dp" />
     </LinearLayout>
 
 </merge>
