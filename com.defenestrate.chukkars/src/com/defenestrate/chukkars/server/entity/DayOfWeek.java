@@ -51,6 +51,11 @@ public class DayOfWeek implements Serializable
 		return _isEnabled;
 	}
 	
+	public void setEnabled(boolean isEnabled)
+	{
+		_isEnabled = isEnabled;
+	}
+
 	public String getName()
 	{
 		return _name;
