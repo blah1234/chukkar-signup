@@ -107,6 +107,33 @@ public enum Day
 		return _numRepresentation;
 	}
 
+	public boolean isFirstGameDayOfTheWeek()
+	{
+		Day[] daysOfTheWeek = getAll();
+
+		for(Day currDay : daysOfTheWeek) {
+			if( currDay.isEnabled() ) {
+				if(currDay.isBefore(this)) {
+					return false;
+				} else if(currDay == this) {
+					return true;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private boolean isBefore(Day query)
+	{
+		return this._numRepresentation < query._numRepresentation;
+	}
+
+	private boolean isAfter(Day query)
+	{
+		return this._numRepresentation > query._numRepresentation;
+	}
+
 	public Day tomorrow()
 	{
 		switch(_numRepresentation)

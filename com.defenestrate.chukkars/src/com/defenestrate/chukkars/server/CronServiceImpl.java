@@ -1,5 +1,18 @@
 package com.defenestrate.chukkars.server;
 
+import com.defenestrate.chukkars.server.entity.CronTask;
+import com.defenestrate.chukkars.server.entity.DeviceDatastore;
+import com.defenestrate.chukkars.server.entity.MessageAdmin;
+import com.defenestrate.chukkars.server.gcm.SendMessageServlet;
+import com.defenestrate.chukkars.server.gcm.SendMessageServlet.MessageType;
+import com.defenestrate.chukkars.shared.Day;
+import com.defenestrate.chukkars.shared.Player;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,19 +41,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
-
-import com.defenestrate.chukkars.server.entity.CronTask;
-import com.defenestrate.chukkars.server.entity.DeviceDatastore;
-import com.defenestrate.chukkars.server.entity.MessageAdmin;
-import com.defenestrate.chukkars.server.gcm.SendMessageServlet;
-import com.defenestrate.chukkars.server.gcm.SendMessageServlet.MessageType;
-import com.defenestrate.chukkars.shared.Day;
-import com.defenestrate.chukkars.shared.Player;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
 
 public class CronServiceImpl extends HttpServlet
 {
@@ -179,47 +179,51 @@ public class CronServiceImpl extends HttpServlet
 
 		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
         boolean enableSignupCutoff = Boolean.parseBoolean( strings.getString("enableSignupCutoff") );
+        boolean enablePerDaySignupCutoff = Boolean.parseBoolean( strings.getString("enablePerDaySignupCutoff") );
         Calendar cal = Calendar.getInstance();
 		cal.setTimeZone( TimeZone.getTimeZone("America/Los_Angeles") );
 
         if(enableSignupCutoff)
         {
-        		boolean isOneDayEnabled = false;
-        		Day[] allDays = Day.getAll();
-        		for(Day currDay : allDays)
-        		{
-        			if( currDay.isEnabled() )
-        			{
-        				isOneDayEnabled = true;
+        	Integer lastDay = null;
+    		boolean isOneDayEnabled = false;
+    		Day[] allDays = Day.getAll();
+    		for(Day currDay : allDays)
+    		{
+    			if( currDay.isEnabled() )
+    			{
+    				isOneDayEnabled = true;
 
-        				//log the time when signup should be closed
-        				cal.setTime( new Date() );
+    				//log the time when signup should be closed
+    				cal.setTime( new Date() );
 
-        				int lastDay = getLastSignupDayOfWeek(currDay);
+    				if(lastDay == null || enablePerDaySignupCutoff) {
+    					lastDay = getLastSignupDayOfWeek(currDay);
+    				}
 
-        				do
-        				{
-        					cal.add(Calendar.DAY_OF_WEEK, 1);
-        				} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
+    				do
+    				{
+    					cal.add(Calendar.DAY_OF_WEEK, 1);
+    				} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay.intValue());
 
-        				cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
-        				cal.set(Calendar.MINUTE, 30);
+    				cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
+    				cal.set(Calendar.MINUTE, 30);
 
-        				logTask( CronTask.CLOSE_SIGNUP + currDay.getNumber(), cal.getTime() );
-        			}
-        		}
+    				logTask( CronTask.CLOSE_SIGNUP + currDay.getNumber(), cal.getTime() );
+    			}
+    		}
 
 
-        		if(!isOneDayEnabled)
-        		{
-        			//otherwise signup is never closed
-            		logTask( CronTask.CLOSE_SIGNUP + 1, getNever() );
-        		}
+    		if(!isOneDayEnabled)
+    		{
+    			//otherwise signup is never closed
+        		logTask( CronTask.CLOSE_SIGNUP + 1, getNever() );
+    		}
         }
         else
         {
-        		//otherwise signup is never closed
-        		logTask( CronTask.CLOSE_SIGNUP + 1, getNever() );
+    		//otherwise signup is never closed
+    		logTask( CronTask.CLOSE_SIGNUP + 1, getNever() );
         }
 
 		//------------------
@@ -549,7 +553,20 @@ public class CronServiceImpl extends HttpServlet
 		}
 
 		Day possibleGameDay = dayNow.tomorrow();
-		return possibleGameDay.isEnabled();
+		boolean isGameDay = possibleGameDay.isEnabled();
+
+		ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
+        boolean enablePerDaySignupCutoff = Boolean.parseBoolean( strings.getString("enablePerDaySignupCutoff") );
+
+        if(enablePerDaySignupCutoff)
+        {
+        	return isGameDay;
+        }
+        else
+        {
+        	boolean isFirstGameDay = possibleGameDay.isFirstGameDayOfTheWeek();
+			return isGameDay && isFirstGameDay;
+		}
 	}
 
 	public void sendSignupReminderEmail(HttpServletRequest req, HttpServletResponse resp) throws ServletException
