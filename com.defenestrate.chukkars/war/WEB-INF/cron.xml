@@ -4,8 +4,8 @@
   <!-- Menlo -->   
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
-    <description>Resets the signup page every Monday at 7pm</description>
-    <schedule>every monday 19:00</schedule>
+    <description>Resets the signup page every Monday at 1am</description>
+    <schedule>every monday 1:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
   
