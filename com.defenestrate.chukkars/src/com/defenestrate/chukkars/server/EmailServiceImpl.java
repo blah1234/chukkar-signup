@@ -1,5 +1,10 @@
 package com.defenestrate.chukkars.server;
 
+import com.defenestrate.chukkars.client.EmailService;
+import com.defenestrate.chukkars.server.entity.MessageAdmin;
+import com.defenestrate.chukkars.shared.LoginInfo;
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -14,11 +19,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletException;
-
-import com.defenestrate.chukkars.client.EmailService;
-import com.defenestrate.chukkars.server.entity.MessageAdmin;
-import com.defenestrate.chukkars.shared.LoginInfo;
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class EmailServiceImpl extends RemoteServiceServlet
 							  implements EmailService
@@ -48,7 +48,12 @@ public class EmailServiceImpl extends RemoteServiceServlet
             		msg.setReplyTo( new Address[] {new InternetAddress(data.getRecipientEmailAddress())} );
             }
 
-            msg.addRecipient( Message.RecipientType.TO, new InternetAddress(recipientAddress) );
+            String[] parts = recipientAddress.split("[\\,\\;]");
+            
+            for(String currAddress : parts) {
+            	msg.addRecipient( Message.RecipientType.TO, new InternetAddress(currAddress.trim()) );
+            }
+            
             msg.setSubject(subject);
             msg.setContent(msgBody.replace("\n", "<br>"), "text/html");
             Transport.send(msg);
