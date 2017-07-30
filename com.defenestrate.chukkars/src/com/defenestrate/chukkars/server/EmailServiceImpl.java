@@ -45,7 +45,12 @@ public class EmailServiceImpl extends RemoteServiceServlet
 
             if(useClubListAddressAsReplyTo)
             {
-            		msg.setReplyTo( new Address[] {new InternetAddress(data.getRecipientEmailAddress())} );
+                String[] parts = data.getRecipientEmailAddress().split("[\\,\\;]");
+                
+                for(String currAddress : parts) {
+            		msg.setReplyTo( new Address[] {new InternetAddress(currAddress.trim())} );
+            		break;
+                }
             }
 
             String[] parts = recipientAddress.split("[\\,\\;]");
