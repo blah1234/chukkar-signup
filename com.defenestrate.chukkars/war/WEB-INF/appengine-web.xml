@@ -21,4 +21,8 @@
 
   <threadsafe>false</threadsafe>
   
+  <!-- https://cloud.google.com/appengine/docs/standard/java/migrating-to-java8 --> 
+  <runtime>java8</runtime>
+  <url-stream-handler>urlfetch</url-stream-handler>
+
 </appengine-web-app>
