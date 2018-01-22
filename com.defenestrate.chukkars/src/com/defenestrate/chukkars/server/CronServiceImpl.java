@@ -1,5 +1,18 @@
 package com.defenestrate.chukkars.server;
 
+import com.defenestrate.chukkars.server.entity.CronTask;
+import com.defenestrate.chukkars.server.entity.DeviceDatastore;
+import com.defenestrate.chukkars.server.entity.MessageAdmin;
+import com.defenestrate.chukkars.server.gcm.SendMessageServlet;
+import com.defenestrate.chukkars.server.gcm.SendMessageServlet.MessageType;
+import com.defenestrate.chukkars.shared.Day;
+import com.defenestrate.chukkars.shared.Player;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,19 +41,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
-
-import com.defenestrate.chukkars.server.entity.CronTask;
-import com.defenestrate.chukkars.server.entity.DeviceDatastore;
-import com.defenestrate.chukkars.server.entity.MessageAdmin;
-import com.defenestrate.chukkars.server.gcm.SendMessageServlet;
-import com.defenestrate.chukkars.server.gcm.SendMessageServlet.MessageType;
-import com.defenestrate.chukkars.shared.Day;
-import com.defenestrate.chukkars.shared.Player;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
 
 public class CronServiceImpl extends HttpServlet
 {
@@ -202,7 +202,7 @@ public class CronServiceImpl extends HttpServlet
         					cal.add(Calendar.DAY_OF_WEEK, 1);
         				} while(cal.get(Calendar.DAY_OF_WEEK) != lastDay);
 
-        				cal.set(Calendar.HOUR_OF_DAY, 12);	 //noon
+        				cal.set(Calendar.HOUR_OF_DAY, 17);	 //5pm
         				cal.set(Calendar.MINUTE, 30);
 
         				logTask( CronTask.CLOSE_SIGNUP + currDay.getNumber(), cal.getTime() );
@@ -575,7 +575,7 @@ public class CronServiceImpl extends HttpServlet
 			{
 				String msgBody = data.getSignupReminderMessage();
 				ResourceBundle strings = ResourceBundle.getBundle("com.defenestrate.chukkars.shared.resources.DisplayStrings");
-				EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 12 noon", msgBody, data, false);
+				EmailServiceImpl.sendEmail(strings.getString("clubAbbreviation") + " signup by 5pm", msgBody, data, false);
 
 				//----------------
 

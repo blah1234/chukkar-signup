@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-  <!-- summer--> 
+  <!-- summer 
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page every Wednesday at 7pm</description>
@@ -28,8 +28,8 @@
     <schedule>every day 13:00</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
-
-  <!-- winter  
+-->
+  <!-- winter  -->
   <cron>
     <url>/signup/cron/removeAllPlayers</url>
     <description>Resets the signup page every Sunday at 7pm</description>
@@ -54,8 +54,8 @@
   <cron>
     <url>/signup/cron/sendExportSignupEmail</url>
     <description>Sends a weekly export of the player signups to the club manager</description>
-    <schedule>every day 13:00</schedule>
+    <schedule>every day 17:30</schedule>
     <timezone>America/Los_Angeles</timezone>
   </cron>
-  -->
+  
 </cronentries>
